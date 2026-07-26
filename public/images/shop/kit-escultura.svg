@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 250" fill="none">
+  <rect width="400" height="250" fill="#142d54"/>
+  <rect x="120" y="70" width="160" height="100" rx="8" fill="#c9a962" opacity="0.3" stroke="#c9a962" stroke-width="2"/>
+  <rect x="140" y="90" width="30" height="60" rx="4" fill="#e8d5a8"/>
+  <rect x="185" y="85" width="30" height="65" rx="4" fill="#c9a962"/>
+  <rect x="230" y="95" width="30" height="55" rx="4" fill="#e8d5a8"/>
+  <text x="200" y="200" text-anchor="middle" fill="#e8d5a8" font-family="system-ui" font-size="18" font-weight="600">Kit Escultura</text>
+</svg>

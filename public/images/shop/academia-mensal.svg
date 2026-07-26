@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 250" fill="none">
+  <rect width="400" height="250" fill="#1a3a6b"/>
+  <circle cx="200" cy="100" r="50" stroke="#c9a962" stroke-width="3" fill="none"/>
+  <path d="M160 100 L200 60 L240 100 L200 140 Z" fill="#c9a962" opacity="0.6"/>
+  <text x="200" y="200" text-anchor="middle" fill="#e8d5a8" font-family="system-ui" font-size="18" font-weight="600">Academia Digital</text>
+</svg>

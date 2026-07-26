@@ -1,0 +1,37 @@
+{
+  "name": "escultura-dental-gabriela",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "dev:server": "npm run dev --prefix server",
+    "dev:all": "npm run dev:server & npm run dev",
+    "db:up": "docker compose up -d",
+    "db:init": "npm run db:init --prefix server",
+    "db:seed": "npm run seed --prefix server",
+    "setup": "npm run db:up && sleep 2 && npm run db:init && npm run db:seed",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview",
+    "extract-images": "node scripts/extract-images.mjs",
+    "generate-stl": ".venv/bin/python scripts/generate-tooth-stl.py",
+    "render-views": ".venv/bin/python scripts/render-tooth-views.py",
+    "render-test": ".venv/bin/python scripts/render-tooth-views.py --tooth 13",
+    "generate-images": "npm run generate-stl && npm run render-views"
+  },
+  "dependencies": {
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "react-router-dom": "^7.1.1",
+    "three": "^0.185.1"
+  },
+  "devDependencies": {
+    "@types/react": "^19.1.0",
+    "@types/react-dom": "^19.1.0",
+    "@types/three": "^0.185.1",
+    "@vitejs/plugin-react": "^4.4.1",
+    "sharp": "^0.35.3",
+    "typescript": "^5.8.3",
+    "vite": "^6.3.5"
+  }
+}

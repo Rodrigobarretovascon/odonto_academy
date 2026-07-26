@@ -1,0 +1,28 @@
+{
+  "comment": "14 dentes base (sem 3os molares). Lado esquerdo espelha o par contralateral direito.",
+  "baseTeeth": {
+    "11": { "align3d": { "case": "data_738", "arch": "up", "file": "9.stl" }, "type": "incisor", "jaw": "upper" },
+    "12": { "align3d": { "case": "data_738", "arch": "up", "file": "10.stl" }, "type": "incisor", "jaw": "upper" },
+    "13": { "align3d": { "case": "data_738", "arch": "up", "file": "11.stl" }, "type": "canine", "jaw": "upper" },
+    "14": { "align3d": { "case": "data_738", "arch": "up", "file": "12.stl" }, "type": "premolar", "jaw": "upper" },
+    "15": { "align3d": { "case": "data_738", "arch": "up", "file": "13.stl" }, "type": "premolar", "jaw": "upper" },
+    "16": { "align3d": { "case": "data_738", "arch": "up", "file": "14.stl" }, "type": "molar", "jaw": "upper" },
+    "17": { "align3d": { "case": "data_738", "arch": "up", "file": "15.stl" }, "type": "molar", "jaw": "upper" },
+    "41": { "align3d": { "case": "data_738", "arch": "down", "file": "24.stl" }, "type": "incisor", "jaw": "lower" },
+    "42": { "align3d": { "case": "data_738", "arch": "down", "file": "23.stl" }, "type": "incisor", "jaw": "lower" },
+    "43": { "align3d": { "case": "data_738", "arch": "down", "file": "22.stl" }, "type": "canine", "jaw": "lower" },
+    "44": { "align3d": { "case": "data_738", "arch": "down", "file": "21.stl" }, "type": "premolar", "jaw": "lower" },
+    "45": { "align3d": { "case": "data_738", "arch": "down", "file": "20.stl" }, "type": "premolar", "jaw": "lower" },
+    "46": { "align3d": { "case": "data_738", "arch": "down", "file": "19.stl" }, "type": "molar", "jaw": "lower" },
+    "47": { "align3d": { "case": "data_738", "arch": "down", "file": "18.stl" }, "type": "molar", "jaw": "lower" }
+  },
+  "mirrorPairs": {
+    "21": 11, "22": 12, "23": 13, "24": 14, "25": 15, "26": 16, "27": 17,
+    "31": 41, "32": 42, "33": 43, "34": 44, "35": 45, "36": 46, "37": 47
+  },
+  "views": ["distal", "mesial", "palatina", "vestibular", "incisal"],
+  "lingualViewName": {
+    "upper": "palatina",
+    "lower": "lingual"
+  }
+}

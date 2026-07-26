@@ -1,0 +1,16 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: gabriela-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: gabriela
+      POSTGRES_PASSWORD: gabriela_dev
+      POSTGRES_DB: gabriela_dental
+    ports:
+      - "5433:5432"
+    volumes:
+      - gabriela_pg_data:/var/lib/postgresql/data
+
+volumes:
+  gabriela_pg_data:
