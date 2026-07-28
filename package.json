@@ -18,6 +18,8 @@
     "generate-stl": ".venv/bin/python scripts/generate-tooth-stl.py",
     "render-views": ".venv/bin/python scripts/render-tooth-views.py",
     "render-test": ".venv/bin/python scripts/render-tooth-views.py --tooth 13",
+    "import-conteudos": ".venv/bin/python scripts/import-conteudos-pdf.py",
+    "download-dundee": ".venv/bin/python scripts/download-dundee-models.py",
     "generate-images": "npm run generate-stl && npm run render-views"
   },
   "dependencies": {

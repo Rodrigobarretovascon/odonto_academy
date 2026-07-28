@@ -15,7 +15,7 @@ interface ToothMeta {
   blockMeasures: Array<{ label: string; value: string }>;
 }
 
-const IMAGE_CACHE = "v3";
+const IMAGE_CACHE = "v5";
 
 const img = (number: number, file: string, alt: string, placeholderLabel: string) => ({
   src: `/images/tooth-${number}/${file}?v=${IMAGE_CACHE}`,

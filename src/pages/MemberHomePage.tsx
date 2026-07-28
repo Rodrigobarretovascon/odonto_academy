@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { contentSlides } from "../data/content-manifest";
 
 export function MemberHomePage() {
   const { user, subscription } = useAuth();
@@ -27,7 +28,11 @@ export function MemberHomePage() {
         <Link to="/app/anatomia" className="member-tile">
           <span className="member-tile__icon">🔬</span>
           <h2>Anatomia Dental</h2>
-          <p>Faces, oclusal, sulcos e estruturas</p>
+          <p>
+            {contentSlides.length > 0
+              ? "Atlas vivo · 7 jornadas · morfologia para esculpir"
+              : "Faces, oclusal, sulcos e estruturas"}
+          </p>
         </Link>
         <Link to="/app/ia" className="member-tile">
           <span className="member-tile__icon">💬</span>

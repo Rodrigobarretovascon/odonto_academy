@@ -16,6 +16,7 @@ from PIL import Image, ImageDraw, ImageEnhance, ImageFilter
 
 ROOT = Path(__file__).resolve().parent.parent
 CONFIG_PATH = ROOT / "scripts" / "tooth-config.json"
+DUNDEE_MANIFEST = ROOT / "scripts" / "dundee-manifest.json"
 MODELS_DIR = ROOT / "models" / "stl"
 OUTPUT_DIR = ROOT / "public" / "images"
 
@@ -26,15 +27,10 @@ PADDING_INCISAL = 0.30
 # Fração superior do dente visível (coroa + parte da raiz)
 DISPLAY_TOP_FRACTION = 0.85
 BG = (255, 255, 255)
-# Coroa branca brilhante + raiz amarronzada (referência clínica / cera)
-CROWN_BASE = np.array([1.0, 1.0, 1.0])
-CROWN_HIGHLIGHT = np.array([1.0, 1.0, 1.0])
-CROWN_SHADOW = np.array([0.94, 0.94, 0.92])
-ROOT_BASE = np.array([0.82, 0.69, 0.56])
-ROOT_HIGHLIGHT = np.array([0.92, 0.80, 0.68])
-ROOT_SHADOW = np.array([0.68, 0.55, 0.42])
-CERVICAL_FRACTION = 0.42
-CERVICAL_BLEND = 0.08
+# Material neutro (STLs sem textura) — tom anatômico original, sem pintura artificial
+NEUTRAL_BASE = np.array([0.88, 0.85, 0.80])
+NEUTRAL_HIGHLIGHT = np.array([0.96, 0.94, 0.90])
+NEUTRAL_SHADOW = np.array([0.62, 0.58, 0.52])
 
 
 def load_config() -> dict:
@@ -134,27 +130,62 @@ def view_camera(view: str) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     raise ValueError(view)
 
 
-def crown_blend(z: float, z_min: float, z_max: float) -> float:
-    """0 = raiz (amarronzada), 1 = coroa (branca). +Z = incisal."""
-    span = max(z_max - z_min, 1e-9)
-    cervical = z_min + span * CERVICAL_FRACTION
-    blend = span * CERVICAL_BLEND
-    if z >= cervical:
-        return 1.0
-    if z <= cervical - blend:
-        return 0.0
-    return float((z - (cervical - blend)) / blend)
+def texture_path_for_tooth(number: str, model_path: Path) -> Path | None:
+    """Textura original Dundee do próprio dente (ex.: 13-TM.png)."""
+    candidates = [
+        MODELS_DIR / f"{number}-TM.png",
+        model_path.with_name(f"{model_path.stem}-TM.png"),
+    ]
+    # Fallback só para o canino 13 (OBJ Dundee original em tmp)
+    if number == "13":
+        candidates.append(ROOT / "tmp" / "maxillary-canine" / "textures" / "UL3sketch1_1-TM.png")
+    for path in candidates:
+        if path.exists():
+            return path
+    return None
 
 
-def shade_palette(t: float) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
-    """Interpola paletas coroa ↔ raiz."""
-    base = ROOT_BASE * (1.0 - t) + CROWN_BASE * t
-    highlight = ROOT_HIGHLIGHT * (1.0 - t) + CROWN_HIGHLIGHT * t
-    shadow = ROOT_SHADOW * (1.0 - t) + CROWN_SHADOW * t
-    return base, highlight, shadow
+def load_texture_array(path: Path) -> np.ndarray:
+    return np.asarray(Image.open(path).convert("RGB"), dtype=np.float32) / 255.0
 
 
-def render_mesh(mesh: trimesh.Trimesh, view: str, size: int = SIZE) -> Image.Image:
+def sample_texture(tex: np.ndarray, u: float, v: float) -> np.ndarray:
+    h, w = tex.shape[:2]
+    u = float(np.clip(u, 0.0, 1.0))
+    v = float(np.clip(1.0 - v, 0.0, 1.0))
+    x = min(int(u * (w - 1)), w - 1)
+    y = min(int(v * (h - 1)), h - 1)
+    return tex[y, x]
+
+
+def mesh_uv_coords(mesh: trimesh.Trimesh) -> np.ndarray | None:
+    visual = getattr(mesh, "visual", None)
+    uv = getattr(visual, "uv", None) if visual is not None else None
+    if uv is None or len(uv) != len(mesh.vertices):
+        return None
+    return np.asarray(uv, dtype=np.float64)
+
+
+def shade_lit(base: np.ndarray, normal: np.ndarray, light: np.ndarray, view_dir: np.ndarray) -> np.ndarray:
+    ndotl = max(0.0, float(np.dot(normal, light)))
+    ndotv = max(0.0, float(np.dot(normal, view_dir)))
+    half_vec = light + view_dir
+    half_vec /= max(np.linalg.norm(half_vec), 1e-9)
+    spec = max(0.0, float(np.dot(normal, half_vec))) ** 18
+    # Ambiente alto para preservar cores da textura Dundee (coroa clara / raiz bege)
+    shade = 0.62 + 0.38 * ndotl
+    highlight = np.minimum(base * 1.1 + 0.05, 1.0)
+    color = base * shade + highlight * (spec * 0.12 + ndotv**4 * 0.04)
+    return np.clip(color, 0, 1)
+
+
+def render_mesh(
+    mesh: trimesh.Trimesh,
+    view: str,
+    size: int = SIZE,
+    texture: np.ndarray | None = None,
+    uv: np.ndarray | None = None,
+) -> Image.Image:
     internal = size * SUPERSAMPLE
     look, up, right = view_camera(view)
     look = look.astype(np.float64)
@@ -169,8 +200,7 @@ def render_mesh(mesh: trimesh.Trimesh, view: str, size: int = SIZE) -> Image.Ima
     verts = mesh.vertices
     faces = mesh.faces
     vnorms = mesh.vertex_normals
-    z_min = float(verts[:, 2].min())
-    z_max = float(verts[:, 2].max())
+    use_texture = texture is not None and uv is not None
 
     proj_u = verts @ right
     proj_v = verts @ up
@@ -219,9 +249,10 @@ def render_mesh(mesh: trimesh.Trimesh, view: str, size: int = SIZE) -> Image.Ima
         for y in range(min_y, max_y + 1):
             for x in range(min_x, max_x + 1):
                 p = np.array([x + 0.5, y + 0.5])
-                w0 = ((v1[0] - v0[0]) * (p[1] - v0[1]) - (v1[1] - v0[1]) * (p[0] - v0[0])) / area
-                w1 = ((v2[0] - v1[0]) * (p[1] - v1[1]) - (v2[1] - v1[1]) * (p[0] - v1[0])) / area
-                w2 = 1 - w0 - w1
+                # Bariocêntricos corretos: w0→v0, w1→v1, w2→v2
+                w0 = ((v1[0] - p[0]) * (v2[1] - p[1]) - (v2[0] - p[0]) * (v1[1] - p[1])) / area
+                w1 = ((v2[0] - p[0]) * (v0[1] - p[1]) - (v0[0] - p[0]) * (v2[1] - p[1])) / area
+                w2 = 1.0 - w0 - w1
                 if w0 >= 0 and w1 >= 0 and w2 >= 0:
                     z = w0 * depth[tri[0]] + w1 * depth[tri[1]] + w2 * depth[tri[2]]
                     if z < zbuf[y, x]:
@@ -233,24 +264,15 @@ def render_mesh(mesh: trimesh.Trimesh, view: str, size: int = SIZE) -> Image.Ima
                         normal /= nlen
                         if np.dot(normal, -look) <= 0:
                             continue
-                        z = w0 * verts[tri[0], 2] + w1 * verts[tri[1], 2] + w2 * verts[tri[2], 2]
-                        t = crown_blend(z, z_min, z_max)
-                        base, highlight, shadow = shade_palette(t)
-                        ndotl = max(0.0, float(np.dot(normal, light)))
-                        ndotv = max(0.0, float(np.dot(normal, view_dir)))
-                        half_vec = light + view_dir
-                        half_vec /= max(np.linalg.norm(half_vec), 1e-9)
-                        spec_power = 28 if t > 0.55 else 18
-                        spec = max(0.0, float(np.dot(normal, half_vec))) ** spec_power
-                        spec_strength = 0.55 if t > 0.55 else 0.08
-                        shade = 0.35 + 0.55 * ndotl
-                        shadow_mix = (1.0 - ndotl) * (0.06 if t > 0.55 else 0.14)
-                        color = (
-                            shadow * shadow_mix
-                            + base * shade
-                            + highlight * (spec * spec_strength + ndotv**4 * (0.14 if t > 0.55 else 0.04))
-                        )
-                        img[y, x] = np.clip(color, 0, 1)
+                        if use_texture:
+                            tri_uv = uv[tri]
+                            u = w0 * tri_uv[0, 0] + w1 * tri_uv[1, 0] + w2 * tri_uv[2, 0]
+                            v = w0 * tri_uv[0, 1] + w1 * tri_uv[1, 1] + w2 * tri_uv[2, 1]
+                            base = sample_texture(texture, u, v)
+                        else:
+                            base = NEUTRAL_BASE
+                        color = shade_lit(base, normal, light, view_dir)
+                        img[y, x] = color
 
     pil = Image.fromarray(np.clip(img * 255, 0, 255).astype(np.uint8))
     if view != "incisal":
@@ -262,23 +284,13 @@ def render_mesh(mesh: trimesh.Trimesh, view: str, size: int = SIZE) -> Image.Ima
 
 
 def enhance_image(pil: Image.Image) -> Image.Image:
-    """Clareia e aumenta contraste preservando o fundo branco."""
+    """Leve clareamento da textura Dundee, sem esticar histograma (evita escurecer)."""
     arr = np.array(pil, dtype=np.float32)
     tooth = arr.min(axis=2) < 250
     if not tooth.any():
         return pil
-    for c in range(3):
-        channel = arr[:, :, c]
-        values = channel[tooth]
-        lo, hi = np.percentile(values, [2, 98])
-        span = max(hi - lo, 1.0)
-        stretched = (channel - lo) / span
-        channel = np.where(tooth, np.clip(stretched, 0, 1) * 255, channel)
-        arr[:, :, c] = channel
-    out = Image.fromarray(arr.astype(np.uint8))
-    out = ImageEnhance.Brightness(out).enhance(1.03)
-    out = ImageEnhance.Contrast(out).enhance(1.05)
-    return out
+    arr[tooth] = np.clip(arr[tooth] * 1.12 + 6.0, 0, 255)
+    return Image.fromarray(arr.astype(np.uint8))
 
 
 def add_ground_shadow(img: Image.Image, zbuf: np.ndarray) -> Image.Image:
@@ -296,8 +308,51 @@ def add_ground_shadow(img: Image.Image, zbuf: np.ndarray) -> Image.Image:
     return Image.alpha_composite(out, overlay).convert("RGB")
 
 
+def load_dundee_manifest() -> dict:
+    if not DUNDEE_MANIFEST.exists():
+        return {"teeth": {}}
+    return json.loads(DUNDEE_MANIFEST.read_text())
+
+
+def dundee_mirror_for(number: str) -> bool:
+    teeth = load_dundee_manifest().get("teeth", {})
+    return bool(teeth.get(number, {}).get("mirror", False))
+
+
+def dundee_flip_vertical_for(number: str) -> bool:
+    teeth = load_dundee_manifest().get("teeth", {})
+    return bool(teeth.get(number, {}).get("flipVertical", False))
+
+
+def mirror_mesh_x(mesh: trimesh.Trimesh) -> trimesh.Trimesh:
+    m = mesh.copy()
+    m.apply_transform(np.diag([-1.0, 1.0, 1.0, 1.0]))
+    return m
+
+
+def flip_mesh_z(mesh: trimesh.Trimesh) -> trimesh.Trimesh:
+    m = mesh.copy()
+    m.apply_transform(np.diag([1.0, 1.0, -1.0, 1.0]))
+    return m
+
+
+def texture_from_mesh_visual(mesh: trimesh.Trimesh) -> tuple[np.ndarray, np.ndarray] | None:
+    visual = getattr(mesh, "visual", None)
+    if visual is None:
+        return None
+    uv = getattr(visual, "uv", None)
+    material = getattr(visual, "material", None)
+    image = getattr(material, "image", None) if material is not None else None
+    if uv is None or image is None:
+        return None
+    if len(uv) != len(mesh.vertices):
+        return None
+    tex = np.asarray(image.convert("RGB"), dtype=np.float32) / 255.0
+    return tex, np.asarray(uv, dtype=np.float64)
+
+
 def stl_path_for_tooth(number: str, meta: dict) -> Path:
-    for ext in (".obj", ".stl"):
+    for ext in (".obj", ".glb", ".stl"):
         direct = MODELS_DIR / f"{number}{ext}"
         if direct.exists():
             return direct
@@ -322,16 +377,35 @@ def views_for_tooth(meta: dict) -> list[tuple[str, str]]:
 
 def render_tooth(number: str, meta: dict, out_dir: Path) -> None:
     stl = stl_path_for_tooth(number, meta)
-    mesh = trimesh.load_mesh(stl, force="mesh")
+    mesh = trimesh.load_mesh(stl, force="mesh", process=False)
     if isinstance(mesh, trimesh.Scene):
         mesh = trimesh.util.concatenate(tuple(mesh.geometry.values()))
     mesh = normalize_mesh(mesh)
     mesh = orient_tooth(mesh, meta["type"], meta["jaw"])
+    if dundee_flip_vertical_for(number):
+        mesh = flip_mesh_z(mesh)
+        print("  · flip vertical")
+    if dundee_mirror_for(number):
+        mesh = mirror_mesh_x(mesh)
     mesh = trim_mesh_for_display(mesh)
+
+    tex_path = texture_path_for_tooth(number, stl)
+    texture = load_texture_array(tex_path) if tex_path else None
+    uv = mesh_uv_coords(mesh)
+    if texture is None:
+        embedded = texture_from_mesh_visual(mesh)
+        if embedded is not None:
+            texture, uv = embedded
+            print(f"  · textura embutida ({stl.suffix})")
+    if texture is not None and uv is None:
+        print(f"  ! textura encontrada ({tex_path.name}) mas sem UV — material neutro")
+        texture = None
+    elif texture is not None:
+        print(f"  · textura original: {tex_path.name}")
 
     out_dir.mkdir(parents=True, exist_ok=True)
     for internal, suffix in views_for_tooth(meta):
-        img = render_mesh(mesh, internal)
+        img = render_mesh(mesh, internal, texture=texture, uv=uv)
         filename = f"{number}-final-{suffix}.png"
         img.save(out_dir / filename, compress_level=3)
         print(f"  ✓ {filename}")
