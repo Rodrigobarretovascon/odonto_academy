@@ -27,25 +27,28 @@ export async function migrateSchema() {
   await query(`CREATE SEQUENCE IF NOT EXISTS product_code_seq START 1`);
 
   // --- products.code ---
-  if (!(await columnExists("products", "code"))) {
-    await query(`ALTER TABLE products ADD COLUMN code VARCHAR(32)`);
+  // Sem tabela base (schema.sql ainda não rodou), pula — ensureDatabase / db:init criam depois.
+  if (await tableExists("products")) {
+    if (!(await columnExists("products", "code"))) {
+      await query(`ALTER TABLE products ADD COLUMN code VARCHAR(32)`);
+      await query(`
+        UPDATE products SET code = 'GB-' || lpad(id::text, 5, '0')
+        WHERE code IS NULL OR code = ''
+      `);
+      const maxId = await query<{ m: string | null }>(`SELECT MAX(id)::text AS m FROM products`);
+      const start = Number(maxId.rows[0]?.m ?? 0) + 1;
+      await query(`SELECT setval('product_code_seq', GREATEST($1, 1), true)`, [start]);
+      await query(`ALTER TABLE products ALTER COLUMN code SET NOT NULL`);
+    }
     await query(`
-      UPDATE products SET code = 'GB-' || lpad(id::text, 5, '0')
-      WHERE code IS NULL OR code = ''
+      DO $$ BEGIN
+        ALTER TABLE products ADD CONSTRAINT products_code_unique UNIQUE (code);
+      EXCEPTION
+        WHEN duplicate_object THEN NULL;
+        WHEN duplicate_table THEN NULL;
+      END $$
     `);
-    const maxId = await query<{ m: string | null }>(`SELECT MAX(id)::text AS m FROM products`);
-    const start = Number(maxId.rows[0]?.m ?? 0) + 1;
-    await query(`SELECT setval('product_code_seq', GREATEST($1, 1), true)`, [start]);
-    await query(`ALTER TABLE products ALTER COLUMN code SET NOT NULL`);
   }
-  await query(`
-    DO $$ BEGIN
-      ALTER TABLE products ADD CONSTRAINT products_code_unique UNIQUE (code);
-    EXCEPTION
-      WHEN duplicate_object THEN NULL;
-      WHEN duplicate_table THEN NULL;
-    END $$
-  `);
 
   // --- product_prices ---
   await query(`

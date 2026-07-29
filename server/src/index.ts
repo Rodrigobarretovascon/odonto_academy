@@ -78,11 +78,13 @@ if (isProd && existsSync(distPath)) {
 async function start() {
   if (process.env.DATABASE_URL || isProd) {
     try {
-      await migrateSchema();
+      // Produção: schema.sql + seed mínimo via ensureDatabase (já chama migrateSchema).
+      // Dev: só migrations idempotentes (schema já existe via db:init / docker).
       if (isProd) {
         await ensureDatabase();
         console.log("✓ Banco inicializado");
       } else {
+        await migrateSchema();
         console.log("✓ Migrações aplicadas");
       }
     } catch (err) {
