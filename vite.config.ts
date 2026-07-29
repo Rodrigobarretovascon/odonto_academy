@@ -8,6 +8,7 @@ export default defineConfig({
       "/api": "http://localhost:3001",
       "/models": "http://localhost:3001",
       "/tmp": "http://localhost:3001",
+      "/uploads": "http://localhost:3001",
     },
   },
 });

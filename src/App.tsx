@@ -5,8 +5,7 @@ import { ProtectedRoute } from "./components/ProtectedRoute";
 import { PublicLayout } from "./layouts/PublicLayout";
 import { MemberLayout } from "./layouts/MemberLayout";
 import { LandingPage } from "./pages/LandingPage";
-import { ShopPage } from "./pages/ShopPage";
-import { CartPage } from "./pages/CartPage";
+import { ShopCartPage } from "./pages/ShopCartPage";
 import { CheckoutPage } from "./pages/CheckoutPage";
 import { LoginPage } from "./pages/LoginPage";
 import { RegisterPage } from "./pages/RegisterPage";
@@ -25,11 +24,14 @@ export default function App() {
           <Routes>
             <Route element={<PublicLayout />}>
               <Route index element={<LandingPage />} />
-              <Route path="loja" element={<ShopPage />} />
-              <Route path="carrinho" element={<CartPage />} />
+              <Route path="loja" element={<ShopCartPage />} />
+              <Route path="carrinho" element={<Navigate to="/loja" replace />} />
               <Route path="checkout" element={<CheckoutPage />} />
               <Route path="login" element={<LoginPage />} />
               <Route path="cadastro" element={<RegisterPage />} />
+              <Route element={<ProtectedRoute admin />}>
+                <Route path="admin" element={<AdminPage />} />
+              </Route>
             </Route>
 
             <Route element={<ProtectedRoute />}>
@@ -44,10 +46,6 @@ export default function App() {
                   <Route path="novidades" element={<NewsPage />} />
                 </Route>
               </Route>
-            </Route>
-
-            <Route element={<ProtectedRoute admin />}>
-              <Route path="admin" element={<AdminPage />} />
             </Route>
 
             <Route path="*" element={<Navigate to="/" replace />} />

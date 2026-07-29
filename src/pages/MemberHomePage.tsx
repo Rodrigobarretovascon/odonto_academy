@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { contentSlides } from "../data/content-manifest";
+import { BrandIcon } from "../components/BrandIcon";
 
 export function MemberHomePage() {
   const { user, subscription } = useAuth();
@@ -21,12 +22,12 @@ export function MemberHomePage() {
       </header>
       <div className="member-home__grid">
         <Link to="/app/escultura/13" className="member-tile member-tile--featured">
-          <span className="member-tile__icon">🦷</span>
+          <BrandIcon name="tooth" />
           <h2>Escultura em Cera</h2>
           <p>28 dentes · passo a passo · vistas finais · 3D</p>
         </Link>
         <Link to="/app/anatomia" className="member-tile">
-          <span className="member-tile__icon">🔬</span>
+          <BrandIcon name="anatomy" />
           <h2>Anatomia Dental</h2>
           <p>
             {contentSlides.length > 0
@@ -35,12 +36,12 @@ export function MemberHomePage() {
           </p>
         </Link>
         <Link to="/app/ia" className="member-tile">
-          <span className="member-tile__icon">💬</span>
+          <BrandIcon name="chat" />
           <h2>Tirar Dúvidas</h2>
           <p>Assistente IA para escultura</p>
         </Link>
         <Link to="/app/novidades" className="member-tile">
-          <span className="member-tile__icon">✨</span>
+          <BrandIcon name="spark" />
           <h2>Novidades</h2>
           <p>Conteúdos novos da Gabriela</p>
         </Link>

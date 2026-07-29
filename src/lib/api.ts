@@ -23,11 +23,17 @@ export interface Product {
   subtitle: string;
   description: string;
   price_cents: number;
+  promo_price_cents?: number | null;
+  effective_price_cents?: number;
   type: string;
   access_days: number;
   image_url: string;
   badge: string;
   featured: boolean;
+  stock_qty?: number | null;
+  characteristics?: string[];
+  applications?: string[];
+  volume_prices?: Array<{ min_qty: number; unit_price_cents: number }>;
 }
 
 export interface User {

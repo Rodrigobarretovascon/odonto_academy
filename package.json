@@ -11,6 +11,7 @@
     "db:up": "docker compose up -d",
     "db:init": "npm run db:init --prefix server",
     "db:seed": "npm run seed --prefix server",
+    "db:seed:catalog": "npm run seed:catalog --prefix server",
     "setup": "npm run db:up && sleep 2 && npm run db:init && npm run db:seed",
     "build": "tsc -b && vite build",
     "preview": "vite preview",

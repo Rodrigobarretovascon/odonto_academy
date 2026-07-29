@@ -1,5 +1,7 @@
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { BrandLockup } from "../components/BrandMark";
+import { SiteFooter } from "../components/SiteFooter";
 
 const NAV = [
   { to: "/app", label: "Início", end: true },
@@ -21,8 +23,8 @@ export function MemberLayout() {
     <div className="terus-app terus-app--member">
       <aside className="member-sidebar">
         <div className="member-sidebar__brand">
-          <span className="terus-brand__mark">GB</span>
-          <div>
+          <BrandLockup size="sm" />
+          <div className="member-sidebar__user">
             <strong>Academia Exclusiva</strong>
             <small>{user?.name}</small>
           </div>
@@ -71,6 +73,7 @@ export function MemberLayout() {
       </aside>
       <div className="member-content">
         <Outlet />
+        <SiteFooter />
       </div>
     </div>
   );

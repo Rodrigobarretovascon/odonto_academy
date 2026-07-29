@@ -40,7 +40,11 @@ export function CheckoutPage() {
         {
           method: "POST",
           body: JSON.stringify({
-            items: items.map((i) => ({ productId: i.product.id, quantity: i.quantity })),
+            items: items.map((i) => ({
+              productId: i.product.id,
+              quantity: i.quantity,
+              unitPriceCents: i.unitPriceCents,
+            })),
             paymentMethod: "demo",
           }),
         },
@@ -83,10 +87,15 @@ export function CheckoutPage() {
       <div className="checkout-grid">
         <section className="checkout-summary">
           <h2>Resumo</h2>
+          {user && (
+            <p className="checkout-summary__buyer">
+              Comprador: <strong>{user.name}</strong> · {user.email}
+            </p>
+          )}
           <ul>
             {items.map(({ product, quantity }) => (
               <li key={product.id}>
-                {product.name} ×{quantity} — {formatPrice(product.price_cents * quantity)}
+                {product.name} ×{quantity} — {formatPrice((product.effective_price_cents ?? product.price_cents) * quantity)}
               </li>
             ))}
           </ul>

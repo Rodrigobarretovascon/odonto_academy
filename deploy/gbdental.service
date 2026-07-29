@@ -1,0 +1,19 @@
+[Unit]
+Description=GB Dental (Gabriela Barreto)
+After=network.target postgresql.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/var/www/gbdental/server
+Environment=NODE_ENV=production
+Environment=PORT=3001
+EnvironmentFile=-/var/www/gbdental/.env
+ExecStart=/usr/bin/npm run start
+Restart=always
+RestartSec=5
+# Logs: journalctl -u gbdental -f
+
+[Install]
+WantedBy=multi-user.target

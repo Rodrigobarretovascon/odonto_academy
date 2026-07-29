@@ -23,18 +23,19 @@ const img = (number: number, file: string, alt: string, placeholderLabel: string
   placeholderLabel,
 });
 
-/** Layout fixo (vestibular → palatina/lingual → mesial → distal → incisal).
- *  Legendas da esquerda para a direita: Distal, Mesial, Lingual, Vestibular, Incisal. */
+/** Layout fixo das imagens (ordem visual dos arquivos).
+ *  Legendas da esquerda para a direita: Distal, Mesial, Vestibular, Lingual, Incisal/Oclusal. */
 function finalViews(number: number, meta: Pick<ToothMeta, "jaw" | "kind">): ToothViewData[] {
   const backKey = meta.jaw === "upper" ? "palatina" : "lingual";
   const topKey = meta.kind === "incisor" || meta.kind === "canine" ? "incisal" : "oclusal";
   const topLabel = topKey === "incisal" ? "Incisal" : "Oclusal";
+  const innerLabel = meta.jaw === "upper" ? "Palatina" : "Lingual";
 
   const slots: Array<{ label: string; file: string; alt: string }> = [
-    { label: "Distal", file: `${number}-final-vestibular.png`, alt: "Vista vestibular final" },
-    { label: "Mesial", file: `${number}-final-${backKey}.png`, alt: "Vista palatina/lingual final" },
-    { label: "Lingual", file: `${number}-final-mesial.png`, alt: "Vista mesial final" },
-    { label: "Vestibular", file: `${number}-final-distal.png`, alt: "Vista distal final" },
+    { label: "Distal", file: `${number}-final-vestibular.png`, alt: "Vista distal final" },
+    { label: "Mesial", file: `${number}-final-${backKey}.png`, alt: "Vista mesial final" },
+    { label: "Vestibular", file: `${number}-final-mesial.png`, alt: "Vista vestibular final" },
+    { label: innerLabel, file: `${number}-final-distal.png`, alt: `Vista ${innerLabel.toLowerCase()} final` },
     { label: topLabel, file: `${number}-final-${topKey}.png`, alt: `Vista ${topLabel.toLowerCase()} final` },
   ];
 

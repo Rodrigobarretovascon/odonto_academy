@@ -1,20 +1,21 @@
-import { Link, NavLink, Outlet } from "react-router-dom";
+import { Link, NavLink, Outlet, useLocation } from "react-router-dom";
 import { useCart } from "../context/CartContext";
 import { useAuth } from "../context/AuthContext";
+import { BrandLockup } from "../components/BrandMark";
+import { SiteFooter } from "../components/SiteFooter";
+import { PromoBannerRail } from "../components/PromoBannerRail";
 
 export function PublicLayout() {
   const { count } = useCart();
   const { user, hasAccess } = useAuth();
+  const location = useLocation();
+  const hideFooter = location.pathname === "/loja";
 
   return (
-    <div className="terus-app">
+    <div className={`terus-app${hideFooter ? " terus-app--cart-desk" : ""}`}>
       <header className="terus-header">
-        <Link to="/" className="terus-brand">
-          <span className="terus-brand__mark">GB</span>
-          <span className="terus-brand__text">
-            Gabriela Barreto
-            <small>Dental</small>
-          </span>
+        <Link to="/" className="terus-brand" aria-label="GB Dental">
+          <BrandLockup size="sm" />
         </Link>
         <nav className="terus-nav" aria-label="Principal">
           <NavLink to="/" end className="terus-nav__link">
@@ -33,6 +34,11 @@ export function PublicLayout() {
                   Minha Academia
                 </NavLink>
               )}
+              {user.role === "admin" && (
+                <NavLink to="/admin" className="terus-nav__link">
+                  Administração
+                </NavLink>
+              )}
             </>
           ) : (
             <NavLink to="/login" className="terus-nav__link">
@@ -41,28 +47,22 @@ export function PublicLayout() {
           )}
         </nav>
         <div className="terus-header__actions">
-          <Link to="/carrinho" className="terus-cart-btn" aria-label={`Carrinho, ${count} itens`}>
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <circle cx="9" cy="21" r="1" />
-              <circle cx="20" cy="21" r="1" />
-              <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
+          <Link to="/loja" className="terus-cart-btn" aria-label={`Carrinho, ${count} itens`}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
+              <path d="M6 7h15l-1.4 8.2a2 2 0 0 1-2 1.8H9a2 2 0 0 1-2-1.6L5 4H2" />
+              <circle cx="9" cy="20" r="1.2" />
+              <circle cx="18" cy="20" r="1.2" />
             </svg>
             {count > 0 && <span className="terus-cart-btn__badge">{count}</span>}
           </Link>
-          {user && (
-            <span className="terus-header__user">{user.name.split(" ")[0]}</span>
-          )}
+          {user && <span className="terus-header__user">{user.name.split(" ")[0]}</span>}
         </div>
       </header>
+      <PromoBannerRail />
       <main className="terus-main">
         <Outlet />
       </main>
-      <footer className="terus-footer">
-        <p>© {new Date().getFullYear()} Gabriela Barreto Dental · Escultura & Anatomia</p>
-        <p className="terus-footer__credit">
-          Modelos 3D: University of Dundee, School of Dentistry (CC BY)
-        </p>
-      </footer>
+      {!hideFooter && <SiteFooter />}
     </div>
   );
 }

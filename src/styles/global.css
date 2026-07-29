@@ -1,17 +1,39 @@
 :root {
-  --color-bg: #f8f9fb;
+  /* Identidade GB Dental */
+  --gb-navy: #2d5596;
+  --gb-blue-mid: #b2cee6;
+  --gb-blue-soft: #d6e6fa;
+  --gb-blue-light: #e8f2fd;
+  --gb-rose: #f6b6c6;
+  --gb-rose-deep: #e89aab;
+  --gb-white: #ffffff;
+  --gb-blue-900: #1e3a6e;
+  --gb-blue-800: #2d5596;
+  --gb-blue-700: #3d6aad;
+  --gb-blue-600: #5a7fb8;
+  --gb-gold: var(--gb-rose);
+  --gb-gold-light: #fde8ee;
+  --gb-gold-dark: var(--gb-rose-deep);
+  --gb-cream: var(--gb-white);
+  --gb-radius: 14px;
+  --gb-shadow: 0 10px 36px rgba(45, 85, 150, 0.1);
+  --gb-font-display: "Playfair Display", Georgia, serif;
+  --gb-font-body: "Montserrat", system-ui, sans-serif;
+
+  --color-bg: var(--gb-white);
   --color-surface: #ffffff;
-  --color-title: #1e3a5f;
-  --color-accent: #4a90c4;
-  --color-accent-light: #d6e8f5;
-  --color-border: #c5d9ea;
-  --color-text: #2d3748;
-  --color-muted: #64748b;
-  --color-alert-bg: #fff8e6;
-  --color-alert-border: #f0c040;
-  --radius: 10px;
-  --shadow: 0 2px 8px rgba(30, 58, 95, 0.08);
-  --font: "Source Sans 3", system-ui, sans-serif;
+  --color-title: var(--gb-navy);
+  --color-accent: var(--gb-blue-600);
+  --color-accent-light: var(--gb-blue-light);
+  --color-border: var(--gb-blue-soft);
+  --color-text: #3a4a66;
+  --color-muted: #7a8aa3;
+  --color-alert-bg: #fff5f8;
+  --color-alert-border: var(--gb-rose-deep);
+  --radius: var(--gb-radius);
+  --shadow: var(--gb-shadow);
+  --font: var(--gb-font-body);
+  --font-display: var(--gb-font-display);
   --slide-max-width: 1280px;
 }
 
@@ -36,7 +58,13 @@ body {
 
 h1,
 h2,
-h3,
+h3 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
 p,
 ul,
 dl,

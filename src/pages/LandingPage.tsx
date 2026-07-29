@@ -3,6 +3,8 @@ import { useEffect, useState } from "react";
 import { api, formatPrice, type Product } from "../lib/api";
 import { useAuth } from "../context/AuthContext";
 import { ProductCard } from "../components/ProductCard";
+import { BrandIcon } from "../components/BrandIcon";
+import { BrandLockup, HeartRule } from "../components/BrandMark";
 
 export function LandingPage() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -14,16 +16,14 @@ export function LandingPage() {
 
   return (
     <div className="landing">
-      <section className="hero">
+      <section className="hero hero--solo">
         <div className="hero__content">
-          <p className="hero__eyebrow">Odontologia · Escultura · Anatomia</p>
-          <h1 className="hero__title">
-            Domine a escultura dental em cera com a{" "}
-            <span className="text-gold">Academia Gabriela Barreto</span>
+          <h1 className="hero__brand">
+            <BrandLockup size="lg" />
           </h1>
           <p className="hero__subtitle">
-            Guia completo dos 28 dentes permanentes, visualizador 3D interativo, anatomia
-            detalhada e assistente para suas dúvidas — tudo em uma plataforma exclusiva.
+            Academia de escultura em cera e anatomia — 28 dentes, visualizador 3D e atlas
+            vivo para estudar com delicadeza e precisão.
           </p>
           <div className="hero__actions">
             {user ? (
@@ -49,21 +49,9 @@ export function LandingPage() {
             )}
           </div>
         </div>
-        <div className="hero__visual">
-          <div className="hero__card hero__card--1">
-            <span>28 dentes</span>
-            <small>Guia passo a passo</small>
-          </div>
-          <div className="hero__card hero__card--2">
-            <span>3D interativo</span>
-            <small>Gire cada dente</small>
-          </div>
-          <div className="hero__card hero__card--3">
-            <span>IA assistente</span>
-            <small>Tire dúvidas ao esculpir</small>
-          </div>
-        </div>
       </section>
+
+      <HeartRule className="landing__rule" />
 
       <section className="section section--exclusive">
         <div className="section__header">
@@ -76,32 +64,32 @@ export function LandingPage() {
         <div className="feature-grid">
           {[
             {
-              icon: "🦷",
+              icon: "tooth" as const,
               title: "Escultura em Cera",
               desc: "28 dentes com medidas, faces, oclusal e vistas finais",
               to: user ? "/app/escultura/13" : "/loja",
             },
             {
-              icon: "🔬",
+              icon: "anatomy" as const,
               title: "Anatomia Dental",
-              desc: "Estudo detalhado de cada face e estrutura",
+              desc: "Atlas vivo com jornadas e morfologia para esculpir",
               to: hasAccess ? "/app/anatomia" : "/loja",
             },
             {
-              icon: "🎯",
+              icon: "spark" as const,
               title: "Visualizador 3D",
-              desc: "Gire o dente como no BoneBox",
+              desc: "Gire o dente e estude cada face com textura original",
               to: user ? "/app/escultura/13" : "/loja",
             },
             {
-              icon: "💬",
+              icon: "chat" as const,
               title: "Assistente IA",
-              desc: "Tire dúvidas durante a escultura",
+              desc: "Tire dúvidas durante a escultura com orientação clara",
               to: hasAccess ? "/app/ia" : "/loja",
             },
           ].map((f) => (
             <Link key={f.title} to={f.to} className="feature-card feature-card--link">
-              <span className="feature-card__icon">{f.icon}</span>
+              <BrandIcon name={f.icon} />
               <h3>{f.title}</h3>
               <p>{f.desc}</p>
             </Link>
@@ -126,6 +114,7 @@ export function LandingPage() {
 
       <section className="section section--cta">
         <div className="cta-banner">
+          <BrandLockup size="md" />
           <h2>Pronta para esculpir com confiança?</h2>
           <p>A partir de {products[0] ? formatPrice(products[0].price_cents) : "R$ 49,90"}/mês</p>
           <Link to="/loja" className="btn-primary">

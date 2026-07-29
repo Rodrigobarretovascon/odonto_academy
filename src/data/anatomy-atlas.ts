@@ -270,8 +270,8 @@ export const atlasChapters: AtlasChapter[] = [
 
 export const atlasHero = {
   image: atlasImage("anatomia-dente-completa"),
-  crop: "48% 38%",
-  brand: "Gabriela Barreto",
+  crop: "50% 50%",
+  brand: "Gabriela Barreto Dental",
   title: "Atlas anatômico",
-  subtitle: "Do PDF à experiência — morfologia viva para quem esculpe.",
+  subtitle: "Ensina, orienta e cuida — morfologia viva para quem esculpe.",
 };

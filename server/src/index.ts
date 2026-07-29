@@ -1,16 +1,17 @@
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
-import { existsSync } from "fs";
-import { resolve } from "path";
+import { existsSync, mkdirSync } from "fs";
+import { resolve, dirname } from "path";
 import { fileURLToPath } from "url";
-import { dirname } from "path";
 import authRoutes from "./routes/auth.js";
 import productRoutes from "./routes/products.js";
 import orderRoutes from "./routes/orders.js";
 import adminRoutes from "./routes/admin.js";
 import aiRoutes from "./routes/ai.js";
+import bannerRoutes from "./routes/banners.js";
 import { ensureDatabase } from "./db/ensure.js";
+import { migrateSchema } from "./db/migrate.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -39,10 +40,13 @@ app.use(express.json());
 const modelsDir = resolve(__dirname, "../../models/stl");
 const publicModelsDir = resolve(__dirname, "../../public/models");
 const tmpDir = resolve(__dirname, "../../tmp");
+const uploadsDir = resolve(__dirname, "../../public/uploads");
+if (!existsSync(uploadsDir)) mkdirSync(uploadsDir, { recursive: true });
 
 if (existsSync(modelsDir)) app.use("/models", express.static(modelsDir));
 if (existsSync(publicModelsDir)) app.use("/models", express.static(publicModelsDir));
 if (existsSync(tmpDir)) app.use("/tmp", express.static(tmpDir));
+app.use("/uploads", express.static(uploadsDir));
 
 app.get("/api/health", (_req, res) => {
   res.json({ ok: true, service: "Gabriela Barreto Dental API" });
@@ -51,6 +55,7 @@ app.get("/api/health", (_req, res) => {
 app.use("/api/auth", authRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/orders", orderRoutes);
+app.use("/api/banners", bannerRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/ai", aiRoutes);
 
@@ -61,7 +66,8 @@ if (isProd && existsSync(distPath)) {
     if (
       req.path.startsWith("/api") ||
       req.path.startsWith("/models") ||
-      req.path.startsWith("/tmp")
+      req.path.startsWith("/tmp") ||
+      req.path.startsWith("/uploads")
     ) {
       return next();
     }
@@ -70,10 +76,15 @@ if (isProd && existsSync(distPath)) {
 }
 
 async function start() {
-  if (isProd && process.env.DATABASE_URL) {
+  if (process.env.DATABASE_URL || isProd) {
     try {
-      await ensureDatabase();
-      console.log("✓ Banco inicializado");
+      await migrateSchema();
+      if (isProd) {
+        await ensureDatabase();
+        console.log("✓ Banco inicializado");
+      } else {
+        console.log("✓ Migrações aplicadas");
+      }
     } catch (err) {
       console.error("Erro ao inicializar banco:", err);
     }

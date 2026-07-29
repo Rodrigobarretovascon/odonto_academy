@@ -6,3 +6,14 @@ tmp
 models
 .env
 tsconfig.tsbuildinfo
+
+# Product/banner uploads — versionamos seeds de catálogo
+public/uploads/*
+!public/uploads/.gitkeep
+!public/uploads/products/
+!public/uploads/products/**
+!public/uploads/banners/
+!public/uploads/banners/**
+
+# Material bruto de importação (PDFs/páginas) — não versionar
+content/import/
