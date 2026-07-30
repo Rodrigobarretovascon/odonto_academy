@@ -10,6 +10,7 @@ import orderRoutes from "./routes/orders.js";
 import adminRoutes from "./routes/admin.js";
 import aiRoutes from "./routes/ai.js";
 import bannerRoutes from "./routes/banners.js";
+import paymentRoutes from "./routes/payments.js";
 import { ensureDatabase } from "./db/ensure.js";
 import { migrateSchema } from "./db/migrate.js";
 
@@ -58,6 +59,7 @@ app.use("/api/orders", orderRoutes);
 app.use("/api/banners", bannerRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/ai", aiRoutes);
+app.use("/api/payments", paymentRoutes);
 
 const distPath = resolve(__dirname, "../../dist");
 if (isProd && existsSync(distPath)) {

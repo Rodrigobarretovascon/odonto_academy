@@ -23,8 +23,8 @@ const img = (number: number, file: string, alt: string, placeholderLabel: string
   placeholderLabel,
 });
 
-/** Layout fixo das imagens (ordem visual dos arquivos).
- *  Legendas da esquerda para a direita: Distal, Mesial, Vestibular, Lingual, Incisal/Oclusal. */
+/** Ordem padronizada E→D: Vestibular, Lingual/Palatina, Mesial, Distal, Incisal/Oclusal.
+ *  Cada rótulo aponta para o arquivo correspondente (sem troca cruzada de faces). */
 function finalViews(number: number, meta: Pick<ToothMeta, "jaw" | "kind">): ToothViewData[] {
   const backKey = meta.jaw === "upper" ? "palatina" : "lingual";
   const topKey = meta.kind === "incisor" || meta.kind === "canine" ? "incisal" : "oclusal";
@@ -32,16 +32,16 @@ function finalViews(number: number, meta: Pick<ToothMeta, "jaw" | "kind">): Toot
   const innerLabel = meta.jaw === "upper" ? "Palatina" : "Lingual";
 
   const slots: Array<{ label: string; file: string; alt: string }> = [
-    { label: "Distal", file: `${number}-final-vestibular.png`, alt: "Vista distal final" },
-    { label: "Mesial", file: `${number}-final-${backKey}.png`, alt: "Vista mesial final" },
-    { label: "Vestibular", file: `${number}-final-mesial.png`, alt: "Vista vestibular final" },
-    { label: innerLabel, file: `${number}-final-distal.png`, alt: `Vista ${innerLabel.toLowerCase()} final` },
+    { label: "Vestibular", file: `${number}-final-vestibular.png`, alt: "Vista vestibular final" },
+    { label: innerLabel, file: `${number}-final-${backKey}.png`, alt: `Vista ${innerLabel.toLowerCase()} final` },
+    { label: "Mesial", file: `${number}-final-mesial.png`, alt: "Vista mesial final" },
+    { label: "Distal", file: `${number}-final-distal.png`, alt: "Vista distal final" },
     { label: topLabel, file: `${number}-final-${topKey}.png`, alt: `Vista ${topLabel.toLowerCase()} final` },
   ];
 
   return slots.map(({ label, file, alt }) => ({
     label,
-    image: img(number, file, alt, `Imagem — ${label.toLowerCase()}`),
+    image: img(number, file, alt, `PLACEHOLDER — /images/tooth-${number}/${file}`),
   }));
 }
 
@@ -52,8 +52,8 @@ function buildTooth(meta: ToothMeta): ToothSculptureData {
     name: meta.name,
     contralateralNumber: meta.contralateral,
     contralateralName: meta.contralateralName,
-    title: `Escultura Dental em Cera – Dente ${meta.number}`,
-    subtitle: `${meta.name.replace(/ (direito|esquerdo)$/, "")} · par contralateral ${meta.contralateral}`,
+    title: `${meta.name} · FDI ${meta.number}`,
+    subtitle: `Arcada ${meta.jaw === "upper" ? "superior" : "inferior"} · contralateral FDI ${meta.contralateral}`,
     contralateralNote: undefined,
     blockMeasures: meta.blockMeasures,
     blockPreparation: [
@@ -190,4 +190,11 @@ export const toothNavItems = METAS.map((m) => ({
   shortName: m.shortName,
   fullName: m.name,
   group: m.navGroup,
+  jaw: m.jaw as Jaw,
+  number: m.number,
 }));
+
+/** Vídeo esperado por fase (placeholder até o arquivo existir). */
+export function phaseVideoPath(toothNumber: number, phaseId: number) {
+  return `/videos/tooth-${toothNumber}/fase-${phaseId}.mp4`;
+}

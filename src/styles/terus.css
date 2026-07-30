@@ -4177,3 +4177,571 @@
     display: none !important;
   }
 }
+
+/* ===== GB Dental platform refresh ===== */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.hero__headline {
+  font-family: var(--gb-font-display);
+  font-size: clamp(1.6rem, 3vw, 2.4rem);
+  color: var(--gb-navy);
+  margin: 0.75rem 0 1.25rem;
+  font-weight: 600;
+}
+
+.feature-grid--dense {
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+}
+
+.feature-card__tag {
+  display: inline-block;
+  margin-top: 0.5rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--gb-rose-deep);
+}
+
+.help-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.help-links__card {
+  flex: 1 1 200px;
+  padding: 1.25rem 1.5rem;
+  border-radius: var(--gb-radius);
+  background: linear-gradient(145deg, var(--gb-blue-light), #fff);
+  border: 1px solid var(--gb-blue-soft);
+  color: var(--gb-navy);
+  font-weight: 600;
+  text-align: center;
+  text-decoration: none;
+}
+
+.help-links__card:hover {
+  border-color: var(--gb-navy);
+}
+
+.content-page {
+  max-width: 880px;
+  margin: 0 auto;
+  padding: 2rem 1.25rem 3rem;
+}
+
+.content-page__lead {
+  color: var(--color-muted);
+  font-size: 1.05rem;
+  line-height: 1.55;
+}
+
+.content-page__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+}
+
+.content-page__note {
+  font-size: 0.85rem;
+  color: var(--color-muted);
+}
+
+.how-steps {
+  list-style: none;
+  padding: 0;
+  margin: 1.5rem 0;
+  display: grid;
+  gap: 1rem;
+}
+
+.how-steps__item {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+  padding: 1rem;
+  border-radius: var(--gb-radius);
+  background: #fff;
+  border: 1px solid var(--gb-blue-soft);
+}
+
+.how-steps__num {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  background: var(--gb-navy);
+  color: #fff;
+  display: grid;
+  place-items: center;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.subscribe-hero {
+  text-align: center;
+  padding: 2.5rem 1rem 1rem;
+}
+
+.subscribe-hero h1 {
+  font-family: var(--gb-font-display);
+  color: var(--gb-navy);
+  margin: 1rem 0 0.5rem;
+}
+
+.subscribe-benefits {
+  margin: 0;
+  padding-left: 1.2rem;
+  display: grid;
+  gap: 0.45rem;
+}
+
+.subscribe-plans {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1rem;
+}
+
+.subscribe-plan-card {
+  position: relative;
+  padding: 1.25rem;
+  border-radius: var(--gb-radius);
+  border: 1px solid var(--gb-blue-soft);
+  background: #fff;
+  display: grid;
+  gap: 0.6rem;
+}
+
+.subscribe-plan-card__badge {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  font-size: 0.7rem;
+  background: var(--gb-rose);
+  color: var(--gb-navy);
+  padding: 0.15rem 0.45rem;
+  border-radius: 999px;
+}
+
+.subscribe-plan-card__price {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--gb-navy);
+  margin: 0;
+}
+
+.subscribe-faq__item {
+  border: 1px solid var(--gb-blue-soft);
+  border-radius: 10px;
+  padding: 0.75rem 1rem;
+  margin-bottom: 0.5rem;
+  background: #fff;
+}
+
+.resumo-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1rem;
+}
+
+.resumo-card {
+  padding: 1.1rem;
+  border-radius: var(--gb-radius);
+  border: 1px solid var(--gb-blue-soft);
+  background: #fff;
+}
+
+.resumo-card__topic {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--gb-rose-deep);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.questions-toolbar {
+  display: grid;
+  grid-template-columns: 1fr 180px;
+  gap: 0.75rem;
+  margin: 1rem 0 1.25rem;
+}
+
+.questions-toolbar label {
+  display: grid;
+  gap: 0.3rem;
+  font-size: 0.82rem;
+  font-weight: 500;
+}
+
+.questions-toolbar input,
+.questions-toolbar select {
+  font: inherit;
+  padding: 0.55rem 0.7rem;
+  border: 1px solid var(--gb-blue-soft);
+  border-radius: 10px;
+}
+
+.questions-item {
+  border: 1px solid var(--gb-blue-soft);
+  border-radius: 12px;
+  margin-bottom: 0.6rem;
+  background: #fff;
+  overflow: hidden;
+}
+
+.questions-item__q {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  text-align: left;
+  padding: 0.9rem 1rem;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  color: var(--gb-navy);
+  cursor: pointer;
+}
+
+.questions-item__a {
+  padding: 0 1rem 1rem;
+  color: var(--color-muted);
+}
+
+.tooth-mascot {
+  color: var(--gb-navy);
+  display: inline-grid;
+  place-items: center;
+}
+
+.tooth-mascot--spin .tooth-mascot__body {
+  transform-origin: 50% 55%;
+  animation: tooth-spin 1.4s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tooth-mascot--spin .tooth-mascot__body {
+    animation: none;
+  }
+}
+
+@keyframes tooth-spin {
+  to { transform: rotate(360deg); }
+}
+
+.page-empty-error {
+  text-align: center;
+  padding: 1.5rem 1rem;
+  color: var(--gb-navy);
+}
+
+.page-empty-error h2 {
+  margin: 0.75rem 0 0.35rem;
+  font-family: var(--gb-font-display);
+}
+
+.terus-nav-toggle,
+.member-topbar__menu {
+  display: none;
+  width: 2.5rem;
+  height: 2.5rem;
+  border: 0;
+  background: transparent;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px;
+  padding: 0.4rem;
+  cursor: pointer;
+}
+
+.terus-nav-toggle span,
+.member-topbar__menu span {
+  display: block;
+  height: 2px;
+  background: var(--gb-navy);
+  border-radius: 2px;
+}
+
+.account-menu {
+  position: relative;
+}
+
+.account-menu__trigger {
+  border: 1px solid var(--gb-blue-soft);
+  background: #fff;
+  border-radius: 999px;
+  padding: 0.35rem 0.8rem;
+  font: inherit;
+  color: var(--gb-navy);
+  cursor: pointer;
+}
+
+.account-menu__dropdown {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 0.35rem);
+  min-width: 180px;
+  background: #fff;
+  border: 1px solid var(--gb-blue-soft);
+  border-radius: 12px;
+  box-shadow: var(--gb-shadow);
+  display: grid;
+  z-index: 40;
+  overflow: hidden;
+}
+
+.account-menu__dropdown a,
+.account-menu__dropdown button {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 0.7rem 0.9rem;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  color: var(--gb-navy);
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.account-menu__dropdown a:hover,
+.account-menu__dropdown button:hover {
+  background: var(--gb-blue-light);
+}
+
+.member-topbar {
+  display: none;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.65rem 1rem;
+  border-bottom: 1px solid var(--gb-blue-soft);
+  background: rgba(255,255,255,0.92);
+  position: sticky;
+  top: 0;
+  z-index: 30;
+}
+
+.member-drawer-backdrop {
+  position: fixed;
+  inset: 0;
+  border: 0;
+  background: rgba(20, 40, 80, 0.35);
+  z-index: 35;
+}
+
+.terus-app--member .member-sidebar {
+  transform: translateX(-105%);
+  transition: transform 0.22s ease;
+  position: fixed;
+  inset: 0 auto 0 0;
+  z-index: 40;
+  width: min(300px, 88vw);
+  height: 100%;
+  overflow: auto;
+}
+
+.terus-app--member .member-sidebar.is-open {
+  transform: translateX(0);
+}
+
+.terus-app--member .member-content {
+  margin-left: 0;
+  width: 100%;
+}
+
+.member-topbar {
+  display: flex;
+}
+
+.member-topbar__menu {
+  display: flex;
+}
+
+.sculpture-nav__groups {
+  display: grid;
+  gap: 1rem;
+}
+
+.sculpture-nav__links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.sculpture-nav__link {
+  display: grid;
+  gap: 0.1rem;
+  padding: 0.45rem 0.55rem;
+  max-width: 11rem;
+  font-size: 0.72rem;
+  line-height: 1.25;
+}
+
+.sculpture-nav__fdi {
+  font-weight: 700;
+  color: var(--gb-navy);
+}
+
+.sculpture-nav__name {
+  color: var(--color-muted);
+}
+
+.instruction-card__number--btn {
+  border: 0;
+  cursor: pointer;
+  font: inherit;
+}
+
+.phase-video-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+}
+
+.phase-video-modal__backdrop {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  background: rgba(15, 30, 60, 0.45);
+}
+
+.phase-video-modal__panel {
+  position: relative;
+  z-index: 1;
+  width: min(560px, 100%);
+  background: #fff;
+  border-radius: 16px;
+  padding: 1.25rem;
+  box-shadow: var(--gb-shadow);
+}
+
+.phase-video-modal__close {
+  float: right;
+  border: 0;
+  background: transparent;
+  color: var(--gb-navy);
+  cursor: pointer;
+  font: inherit;
+}
+
+.phase-video-modal__video {
+  width: 100%;
+  margin-top: 0.75rem;
+  border-radius: 10px;
+  background: #000;
+}
+
+.viewer3d-page {
+  padding: 1.25rem;
+}
+
+.viewer3d-page__layout {
+  display: grid;
+  grid-template-columns: minmax(200px, 260px) 1fr;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.viewer3d-page__picker {
+  padding: 1rem;
+  border: 1px solid var(--gb-blue-soft);
+  border-radius: var(--gb-radius);
+  background: #fff;
+  display: grid;
+  gap: 1rem;
+  align-content: start;
+}
+
+.viewer3d-page__identity {
+  display: grid;
+  gap: 0.2rem;
+}
+
+.viewer3d-page__identity strong {
+  font-size: 1.6rem;
+  color: var(--gb-navy);
+}
+
+.viewer3d-page__stage {
+  min-height: 420px;
+  border-radius: var(--gb-radius);
+  overflow: hidden;
+  border: 1px solid var(--gb-blue-soft);
+  background: #fff;
+}
+
+.cart-desk__empty-link {
+  color: var(--gb-navy);
+  font-weight: 600;
+  text-decoration: underline;
+}
+
+.news-item__meta {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  font-size: 0.8rem;
+  color: var(--color-muted);
+}
+
+.news-item__cat {
+  background: var(--gb-blue-light);
+  padding: 0.1rem 0.45rem;
+  border-radius: 999px;
+}
+
+.form-success {
+  color: #1f6b3a;
+  font-size: 0.9rem;
+}
+
+.ai-promo {
+  text-align: center;
+}
+
+@media (max-width: 900px) {
+  .terus-nav-toggle {
+    display: flex;
+    order: 3;
+  }
+
+  .terus-nav {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: #fff;
+    border-bottom: 1px solid var(--gb-blue-soft);
+    flex-direction: column;
+    padding: 0.75rem 1rem 1rem;
+    z-index: 50;
+  }
+
+  .terus-nav.is-open {
+    display: flex;
+  }
+
+  .terus-header {
+    position: relative;
+    flex-wrap: wrap;
+  }
+
+  .questions-toolbar,
+  .viewer3d-page__layout {
+    grid-template-columns: 1fr;
+  }
+}
+

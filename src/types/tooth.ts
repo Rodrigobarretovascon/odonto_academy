@@ -10,6 +10,8 @@ export interface SculptureStep {
   title: string;
   instructions: string[];
   image?: ToothImage;
+  /** Caminho esperado do vídeo da fase (ex.: /videos/tooth-13/fase-3.mp4) */
+  video?: string;
   alert?: string;
 }
 

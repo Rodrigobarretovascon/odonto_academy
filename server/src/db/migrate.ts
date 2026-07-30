@@ -412,6 +412,17 @@ export async function migrateSchema() {
     LEFT JOIN product_inventory inv ON inv.product_id = p.id
   `);
 
+  await query(`
+    CREATE TABLE IF NOT EXISTS password_reset_tokens (
+      id SERIAL PRIMARY KEY,
+      user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      token VARCHAR(128) NOT NULL UNIQUE,
+      expires_at TIMESTAMPTZ NOT NULL,
+      used_at TIMESTAMPTZ,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    )
+  `);
+
   const indexes = [
     `CREATE INDEX IF NOT EXISTS idx_products_active_sort ON products (active, sort_order, id)`,
     `CREATE INDEX IF NOT EXISTS idx_products_type ON products (type)`,
@@ -440,6 +451,8 @@ export async function migrateSchema() {
     `CREATE INDEX IF NOT EXISTS idx_ad_banners_active ON ad_banners (active, valid_from, valid_until)`,
     `CREATE INDEX IF NOT EXISTS idx_ad_banner_impressions_banner ON ad_banner_impressions (banner_id, created_at DESC)`,
     `CREATE INDEX IF NOT EXISTS idx_ad_banner_impressions_customer ON ad_banner_impressions (customer_id, created_at DESC)`,
+    `CREATE INDEX IF NOT EXISTS idx_password_reset_token ON password_reset_tokens (token)`,
+    `CREATE INDEX IF NOT EXISTS idx_password_reset_user ON password_reset_tokens (user_id)`,
   ];
   for (const sql of indexes) {
     await query(sql);

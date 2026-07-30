@@ -11,25 +11,24 @@ export function SculpturePage() {
     <div className="sculpture-area">
       <nav className="sculpture-nav no-print" aria-label="Seleção de dente">
         <div className="sculpture-nav__groups">
-          {(["upper-r", "upper-l", "lower-l", "lower-r"] as const).map((group) => (
-            <div key={group} className="sculpture-nav__group">
+          {(["upper", "lower"] as const).map((jaw) => (
+            <div key={jaw} className="sculpture-nav__group">
               <span className="sculpture-nav__group-label">
-                {group === "upper-r" && "Sup. Dir."}
-                {group === "upper-l" && "Sup. Esq."}
-                {group === "lower-l" && "Inf. Esq."}
-                {group === "lower-r" && "Inf. Dir."}
+                {jaw === "upper" ? "Superior" : "Inferior"}
               </span>
               <div className="sculpture-nav__links">
                 {toothNavItems
-                  .filter((t) => t.group === group)
+                  .filter((t) => t.jaw === jaw)
                   .map((t) => (
                     <Link
                       key={t.key}
                       to={`/app/escultura/${t.key}`}
                       className={`sculpture-nav__link${t.key === key ? " sculpture-nav__link--active" : ""}`}
-                      title={`${t.key} — ${t.fullName}`}
+                      title={`${t.fullName} · FDI ${t.key}`}
+                      aria-label={`${t.fullName}, número FDI ${t.key}`}
                     >
-                      {t.shortName}
+                      <span className="sculpture-nav__fdi">{t.key}</span>
+                      <span className="sculpture-nav__name">{t.fullName}</span>
                     </Link>
                   ))}
               </div>

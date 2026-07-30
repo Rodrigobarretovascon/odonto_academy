@@ -1,17 +1,13 @@
 import { Navigate, Outlet, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { PageLoading } from "./ToothMascot";
 
 export function ProtectedRoute({ requireAccess = false, admin = false }: { requireAccess?: boolean; admin?: boolean }) {
   const { user, hasAccess, loading } = useAuth();
   const location = useLocation();
 
   if (loading) {
-    return (
-      <div className="page-loading">
-        <div className="page-loading__spinner" />
-        <p>Carregando…</p>
-      </div>
-    );
+    return <PageLoading message="Carregando sua conta…" />;
   }
 
   if (!user) {
@@ -23,7 +19,7 @@ export function ProtectedRoute({ requireAccess = false, admin = false }: { requi
   }
 
   if (requireAccess && !hasAccess && user.role !== "admin") {
-    return <Navigate to="/loja" state={{ needSubscription: true }} replace />;
+    return <Navigate to="/assinar" state={{ needSubscription: true, from: location.pathname }} replace />;
   }
 
   return <Outlet />;

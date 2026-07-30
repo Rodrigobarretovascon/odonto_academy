@@ -3,10 +3,10 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
 export function LoginPage() {
-  const { login, hasAccess } = useAuth();
+  const { login } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const from = (location.state as { from?: string })?.from ?? (hasAccess ? "/app" : "/app/escultura/13");
+  const from = (location.state as { from?: string })?.from ?? "/app";
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -30,7 +30,7 @@ export function LoginPage() {
     <div className="auth-page">
       <div className="auth-card">
         <h1>Entrar</h1>
-        <p>Acesse sua conta da Academia Gabriela Barreto</p>
+        <p>Acesse sua conta do GB Dental</p>
         <form onSubmit={handleSubmit} className="auth-form">
           <label>
             E-mail
@@ -45,6 +45,9 @@ export function LoginPage() {
             {loading ? "Entrando…" : "Entrar"}
           </button>
         </form>
+        <p className="auth-card__footer">
+          <Link to="/recuperar-senha">Esqueci minha senha</Link>
+        </p>
         <p className="auth-card__footer">
           Não tem conta? <Link to="/cadastro">Cadastre-se</Link>
         </p>

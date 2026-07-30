@@ -1,68 +1,39 @@
 import { Link } from "react-router-dom";
-import { contentSlides } from "../data/content-manifest";
+import { NEWS_CATEGORY_LABEL, NEWS_ITEMS } from "../data/news";
+
+function formatDate(iso: string) {
+  const [y, m, d] = iso.split("-");
+  return `${d}/${m}/${y}`;
+}
 
 export function NewsPage() {
-  const featured = contentSlides.slice(0, 3);
-
-  const items = [
-    ...(contentSlides.length > 0
-      ? [
-          {
-            date: "Jul 2026",
-            title: "Atlas anatômico na Academia",
-            desc: "A anatomia deixou de ser galeria de slides: jornadas visuais com hotspots, cinema oclusal e imersão.",
-            link: "/app/anatomia",
-          },
-        ]
-      : []),
-    {
-      date: "Jul 2026",
-      title: "Visualizador 3D e guia do canino (13)",
-      desc: "Modelo anatômico Dundee com textura original, vistas em alta resolução e rotação interativa.",
-    },
-    {
-      date: "Em breve",
-      title: "Todos os 28 dentes em 3D",
-      desc: "Modelos Sketchfab sendo integrados conforme disponibilidade.",
-    },
-  ];
+  const items = [...NEWS_ITEMS].sort((a, b) => b.publishedAt.localeCompare(a.publishedAt));
 
   return (
     <div className="news-page">
       <header className="page-header">
         <h1>Novidades</h1>
-        <p>Conteúdos novos enviados pela Gabriela Barreto</p>
+        <p>Conteúdos, vídeos, modelos 3D e atualizações do GB Dental.</p>
       </header>
-
-      {featured.length > 0 && (
-        <section className="news-featured" aria-label="Entrada do atlas">
-          <h2>Entrar no atlas</h2>
-          <div className="news-featured__grid">
-            {featured.map((slide) => (
-              <Link key={slide.id} to="/app/anatomia" className="news-featured__card">
-                <img src={slide.image} alt={slide.title} loading="lazy" />
-                <span>{slide.title}</span>
-              </Link>
-            ))}
-          </div>
-        </section>
-      )}
 
       <ul className="news-list">
         {items.map((item) => (
-          <li key={item.title} className="news-item">
-            <time>{item.date}</time>
+          <li key={item.id} className="news-item">
+            <div className="news-item__meta">
+              <time dateTime={item.publishedAt}>{formatDate(item.publishedAt)}</time>
+              <span className="news-item__cat">{NEWS_CATEGORY_LABEL[item.category]}</span>
+            </div>
             <h2>
-              {"link" in item && item.link ? (
-                <Link to={item.link}>{item.title}</Link>
-              ) : (
-                item.title
-              )}
+              {item.href ? <Link to={item.href}>{item.title}</Link> : item.title}
             </h2>
-            <p>{item.desc}</p>
+            <p>{item.summary}</p>
           </li>
         ))}
       </ul>
+      <p className="content-page__note">
+        Para publicar novas entradas sem alterar esta página, acrescente itens em{" "}
+        <code>src/data/news.ts</code> (ou na API futura de novidades).
+      </p>
     </div>
   );
 }

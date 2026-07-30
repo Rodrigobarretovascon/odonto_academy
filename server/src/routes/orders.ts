@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { query } from "../db/pool.js";
 import { authRequired } from "../middleware/auth.js";
+import { createCheckoutPreference, getPaymentProviderStatus } from "../services/payments.js";
 import { debitStock, resolveUnitPrice } from "../services/stock.js";
 
 const router = Router();
@@ -66,11 +67,21 @@ router.post("/checkout", authRequired, async (req, res) => {
       });
     }
 
+    const payCfg = getPaymentProviderStatus();
+    const useDemo = payCfg.status !== "ready" || paymentMethod === "demo";
+
     await query("BEGIN");
     const order = await query<{ id: number }>(
-      `INSERT INTO orders (user_id, status, total_cents, payment_method, channel)
-       VALUES ($1, 'paid', $2, $3, 'web') RETURNING id`,
-      [req.user!.id, total, paymentMethod],
+      `INSERT INTO orders (user_id, status, total_cents, payment_method, payment_provider, payment_status, channel)
+       VALUES ($1, $2, $3, $4, $5, $6, 'web') RETURNING id`,
+      [
+        req.user!.id,
+        useDemo ? "paid" : "pending",
+        total,
+        useDemo ? "demo" : paymentMethod,
+        useDemo ? "demo" : "mercadopago",
+        useDemo ? "approved" : "pending",
+      ],
     );
     const orderId = order.rows[0].id;
 
@@ -79,23 +90,48 @@ router.post("/checkout", authRequired, async (req, res) => {
         `INSERT INTO order_items (order_id, product_id, quantity, unit_price_cents) VALUES ($1,$2,$3,$4)`,
         [orderId, li.productId, li.quantity, li.unitPrice],
       );
-      await debitStock({
-        productId: li.productId,
-        quantity: li.quantity,
-        reason: "sale",
-        orderId,
-        userId: req.user!.id,
-      });
-      if (li.accessDays > 0) {
-        await query(
-          `INSERT INTO subscriptions (user_id, product_id, order_id, expires_at)
-           VALUES ($1, $2, $3, NOW() + ($4 || ' days')::interval)`,
-          [req.user!.id, li.productId, orderId, String(li.accessDays)],
-        );
+      if (useDemo) {
+        await debitStock({
+          productId: li.productId,
+          quantity: li.quantity,
+          reason: "sale",
+          orderId,
+          userId: req.user!.id,
+        });
+        if (li.accessDays > 0) {
+          await query(
+            `INSERT INTO subscriptions (user_id, product_id, order_id, expires_at)
+             VALUES ($1, $2, $3, NOW() + ($4 || ' days')::interval)`,
+            [req.user!.id, li.productId, orderId, String(li.accessDays)],
+          );
+        }
       }
     }
     await query("COMMIT");
-    res.status(201).json({ orderId, total, message: "Compra realizada com sucesso!" });
+
+    if (!useDemo) {
+      const pref = await createCheckoutPreference({
+        orderId,
+        totalCents: total,
+        title: `Pedido GB Dental #${orderId}`,
+        payerEmail: req.user!.email,
+      });
+      res.status(201).json({
+        orderId,
+        total,
+        status: "pending",
+        checkoutUrl: pref.checkoutUrl,
+        message: "Redirecione o cliente para o checkout do Mercado Pago.",
+      });
+      return;
+    }
+
+    res.status(201).json({
+      orderId,
+      total,
+      status: "approved",
+      message: "Compra realizada com sucesso! (modo demo — configure Mercado Pago para cobrança real)",
+    });
   } catch (err) {
     try {
       await query("ROLLBACK");

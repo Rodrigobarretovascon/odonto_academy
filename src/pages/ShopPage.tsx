@@ -21,7 +21,7 @@ export function ShopPage() {
       )}
       <header className="page-header">
         <h1>Loja</h1>
-        <p>Materiais e assinatura da Academia Gabriela Barreto Dental</p>
+        <p>Materiais e assinatura do GB Dental</p>
       </header>
       <div className="product-grid product-grid--shop">
         {products.map((p) => (

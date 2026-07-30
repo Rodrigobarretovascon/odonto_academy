@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { api } from "../lib/api";
+import { ToothMascot } from "../components/ToothMascot";
 
 interface Message {
   role: "user" | "assistant";
@@ -19,7 +20,7 @@ export function AiChatPage() {
   const [messages, setMessages] = useState<Message[]>([
     {
       role: "assistant",
-      text: "Olá! Sou a assistente da Academia Gabriela Barreto. Tire suas dúvidas sobre escultura em cera, anatomia ou instrumentos.",
+      text: "Olá! Sou a assistente do GB Dental. Tire dúvidas sobre escultura em cera, anatomia ou instrumentos. Respostas têm fim educacional e não substituem avaliação profissional.",
     },
   ]);
   const [input, setInput] = useState("");
@@ -51,8 +52,12 @@ export function AiChatPage() {
   return (
     <div className="ai-page">
       <header className="page-header">
-        <h1>Tirar Dúvidas com IA</h1>
-        <p>Assistente para escultura em cera — contexto do dente selecionado</p>
+        <ToothMascot mood="idle" label="Mascote dentinho da IA" size={48} />
+        <h1>Tire dúvidas com IA</h1>
+        <p>Assistente educacional do GB Dental — contexto do dente selecionado.</p>
+        <p className="content-page__note" role="note">
+          As respostas têm finalidade educacional e não substituem avaliação profissional.
+        </p>
       </header>
       <div className="ai-layout">
         <aside className="ai-sidebar">

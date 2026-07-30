@@ -32,8 +32,9 @@ export function SiteFooter() {
 
         <nav className="site-footer__nav" aria-label="Rodapé">
           <Link to="/loja">Loja</Link>
-          <Link to="/login">Área da aluna</Link>
-          <Link to="/carrinho">Carrinho</Link>
+          <Link to="/assinar">Assinar</Link>
+          <Link to="/login">Minha conta</Link>
+          <Link to="/perguntas">Perguntas</Link>
         </nav>
       </div>
 

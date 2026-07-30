@@ -74,7 +74,10 @@ export function ShopCartPage() {
           <section className="cart-desk__items">
             {items.length === 0 ? (
               <p className="admin-muted cart-desk__empty">
-                Carrinho vazio. Clique em um produto à direita para adicionar.
+                Você ainda não adicionou nada.{" "}
+                <a href="#loja-produtos" className="cart-desk__empty-link">
+                  Quer adicionar?
+                </a>
               </p>
             ) : (
               <div className="cart-desk__lines">
@@ -144,7 +147,7 @@ export function ShopCartPage() {
           </footer>
         </div>
 
-        <aside className="cart-desk__rail" aria-label="Produtos">
+        <aside id="loja-produtos" className="cart-desk__rail" aria-label="Produtos">
           <div className="cart-desk__rail-head">
             <p className="cart-desk__rail-title">Produtos</p>
             <p className="cart-desk__rail-hint">Clique para adicionar (+1)</p>

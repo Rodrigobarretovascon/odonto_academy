@@ -214,7 +214,7 @@ export function AdminPage() {
             ← Voltar
           </button>
           <Link to="/app" className="btn-outline">
-            Academia
+            GB Dental
           </Link>
           <Link to="/" className="btn-primary">
             Início
@@ -373,7 +373,7 @@ export function AdminPage() {
                 </FieldLabel>
                 <FieldLabel
                   label="Dias de acesso"
-                  tip="Se maior que zero, a compra libera o conteúdo da academia por esse número de dias."
+                  tip="Se maior que zero, a compra libera o conteúdo de assinante por esse número de dias."
                 >
                   <input
                     value={form.access_days}

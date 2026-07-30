@@ -1,5 +1,5 @@
+import { Link } from "react-router-dom";
 import type { ToothSculptureData } from "../types/tooth";
-import { ContralateralComparison } from "./ContralateralComparison";
 import { InstructionCard } from "./InstructionCard";
 import { MeasurementDiagram } from "./MeasurementDiagram";
 import { ToothModel3D } from "./ToothModel3D";
@@ -20,6 +20,13 @@ export function DentalSculpturePage({ data }: DentalSculpturePageProps) {
         <button type="button" className="btn-print" onClick={handlePrint}>
           Exportar PDF / Imprimir
         </button>
+        <Link
+          to={`/app/escultura/${data.contralateralNumber}`}
+          className="btn-outline"
+          title={`Abrir contralateral FDI ${data.contralateralNumber}`}
+        >
+          Contralateral {data.contralateralNumber} — {data.contralateralName}
+        </Link>
       </header>
 
       <main className="dental-page__slide">
@@ -48,8 +55,6 @@ export function DentalSculpturePage({ data }: DentalSculpturePageProps) {
           </aside>
         )}
 
-        <ToothModel3D toothNumber={data.number} />
-
         <div className="dental-page__grid">
           <MeasurementDiagram
             measures={data.blockMeasures}
@@ -57,26 +62,31 @@ export function DentalSculpturePage({ data }: DentalSculpturePageProps) {
             blockImage={data.blockImage}
           />
 
-          <InstructionCard step={data.faceIdentification} compact />
+          <InstructionCard
+            step={data.faceIdentification}
+            compact
+            toothNumber={data.number}
+          />
 
           {data.steps.map((step) => (
-            <InstructionCard key={step.id} step={step} compact />
+            <InstructionCard key={step.id} step={step} compact toothNumber={data.number} />
           ))}
 
           <ToothView views={data.finalViews} />
 
-          <ContralateralComparison
-            primaryNumber={data.number}
-            primaryName={data.name}
-            contralateralNumber={data.contralateralNumber}
-            contralateralName={data.contralateralName}
-            differences={data.contralateralDifferences}
-          />
+          <section className="dental-page__final-3d" aria-labelledby="final-3d-heading">
+            <h2 id="final-3d-heading">Resultado final — gire o dente</h2>
+            <p>Arraste para rotacionar em todos os ângulos. Modelos interativos gerais ficam no Visualizador 3D.</p>
+            <ToothModel3D toothNumber={data.number} />
+          </section>
         </div>
 
         <footer className="dental-page__footer">
           <p>
-            Dente {data.number} · Par contralateral {data.contralateralNumber}
+            {data.name} · FDI {data.number}
+          </p>
+          <p className="content-page__note">
+            Conteúdo educacional — revisão por profissional de odontologia pendente para uso clínico definitivo.
           </p>
         </footer>
       </main>
