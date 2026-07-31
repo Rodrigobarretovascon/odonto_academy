@@ -32,6 +32,18 @@ export function PublicLayout() {
   const navLink = ({ isActive }: { isActive: boolean }) =>
     `terus-nav__link${isActive ? " terus-nav__link--active" : ""}`;
 
+  const canAccessMembers = Boolean(hasAccess || user?.role === "admin");
+  const subscriberPath = (path: string) => {
+    if (canAccessMembers) return path;
+    if (!user) return "/login";
+    return "/assinar";
+  };
+  const subscriberState = (path: string) => {
+    if (canAccessMembers) return undefined;
+    if (!user) return { from: path };
+    return { needSubscription: true, from: path };
+  };
+
   return (
     <div className={`terus-app${hideFooter ? " terus-app--cart-desk" : ""}`}>
       <header className="terus-header">
@@ -65,13 +77,17 @@ export function PublicLayout() {
           <NavLink to="/recursos" className={navLink}>
             Recursos
           </NavLink>
-          <NavLink to="/perguntas" className={navLink}>
+          <NavLink
+            to={subscriberPath("/perguntas")}
+            state={subscriberState("/perguntas")}
+            className={navLink}
+          >
             Perguntas
           </NavLink>
           <NavLink to="/loja" className={navLink}>
             Loja
           </NavLink>
-          <NavLink to="/ia" className={navLink}>
+          <NavLink to={subscriberPath("/ia")} state={subscriberState("/ia")} className={navLink}>
             IA
           </NavLink>
           <NavLink

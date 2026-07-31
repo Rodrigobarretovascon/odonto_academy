@@ -34,7 +34,9 @@ export function SiteFooter() {
           <Link to="/loja">Loja</Link>
           <Link to="/assinar">Assinar</Link>
           <Link to="/login">Minha conta</Link>
-          <Link to="/perguntas">Perguntas</Link>
+          <Link to="/assinar" state={{ needSubscription: true, from: "/perguntas" }}>
+            Perguntas
+          </Link>
         </nav>
       </div>
 

@@ -20,7 +20,7 @@ const FAQ = [
   },
   {
     q: "Posso cancelar?",
-    a: "Sim. Assinaturas canceladas ou expiradas deixam de liberar conteúdos exclusivos; você continua podendo usar a loja e a área gratuita.",
+    a: "Sim. Assinaturas canceladas ou expiradas deixam de liberar conteúdos exclusivos; você continua podendo usar a loja.",
   },
   {
     q: "O pagamento é seguro?",

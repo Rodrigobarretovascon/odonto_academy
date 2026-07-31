@@ -9,13 +9,13 @@ import { SITE } from "../lib/site";
 import { RESUMOS } from "../data/resumos";
 
 const FEATURES = [
-  { title: "Resumos", desc: "Sínteses para revisar com foco.", to: "/resumos", icon: "spark" as const },
+  { title: "Resumos", desc: "Sínteses para revisar com foco.", to: "/resumos", icon: "spark" as const, needSub: true },
   { title: "Escultura em cera", desc: "28 dentes FDI, fases e vistas finais.", to: "/app/escultura/13", icon: "tooth" as const, needSub: true },
   { title: "Anatomia dental", desc: "Atlas vivo da boca e do periodonto.", to: "/app/anatomia", icon: "anatomy" as const, needSub: true },
   { title: "Visualizador 3D", desc: "Gire e estude cada dente em 3D.", to: "/app/visualizador-3d", icon: "spark" as const, needSub: true },
-  { title: "IA para tirar dúvidas", desc: "Apoio educacional no chat.", to: "/ia", icon: "chat" as const },
-  { title: "Perguntas odontológicas", desc: "Perguntas e respostas por tema.", to: "/perguntas", icon: "chat" as const },
-  { title: "Loja", desc: "Produtos e planos de acesso.", to: "/loja", icon: "tooth" as const },
+  { title: "IA para tirar dúvidas", desc: "Apoio educacional no chat.", to: "/ia", icon: "chat" as const, needSub: true },
+  { title: "Perguntas odontológicas", desc: "Perguntas e respostas por tema.", to: "/perguntas", icon: "chat" as const, needSub: true },
+  { title: "Loja", desc: "Produtos e planos de acesso.", to: "/loja", icon: "tooth" as const, needSub: false },
   { title: "Novidades", desc: "Atualizações da plataforma.", to: "/app/novidades", icon: "spark" as const, needSub: true },
 ];
 
@@ -27,8 +27,10 @@ export function LandingPage() {
     api<Product[]>("/products").then(setProducts).catch(console.error);
   }, []);
 
+  const canAccessMembers = Boolean(hasAccess || user?.role === "admin");
+
   const featureTo = (f: (typeof FEATURES)[number]) => {
-    if (f.needSub && !hasAccess && user?.role !== "admin") {
+    if (f.needSub && !canAccessMembers) {
       if (!user) return "/login";
       return "/assinar";
     }
@@ -36,25 +38,53 @@ export function LandingPage() {
     return f.to;
   };
 
+  const featureState = (f: (typeof FEATURES)[number], to: string) => {
+    if (to === "/login") return { from: f.to };
+    if (to === "/assinar") return { needSubscription: true, from: f.to };
+    return undefined;
+  };
+
   return (
     <div className="landing">
-      <section className="hero hero--solo">
+      <section className="hero hero--immersive" aria-label="Destaque">
+        <div className="hero__media" aria-hidden="true">
+          <img
+            src="/uploads/banners/banner-academia.jpg"
+            alt=""
+            className="hero__media-img"
+          />
+        </div>
+        <div className="hero__veil" aria-hidden="true" />
+
         <div className="hero__content">
           <h1 className="hero__brand">
             <BrandLockup size="lg" />
           </h1>
+
           <p className="hero__headline">
-            {user ? "Bem-vindo ao site." : "Odontologia feita para você."}
+            {user ? (
+              <>
+                Bem-vinda de volta ao espaço que <em>une</em> estudo e <em>prática</em>
+              </>
+            ) : (
+              <>
+                A casa que <em>transforma</em> a forma de aprender <em>Odontologia</em>
+              </>
+            )}
           </p>
+
+          <p className="hero__tagline">Ensina · Orienta · Cuida</p>
+          <span className="hero__rule" aria-hidden="true" />
+
           <div className="hero__actions">
             {user ? (
               <>
                 <Link to={hasAccess ? "/app" : "/assinar"} className="btn-primary btn-primary--lg">
                   {hasAccess ? "Minha conta" : "Assinar"}
                 </Link>
-                <Link to="/recursos" className="btn-outline btn-outline--lg">
-                  Ver recursos
-                </Link>
+                <a href="#explore" className="btn-outline btn-outline--lg">
+                  Explorar
+                </a>
               </>
             ) : (
               <>
@@ -68,11 +98,14 @@ export function LandingPage() {
             )}
           </div>
         </div>
+
+        <a href="#explore" className="hero__scroll" aria-label="Ver conteúdos seguintes">
+          <span className="hero__scroll-line" aria-hidden="true" />
+          Descubra
+        </a>
       </section>
 
-      <HeartRule className="landing__rule" />
-
-      <section className="section section--exclusive">
+      <section className="section section--exclusive" id="explore">
         <div className="section__header">
           <h2>Explore a plataforma</h2>
           <p>Cards com os principais recursos — toque para abrir o conteúdo.</p>
@@ -84,7 +117,7 @@ export function LandingPage() {
               <Link
                 key={f.title}
                 to={to}
-                state={to === "/login" ? { from: f.to } : undefined}
+                state={featureState(f, to)}
                 className="feature-card feature-card--link"
               >
                 <BrandIcon name={f.icon} />
@@ -97,23 +130,55 @@ export function LandingPage() {
         </div>
       </section>
 
+      <HeartRule className="landing__rule" />
+
       <section className="section" id="resumos-preview">
         <div className="section__header">
-          <h2>Prévia dos resumos</h2>
-          <p>Visitantes veem um trecho. O texto completo é para assinantes.</p>
+          <h2>Resumos para assinantes</h2>
+          <p>
+            {canAccessMembers
+              ? "Acesse os resumos completos da sua assinatura."
+              : "Exclusivo para assinantes. Assine para liberar resumos, perguntas e IA."}
+          </p>
         </div>
-        <div className="resumo-grid">
-          {RESUMOS.slice(0, 3).map((r) => (
-            <article key={r.id} className="resumo-card">
-              <span className="resumo-card__topic">{r.topic}</span>
-              <h3>{r.title}</h3>
-              <p>{r.preview}</p>
-              <Link to="/resumos" className="btn-outline">
-                Ver resumos
-              </Link>
-            </article>
-          ))}
-        </div>
+        {canAccessMembers ? (
+          <div className="resumo-grid">
+            {RESUMOS.slice(0, 3).map((r) => (
+              <article key={r.id} className="resumo-card">
+                <span className="resumo-card__topic">{r.topic}</span>
+                <h3>{r.title}</h3>
+                <p>{r.preview}</p>
+                <Link to="/resumos" className="btn-outline">
+                  Ver resumos
+                </Link>
+              </article>
+            ))}
+          </div>
+        ) : (
+          <div className="help-links">
+            <Link
+              to={user ? "/assinar" : "/login"}
+              state={user ? { needSubscription: true, from: "/resumos" } : { from: "/resumos" }}
+              className="help-links__card"
+            >
+              Liberar resumos com a assinatura
+            </Link>
+            <Link
+              to={user ? "/assinar" : "/login"}
+              state={user ? { needSubscription: true, from: "/perguntas" } : { from: "/perguntas" }}
+              className="help-links__card"
+            >
+              Perguntas odontológicas · Assinantes
+            </Link>
+            <Link
+              to={user ? "/assinar" : "/login"}
+              state={user ? { needSubscription: true, from: "/ia" } : { from: "/ia" }}
+              className="help-links__card"
+            >
+              IA para tirar dúvidas · Assinantes
+            </Link>
+          </div>
+        )}
       </section>
 
       <section className="section section--shop" id="patrocinadores">

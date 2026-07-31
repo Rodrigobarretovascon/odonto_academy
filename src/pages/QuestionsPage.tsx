@@ -1,6 +1,4 @@
 import { useMemo, useState } from "react";
-import { Link } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
 import {
   DENTAL_QUESTIONS,
   QUESTION_CATEGORY_LABEL,
@@ -8,7 +6,6 @@ import {
 } from "../data/questions";
 
 export function QuestionsPage() {
-  const { hasAccess, user } = useAuth();
   const [q, setQ] = useState("");
   const [category, setCategory] = useState<QuestionCategory | "all">("all");
   const [openId, setOpenId] = useState<string | null>(DENTAL_QUESTIONS[0]?.id ?? null);
@@ -30,7 +27,7 @@ export function QuestionsPage() {
     <div className="content-page questions-page">
       <h1>Perguntas odontológicas</h1>
       <p className="content-page__lead">
-        Perguntas e respostas para estudar. Conteúdos marcados como exclusivos pedem assinatura.
+        Perguntas e respostas exclusivas da assinatura para estudar com método.
       </p>
 
       <div className="questions-toolbar">
@@ -61,7 +58,6 @@ export function QuestionsPage() {
 
       <div className="questions-list">
         {filtered.map((item) => {
-          const locked = Boolean(item.subscriberOnly) && !hasAccess && user?.role !== "admin";
           const isOpen = openId === item.id;
           return (
             <article key={item.id} className="questions-item">
@@ -76,14 +72,7 @@ export function QuestionsPage() {
               </button>
               {isOpen && (
                 <div className="questions-item__a">
-                  {locked ? (
-                    <p>
-                      Resposta completa para assinantes.{" "}
-                      <Link to="/assinar">Assinar para ver</Link>
-                    </p>
-                  ) : (
-                    <p>{item.answer}</p>
-                  )}
+                  <p>{item.answer}</p>
                 </div>
               )}
             </article>

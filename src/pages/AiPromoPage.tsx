@@ -66,8 +66,8 @@ export function AiPromoPage() {
         <Link to="/assinar" className="btn-primary">
           Assinar agora
         </Link>
-        <Link to="/perguntas" className="btn-outline">
-          Ver perguntas gratuitas
+        <Link to="/loja" className="btn-outline">
+          Ver a loja
         </Link>
       </div>
     </div>

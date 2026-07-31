@@ -24,7 +24,6 @@ import { ResumosPage } from "./pages/ResumosPage";
 import { Viewer3DPage } from "./pages/Viewer3DPage";
 import { ForgotPasswordPage } from "./pages/ForgotPasswordPage";
 import { ResetPasswordPage } from "./pages/ResetPasswordPage";
-import { AiPromoPage } from "./pages/AiPromoPage";
 import { PageLoading } from "./components/ToothMascot";
 
 function AiEntry() {
@@ -33,7 +32,10 @@ function AiEntry() {
   if (user && (hasAccess || user.role === "admin")) {
     return <Navigate to="/app/ia" replace />;
   }
-  return <AiPromoPage />;
+  if (!user) {
+    return <Navigate to="/login" state={{ from: "/ia" }} replace />;
+  }
+  return <Navigate to="/assinar" state={{ needSubscription: true, from: "/ia" }} replace />;
 }
 
 export default function App() {
@@ -47,8 +49,6 @@ export default function App() {
               <Route path="o-que-somos" element={<AboutPage />} />
               <Route path="como-funciona" element={<HowItWorksPage />} />
               <Route path="recursos" element={<ResourcesPage />} />
-              <Route path="perguntas" element={<QuestionsPage />} />
-              <Route path="resumos" element={<ResumosPage />} />
               <Route path="assinar" element={<SubscribePage />} />
               <Route path="ia" element={<AiEntry />} />
               <Route path="loja" element={<ShopCartPage />} />
@@ -58,6 +58,10 @@ export default function App() {
               <Route path="cadastro" element={<RegisterPage />} />
               <Route path="recuperar-senha" element={<ForgotPasswordPage />} />
               <Route path="redefinir-senha" element={<ResetPasswordPage />} />
+              <Route element={<ProtectedRoute requireAccess />}>
+                <Route path="perguntas" element={<QuestionsPage />} />
+                <Route path="resumos" element={<ResumosPage />} />
+              </Route>
               <Route element={<ProtectedRoute admin />}>
                 <Route path="admin" element={<AdminPage />} />
               </Route>
@@ -66,9 +70,9 @@ export default function App() {
             <Route element={<ProtectedRoute />}>
               <Route path="app" element={<MemberLayout />}>
                 <Route index element={<MemberHomePage />} />
-                <Route path="resumos" element={<ResumosPage />} />
 
                 <Route element={<ProtectedRoute requireAccess />}>
+                  <Route path="resumos" element={<ResumosPage />} />
                   <Route path="escultura" element={<Navigate to="/app/escultura/13" replace />} />
                   <Route path="escultura/:dente" element={<SculpturePage />} />
                   <Route path="anatomia" element={<AnatomyPage />} />

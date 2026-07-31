@@ -2,16 +2,16 @@ import { Link } from "react-router-dom";
 
 const STEPS = [
   {
-    title: "Explore o gratuito",
-    text: "Veja a página inicial, perguntas, prévia dos resumos e a loja sem precisar assinar.",
+    title: "Conheça a loja",
+    text: "A loja fica aberta a todos. Produtos e planos podem ser vistos sem assinatura.",
   },
   {
     title: "Crie sua conta",
-    text: "Cadastre-se para comprar, acompanhar pedidos e, se assinar, liberar a área exclusiva.",
+    text: "Cadastre-se para comprar, acompanhar pedidos e liberar a área de assinantes.",
   },
   {
     title: "Assine e estude",
-    text: "Com pagamento aprovado, escultura, anatomia, visualizador 3D e IA ficam disponíveis.",
+    text: "Com pagamento aprovado, resumos, perguntas, escultura, anatomia, 3D e IA ficam disponíveis.",
   },
   {
     title: "Pratique com método",
