@@ -1,7 +1,8 @@
-import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Navigate, Route, Routes, useParams } from "react-router-dom";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import { CartProvider } from "./context/CartContext";
 import { ProtectedRoute } from "./components/ProtectedRoute";
+import { ScrollToTop } from "./components/ScrollToTop";
 import { PublicLayout } from "./layouts/PublicLayout";
 import { MemberLayout } from "./layouts/MemberLayout";
 import { LandingPage } from "./pages/LandingPage";
@@ -25,6 +26,12 @@ import { Viewer3DPage } from "./pages/Viewer3DPage";
 import { ForgotPasswordPage } from "./pages/ForgotPasswordPage";
 import { ResetPasswordPage } from "./pages/ResetPasswordPage";
 import { PageLoading } from "./components/ToothMascot";
+import { SubscriberAccessPage } from "./pages/SubscriberAccessPage";
+
+function RedirectImmersiveToClassic() {
+  const { dente = "11" } = useParams();
+  return <Navigate to={`/app/escultura/${dente}`} replace />;
+}
 
 function AiEntry() {
   const { user, hasAccess, loading } = useAuth();
@@ -32,15 +39,13 @@ function AiEntry() {
   if (user && (hasAccess || user.role === "admin")) {
     return <Navigate to="/app/ia" replace />;
   }
-  if (!user) {
-    return <Navigate to="/login" state={{ from: "/ia" }} replace />;
-  }
-  return <Navigate to="/assinar" state={{ needSubscription: true, from: "/ia" }} replace />;
+  return <Navigate to="/acesso" state={{ from: "/app/ia" }} replace />;
 }
 
 export default function App() {
   return (
     <BrowserRouter>
+      <ScrollToTop />
       <AuthProvider>
         <CartProvider>
           <Routes>
@@ -50,6 +55,7 @@ export default function App() {
               <Route path="como-funciona" element={<HowItWorksPage />} />
               <Route path="recursos" element={<ResourcesPage />} />
               <Route path="assinar" element={<SubscribePage />} />
+              <Route path="acesso" element={<SubscriberAccessPage />} />
               <Route path="ia" element={<AiEntry />} />
               <Route path="loja" element={<ShopCartPage />} />
               <Route path="carrinho" element={<Navigate to="/loja" replace />} />
@@ -74,6 +80,7 @@ export default function App() {
                 <Route element={<ProtectedRoute requireAccess />}>
                   <Route path="resumos" element={<ResumosPage />} />
                   <Route path="escultura" element={<Navigate to="/app/escultura/13" replace />} />
+                  <Route path="escultura/:dente/imersivo" element={<RedirectImmersiveToClassic />} />
                   <Route path="escultura/:dente" element={<SculpturePage />} />
                   <Route path="anatomia" element={<AnatomyPage />} />
                   <Route path="visualizador-3d" element={<Viewer3DPage />} />

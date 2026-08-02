@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 250" fill="none">
+  <rect width="400" height="250" fill="#2D5596"/>
+  <circle cx="200" cy="100" r="50" stroke="#B2CEE6" stroke-width="2.5" fill="none"/>
+  <path d="M200 62c-14 0-25 9-28 22-2 10-3 22-3 32 0 14 2 28 5 38 1 4 4 6 8 6 4 0 6-3 8-6 2-5 3-12 4-18h14c1 6 2 13 4 18 2 3 4 6 8 6s7-2 8-6c3-10 5-24 5-38 0-10-1-22-3-32-3-13-14-22-28-22z" stroke="#B2CEE6" stroke-width="2.2" fill="none" stroke-linejoin="round"/>
+  <text x="200" y="200" text-anchor="middle" fill="#E8F2FD" font-family="Georgia, serif" font-size="22" font-weight="600">GB Dental</text>
+</svg>

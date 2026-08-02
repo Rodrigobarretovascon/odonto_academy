@@ -17,3 +17,5 @@ public/uploads/*
 
 # Material bruto de importação (PDFs/páginas) — não versionar
 content/import/
+
+.venv-ffmpeg/

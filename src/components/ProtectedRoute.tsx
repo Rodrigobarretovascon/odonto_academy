@@ -11,7 +11,7 @@ export function ProtectedRoute({ requireAccess = false, admin = false }: { requi
   }
 
   if (!user) {
-    return <Navigate to="/login" state={{ from: location.pathname }} replace />;
+    return <Navigate to="/acesso" state={{ from: location.pathname }} replace />;
   }
 
   if (admin && user.role !== "admin") {
@@ -19,7 +19,7 @@ export function ProtectedRoute({ requireAccess = false, admin = false }: { requi
   }
 
   if (requireAccess && !hasAccess && user.role !== "admin") {
-    return <Navigate to="/assinar" state={{ needSubscription: true, from: location.pathname }} replace />;
+    return <Navigate to="/acesso" state={{ from: location.pathname, needSubscription: true }} replace />;
   }
 
   return <Outlet />;

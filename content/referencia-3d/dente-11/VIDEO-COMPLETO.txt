@@ -1,0 +1,5 @@
+# Opcional: cole aqui o vídeo completo da escultura do 11
+
+Nome sugerido: `video-completo.mp4`
+
+Prioridade menor que os clipes em `fases/` e os frames em `frames/`.

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 640" role="img">
+  <defs>
+    <filter id="sh" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="6" stdDeviation="8" flood-opacity="0.12"/>
+    </filter>
+  </defs>
+  <rect width="960" height="640" fill="#f7fafc"/>
+  <text x="480" y="42" text-anchor="middle" font-family="Montserrat,Segoe UI,sans-serif" font-size="24" font-weight="700" fill="#1e3a6e">Etapa 6 — Refino e revisão final · FDI 13</text>
+  <g>
+    <rect x="36" y="62" width="204" height="44" rx="22" fill="#1e3a6e"/>
+    <circle cx="58" cy="84" r="14" fill="#fbbf24"/>
+    <text x="80" y="90" font-family="Montserrat,Segoe UI,sans-serif" font-size="15" font-weight="700" fill="#fff">REFINO E REVISÃO</text>
+  </g>
+  <g transform="translate(70,150)" filter="url(#sh)">
+    <rect x="18" y="0" width="14" height="260" rx="4" fill="#94a3b8"/>
+    <rect x="14" y="0" width="22" height="40" rx="6" fill="#64748b"/>
+    <path d="M12 260 L38 260 L25 310 Z" fill="#cbd5e1" stroke="#475569"/>
+    <text x="25" y="340" text-anchor="middle" font-family="Montserrat,Segoe UI,sans-serif" font-size="13" font-weight="700" fill="#1e3a6e">Lecron</text>
+  </g><g transform="translate(360,120)" filter="url(#sh)">
+    <path d="M90 50 L210 50 L225 300 L75 300 Z" fill="#e8d4a8" stroke="#1e3a6e" stroke-width="2.5"/>
+    <text x="150" y="180" text-anchor="middle" font-family="Montserrat,Segoe UI,sans-serif" font-size="16" font-weight="700" fill="#1e3a6e">alisar</text>
+    <text x="150" y="340" text-anchor="middle" font-family="Montserrat,Segoe UI,sans-serif" font-size="14" fill="#475569">revisão de faces · cera + Lecron</text>
+  </g>
+  <g transform="translate(48,520)">
+    <rect width="18" height="18" rx="3" fill="#059669"/>
+    <text x="28" y="15" font-family="Montserrat,Segoe UI,sans-serif" font-size="14" fill="#334155">preservar / margem</text>
+    <rect x="220" width="18" height="18" rx="3" fill="#dc2626"/>
+    <text x="248" y="15" font-family="Montserrat,Segoe UI,sans-serif" font-size="14" fill="#334155">remover</text>
+  </g>
+  <text x="480" y="600" text-anchor="middle" font-family="Montserrat,Segoe UI,sans-serif" font-size="16" fill="#475569">FDI 13 · Canino sup. D · cera + Lecron</text>
+</svg>

@@ -4,6 +4,7 @@ import {
   QUESTION_CATEGORY_LABEL,
   type QuestionCategory,
 } from "../data/questions";
+import { PageShell } from "../components/PageShell";
 
 export function QuestionsPage() {
   const [q, setQ] = useState("");
@@ -24,64 +25,63 @@ export function QuestionsPage() {
   }, [q, category]);
 
   return (
-    <div className="content-page questions-page">
-      <h1>Perguntas odontológicas</h1>
-      <p className="content-page__lead">
-        Perguntas e respostas exclusivas da assinatura para estudar com método.
-      </p>
+    <PageShell
+      eyebrow="GB Dental · Assinantes"
+      title="Perguntas odontológicas"
+      lead="Perguntas e respostas exclusivas da assinatura para estudar com método."
+    >
+      <div className="page-card page-card--wide">
+        <div className="questions-toolbar">
+          <label>
+            Buscar
+            <input
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+              placeholder="Ex.: ligamento, molar, 21…"
+              aria-label="Buscar perguntas"
+            />
+          </label>
+          <label>
+            Categoria
+            <select
+              value={category}
+              onChange={(e) => setCategory(e.target.value as QuestionCategory | "all")}
+            >
+              <option value="all">Todas</option>
+              {(Object.keys(QUESTION_CATEGORY_LABEL) as QuestionCategory[]).map((c) => (
+                <option key={c} value={c}>
+                  {QUESTION_CATEGORY_LABEL[c]}
+                </option>
+              ))}
+            </select>
+          </label>
+        </div>
 
-      <div className="questions-toolbar">
-        <label>
-          Buscar
-          <input
-            value={q}
-            onChange={(e) => setQ(e.target.value)}
-            placeholder="Ex.: ligamento, molar, 21…"
-            aria-label="Buscar perguntas"
-          />
-        </label>
-        <label>
-          Categoria
-          <select
-            value={category}
-            onChange={(e) => setCategory(e.target.value as QuestionCategory | "all")}
-          >
-            <option value="all">Todas</option>
-            {(Object.keys(QUESTION_CATEGORY_LABEL) as QuestionCategory[]).map((c) => (
-              <option key={c} value={c}>
-                {QUESTION_CATEGORY_LABEL[c]}
-              </option>
-            ))}
-          </select>
-        </label>
+        <div className="questions-list">
+          {filtered.map((item) => {
+            const open = openId === item.id;
+            return (
+              <article key={item.id} className={`questions-item${open ? " is-open" : ""}`}>
+                <button
+                  type="button"
+                  className="questions-item__q"
+                  onClick={() => setOpenId(open ? null : item.id)}
+                  aria-expanded={open}
+                >
+                  <span>{item.question}</span>
+                  <small>{QUESTION_CATEGORY_LABEL[item.category]}</small>
+                </button>
+                {open && (
+                  <div className="questions-item__a">
+                    <p>{item.answer}</p>
+                  </div>
+                )}
+              </article>
+            );
+          })}
+          {filtered.length === 0 && <p className="admin-muted">Nenhuma pergunta encontrada.</p>}
+        </div>
       </div>
-
-      <div className="questions-list">
-        {filtered.map((item) => {
-          const isOpen = openId === item.id;
-          return (
-            <article key={item.id} className="questions-item">
-              <button
-                type="button"
-                className="questions-item__q"
-                aria-expanded={isOpen}
-                onClick={() => setOpenId(isOpen ? null : item.id)}
-              >
-                <span>{item.question}</span>
-                <small>{QUESTION_CATEGORY_LABEL[item.category]}</small>
-              </button>
-              {isOpen && (
-                <div className="questions-item__a">
-                  <p>{item.answer}</p>
-                </div>
-              )}
-            </article>
-          );
-        })}
-        {filtered.length === 0 && (
-          <p className="admin-muted">Nenhuma pergunta encontrada para essa busca.</p>
-        )}
-      </div>
-    </div>
+    </PageShell>
   );
 }

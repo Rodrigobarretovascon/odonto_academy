@@ -19,7 +19,7 @@ export function PublicLayout() {
   useEffect(() => {
     setMenuOpen(false);
     setAccountOpen(false);
-  }, [location.pathname]);
+  }, [location.pathname, location.hash]);
 
   useEffect(() => {
     const onDoc = (e: MouseEvent) => {
@@ -29,25 +29,38 @@ export function PublicLayout() {
     return () => document.removeEventListener("mousedown", onDoc);
   }, []);
 
+  useEffect(() => {
+    if (location.pathname !== "/" || !location.hash) return;
+    const id = location.hash.replace("#", "");
+    const el = document.getElementById(id);
+    if (!el) return;
+    const t = window.setTimeout(() => {
+      el.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 80);
+    return () => window.clearTimeout(t);
+  }, [location.pathname, location.hash]);
+
   const navLink = ({ isActive }: { isActive: boolean }) =>
     `terus-nav__link${isActive ? " terus-nav__link--active" : ""}`;
 
-  const canAccessMembers = Boolean(hasAccess || user?.role === "admin");
-  const subscriberPath = (path: string) => {
-    if (canAccessMembers) return path;
-    if (!user) return "/login";
-    return "/assinar";
-  };
-  const subscriberState = (path: string) => {
-    if (canAccessMembers) return undefined;
-    if (!user) return { from: path };
-    return { needSubscription: true, from: path };
+  const howActive = location.pathname === "/como-funciona" || location.hash === "#como-funciona";
+  const contentsActive =
+    location.pathname === "/recursos" || location.hash === "#explore" || location.pathname === "/perguntas";
+
+  const goTopAndClose = () => {
+    setMenuOpen(false);
+    window.scrollTo({ top: 0, left: 0, behavior: "auto" });
   };
 
   return (
     <div className={`terus-app${hideFooter ? " terus-app--cart-desk" : ""}`}>
       <header className="terus-header">
-        <Link to="/" className="terus-brand" aria-label="GB Dental — início">
+        <Link
+          to="/"
+          className="terus-brand"
+          aria-label="GB Dental — início"
+          onClick={() => window.scrollTo({ top: 0, left: 0, behavior: "auto" })}
+        >
           <BrandLockup size="sm" />
         </Link>
 
@@ -65,41 +78,71 @@ export function PublicLayout() {
         </button>
 
         <nav id="public-nav" className={`terus-nav${menuOpen ? " is-open" : ""}`} aria-label="Principal">
-          <NavLink to="/" end className={navLink}>
-            Início
-          </NavLink>
-          <NavLink to="/o-que-somos" className={navLink}>
-            O que somos
-          </NavLink>
-          <NavLink to="/como-funciona" className={navLink}>
-            Como funciona
-          </NavLink>
-          <NavLink to="/recursos" className={navLink}>
-            Recursos
-          </NavLink>
-          <NavLink
-            to={subscriberPath("/perguntas")}
-            state={subscriberState("/perguntas")}
-            className={navLink}
-          >
-            Perguntas
-          </NavLink>
-          <NavLink to="/loja" className={navLink}>
-            Loja
-          </NavLink>
-          <NavLink to={subscriberPath("/ia")} state={subscriberState("/ia")} className={navLink}>
-            IA
-          </NavLink>
-          <NavLink
-            to="/assinar"
-            className={({ isActive }) => `${navLink({ isActive })} terus-nav__link--gold`}
-          >
-            Assinar
-          </NavLink>
-          {user?.role === "admin" && (
-            <NavLink to="/admin" className={navLink}>
-              Admin
-            </NavLink>
+          {!user ? (
+            <>
+              <NavLink to="/" end className={navLink} onClick={goTopAndClose}>
+                Início
+              </NavLink>
+              <NavLink to="/loja" className={navLink} onClick={goTopAndClose}>
+                Loja
+              </NavLink>
+              <NavLink
+                to="/assinar"
+                className={({ isActive }) => `${navLink({ isActive })} terus-nav__link--gold`}
+                onClick={goTopAndClose}
+              >
+                Assinar
+              </NavLink>
+              <NavLink to="/acesso" className={navLink} onClick={goTopAndClose}>
+                Fazer login
+              </NavLink>
+            </>
+          ) : (
+            <>
+              <NavLink to="/" end className={navLink} onClick={goTopAndClose}>
+                Início
+              </NavLink>
+              <Link
+                to="/#como-funciona"
+                className={`terus-nav__link${howActive ? " terus-nav__link--active" : ""}`}
+                onClick={() => setMenuOpen(false)}
+              >
+                Como funciona
+              </Link>
+              <Link
+                to="/#explore"
+                className={`terus-nav__link${contentsActive ? " terus-nav__link--active" : ""}`}
+                onClick={() => setMenuOpen(false)}
+              >
+                Conteúdos
+              </Link>
+              <NavLink to="/loja" className={navLink} onClick={goTopAndClose}>
+                Loja
+              </NavLink>
+              <NavLink
+                to="/assinar"
+                className={({ isActive }) => `${navLink({ isActive })} terus-nav__link--gold`}
+                onClick={goTopAndClose}
+              >
+                Assinaturas
+              </NavLink>
+              {user.role === "admin" && (
+                <NavLink to="/admin" className={navLink} onClick={goTopAndClose}>
+                  Admin
+                </NavLink>
+              )}
+              <button
+                type="button"
+                className="terus-nav__link terus-nav__link--action terus-nav__link--mobile-only"
+                onClick={() => {
+                  setMenuOpen(false);
+                  logout();
+                  navigate("/acesso");
+                }}
+              >
+                Trocar de conta
+              </button>
+            </>
           )}
         </nav>
 
@@ -113,59 +156,53 @@ export function PublicLayout() {
             {count > 0 && <span className="terus-cart-btn__badge">{count}</span>}
           </Link>
 
-          <div className="account-menu" ref={accountRef}>
-            {user ? (
-              <>
-                <button
-                  type="button"
-                  className="account-menu__trigger"
-                  aria-expanded={accountOpen}
-                  onClick={() => setAccountOpen((v) => !v)}
-                >
-                  {user.name.split(" ")[0]}
-                </button>
-                {accountOpen && (
-                  <div className="account-menu__dropdown" role="menu">
-                    <Link to="/app" role="menuitem">
-                      Minha conta
+          {user && (
+            <div className="account-menu account-menu--desktop" ref={accountRef}>
+              <button
+                type="button"
+                className="account-menu__trigger"
+                aria-expanded={accountOpen}
+                onClick={() => setAccountOpen((v) => !v)}
+              >
+                {user.name.split(" ")[0]}
+              </button>
+              {accountOpen && (
+                <div className="account-menu__dropdown" role="menu">
+                  <Link to="/app" role="menuitem">
+                    Minha conta
+                  </Link>
+                  {hasAccess && (
+                    <Link to="/app/escultura/13" role="menuitem">
+                      Área de assinante
                     </Link>
-                    {hasAccess && (
-                      <Link to="/app/escultura/13" role="menuitem">
-                        Área de assinante
-                      </Link>
-                    )}
-                    <button
-                      type="button"
-                      role="menuitem"
-                      onClick={() => {
-                        logout();
-                        navigate("/login");
-                      }}
-                    >
-                      Trocar de conta
-                    </button>
-                    <button
-                      type="button"
-                      role="menuitem"
-                      onClick={() => {
-                        logout();
-                        navigate("/");
-                      }}
-                    >
-                      Sair
-                    </button>
-                  </div>
-                )}
-              </>
-            ) : (
-              <NavLink to="/login" className="terus-nav__link">
-                Entrar
-              </NavLink>
-            )}
-          </div>
+                  )}
+                  <button
+                    type="button"
+                    role="menuitem"
+                    onClick={() => {
+                      logout();
+                      navigate("/acesso");
+                    }}
+                  >
+                    Trocar de conta
+                  </button>
+                  <button
+                    type="button"
+                    role="menuitem"
+                    onClick={() => {
+                      logout();
+                      navigate("/");
+                    }}
+                  >
+                    Sair
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </header>
-      <PromoBannerRail />
+      {location.pathname === "/" && <PromoBannerRail />}
       <main className="terus-main">
         <Outlet />
       </main>

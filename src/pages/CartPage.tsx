@@ -1,6 +1,7 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useCart } from "../context/CartContext";
 import { formatPrice } from "../lib/api";
+import { PageShell } from "../components/PageShell";
 
 export function CartPage() {
   const { items, remove, totalCents, count } = useCart();
@@ -8,19 +9,22 @@ export function CartPage() {
 
   if (count === 0) {
     return (
-      <div className="cart-page cart-page--empty">
-        <h1>Carrinho</h1>
-        <p>Seu carrinho está vazio.</p>
-        <Link to="/loja" className="btn-primary">
-          Ir à loja
-        </Link>
-      </div>
+      <PageShell
+        narrow
+        eyebrow="GB Dental · Loja"
+        title="Carrinho"
+        lead="Seu carrinho está vazio."
+        actions={
+          <Link to="/loja" className="btn-primary btn-primary--lg">
+            Ir à loja
+          </Link>
+        }
+      />
     );
   }
 
   return (
-    <div className="cart-page">
-      <h1>Carrinho ({count})</h1>
+    <PageShell eyebrow="GB Dental · Loja" title={`Carrinho (${count})`} lead="Revise os itens antes de finalizar.">
       <ul className="cart-list">
         {items.map(({ product, quantity }) => (
           <li key={product.id} className="cart-item">
@@ -46,6 +50,6 @@ export function CartPage() {
           Finalizar compra
         </button>
       </div>
-    </div>
+    </PageShell>
   );
 }

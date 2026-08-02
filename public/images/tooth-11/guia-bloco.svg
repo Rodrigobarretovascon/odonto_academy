@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 420" role="img" aria-labelledby="title desc">
+  <title id="title">Bloco de cera  dente 11</title>
+  <desc id="desc">Bloco retangular de cera creme com faces vestibular, lingual, mesial e distal identificadas</desc>
+  <rect width="640" height="420" fill="#eef6fb"/>
+  <rect x="40" y="36" width="560" height="348" rx="18" fill="#8fbbd9" opacity="0.35"/>
+
+  <!-- bloco -->
+  <g transform="translate(220 70)">
+    <rect x="0" y="0" width="160" height="280" rx="6" fill="#f5efe0" stroke="#c4b89a" stroke-width="2"/>
+    <!-- arestas leves -->
+    <path d="M0 70 H160 M0 140 H160 M0 210 H160" stroke="#d4c4a8" stroke-width="1" stroke-dasharray="4 6" opacity="0.7"/>
+  </g>
+
+  <!-- labels -->
+  <g font-family="Montserrat, system-ui, sans-serif" font-size="18" font-weight="700" fill="#1e3a6e">
+    <text x="300" y="52" text-anchor="middle">Incisal ÿ</text>
+    <text x="300" y="390" text-anchor="middle">Cervical / base ÿ</text>
+    <text x="400" y="210" text-anchor="start">V</text>
+    <text x="188" y="210" text-anchor="end">P</text>
+    <text x="300" y="58" text-anchor="middle" font-size="14" font-weight="600" fill="#2d5596"></text>
+  </g>
+
+  <!-- callouts -->
+  <g font-family="Montserrat, system-ui, sans-serif" font-size="15" fill="#334155">
+    <rect x="430" y="160" width="150" height="36" rx="8" fill="#fff" stroke="#c5d5e8"/>
+    <text x="505" y="183" text-anchor="middle" font-weight="700" fill="#2d5596">Vestibular (V)</text>
+
+    <rect x="60" y="160" width="140" height="36" rx="8" fill="#fff" stroke="#c5d5e8"/>
+    <text x="130" y="183" text-anchor="middle" font-weight="700" fill="#2d5596">Lingual (L)</text>
+
+    <rect x="430" y="250" width="150" height="36" rx="8" fill="#fff" stroke="#c5d5e8"/>
+    <text x="505" y="273" text-anchor="middle" font-weight="700" fill="#2d5596">Distal (D)</text>
+
+    <rect x="60" y="250" width="140" height="36" rx="8" fill="#fff" stroke="#c5d5e8"/>
+    <text x="130" y="273" text-anchor="middle" font-weight="700" fill="#2d5596">Mesial (M)</text>
+  </g>
+
+  <text x="320" y="28" text-anchor="middle" font-family="Montserrat, system-ui, sans-serif" font-size="16" font-weight="700" fill="#1e3a6e">FDI 11 ÿ bloco de cera (orientaÿÿo)</text>
+</svg>

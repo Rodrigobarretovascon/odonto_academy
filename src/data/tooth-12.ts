@@ -26,14 +26,14 @@ export const tooth12: ToothSculptureData = {
     { label: "Altura na escultura (1,5×)", value: "~14 mm (marcar ~15 mm com margem)" },
     { label: "Mesiodistal real", value: "7,0 mm" },
     { label: "Mesiodistal na escultura (1,5×)", value: "~10 mm" },
-    { label: "Vestíbulo-palatina real", value: "6,1 mm" },
-    { label: "Vestíbulo-palatina na escultura (1,5×)", value: "~9 mm" },
+    { label: "Vestíbulo-lingual real", value: "6,1 mm" },
+    { label: "Vestíbulo-lingual na escultura (1,5×)", value: "~9 mm" },
   ],
 
   blockPreparation: [
     "Centralize o dente no bloco: bloco ~20 mm, largura do dente ~9 mm → ~5 mm de cada lado.",
     "Marcar altura ~15 mm (14 mm + margem de segurança).",
-    "Definir faces: vestibular, distal, palatina, mesial.",
+    "Definir faces: vestibular, distal, lingual, mesial.",
     "Dividir em terços (quadriculado) antes do desenho.",
   ],
 
@@ -44,7 +44,7 @@ export const tooth12: ToothSculptureData = {
     title: "Identifique as faces",
     instructions: [
       "Vestibular — face externa.",
-      "Palatina — face interna; forma côncava com cíngulo no terço cervical.",
+      "Lingual — face interna; forma côncava com cíngulo no terço cervical.",
       "Mesial — contato com o dente 11; mais reta, encostada no central.",
       "Distal — contato com o dente 13; mais arredondada e inclinada.",
       "Incisal — borda de corte; mesial mais reta, distal mais arredondada.",
@@ -69,7 +69,7 @@ export const tooth12: ToothSculptureData = {
       title: "Faça o desgaste grosseiro",
       instructions: [
         "Cortar com estilete seguindo o desenho das proximais.",
-        "Cortar vestibular e palatina com cuidado.",
+        "Cortar vestibular e lingual com cuidado.",
         "Ajustar mesial para ficar mais evidente.",
         "Resultado: figura geométrica esquematizando o dente.",
       ],
@@ -82,21 +82,21 @@ export const tooth12: ToothSculptureData = {
       instructions: [
         "Mesial mais próxima e reta; distal começa mais abaixo e inclinada.",
         "Vestibular passa dentro do quadrante demarcado.",
-        "Desgastar com Le cron: contar e ir convergindo.",
-        "Dente converge no sentido vestíbulo-palatino e médio-distal.",
+        "Desgastar com Lecron: contar e ir convergindo.",
+        "Dente converge no sentido vestíbulo-lingual e médio-distal.",
       ],
       image: img("12-05-vestibular.png", "Modelagem da face vestibular", "Imagem — modelagem vestibular"),
     },
     {
       id: 6,
-      title: "Esculpa a palatina",
+      title: "Esculpa a lingual",
       instructions: [
-        "Face palatina côncava; cíngulo no terço cervical.",
+        "Face lingual côncava; cíngulo no terço cervical.",
         "Crista marginal mesial e distal.",
         "Remover marcas do quadriculado que atrapalham (margem de segurança permite).",
         "Proximais levemente côncavas para definir contorno.",
       ],
-      image: img("12-06-palatina.png", "Modelagem da face palatina", "Imagem — modelagem palatina"),
+      image: img("12-06-lingual.png", "Modelagem da face lingual", "Imagem — modelagem lingual"),
     },
     {
       id: 7,
@@ -124,7 +124,7 @@ export const tooth12: ToothSculptureData = {
 
   finalViews: [
     { label: "Vestibular", image: img("12-final-vestibular.png", "Vista vestibular final", "Imagem — vista vestibular") },
-    { label: "Palatina", image: img("12-final-palatina.png", "Vista palatina final", "Imagem — vista palatina") },
+    { label: "Lingual", image: img("12-final-lingual.png", "Vista lingual final", "Imagem — vista lingual") },
     { label: "Mesial", image: img("12-final-mesial.png", "Vista mesial final", "Imagem — vista mesial") },
     { label: "Distal", image: img("12-final-distal.png", "Vista distal final", "Imagem — vista distal") },
     { label: "Incisal", image: img("12-final-incisal.png", "Vista incisal final", "Imagem — vista incisal") },
@@ -154,7 +154,7 @@ export const tooth12: ToothSculptureData = {
   ],
 
   alerts: [
-    "Instrumentos: bloco de cera, Le cron, estilete, escova, meia fina, régua.",
+    "Você precisa apenas de um bloco de cera e um Lecron.",
     "Margem de segurança na altura (~15 mm) compensa marcas do quadriculado.",
     "O 12 é visivelmente menor e mais estreito que o 11.",
   ],

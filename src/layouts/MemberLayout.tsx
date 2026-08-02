@@ -1,13 +1,14 @@
 import { useEffect, useState } from "react";
 import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { BrandLockup } from "../components/BrandMark";
+import { BrandLockup, BrandMark, HeartRule } from "../components/BrandMark";
+import { AiMascot } from "../components/AiMascot";
 import { SiteFooter } from "../components/SiteFooter";
 
 const NAV = [
   { to: "/app/resumos", label: "Resumos" },
   { to: "/app/escultura/13", label: "Escultura em cera" },
-  { to: "/app/ia", label: "Tire dúvidas com IA" },
+  { to: "/app/ia", label: "Odus IA" },
   { to: "/app/anatomia", label: "Anatomia dental" },
   { to: "/app/visualizador-3d", label: "Visualizador 3D" },
   { to: "/app/novidades", label: "Novidades" },
@@ -19,6 +20,10 @@ export function MemberLayout() {
   const navigate = useNavigate();
   const location = useLocation();
   const [open, setOpen] = useState(false);
+  const isSculpture = location.pathname.startsWith("/app/escultura");
+  const isAi = location.pathname.startsWith("/app/ia");
+  const isAnatomy = location.pathname.startsWith("/app/anatomia");
+  const compactTop = isSculpture || isAi || isAnatomy;
 
   useEffect(() => {
     setOpen(false);
@@ -28,9 +33,21 @@ export function MemberLayout() {
     ? Math.max(0, Math.ceil((new Date(subscription.expires_at).getTime() - Date.now()) / 86400000))
     : null;
 
+  const shellClass = [
+    "terus-app",
+    "terus-app--member",
+    isSculpture ? "terus-app--sculpture" : "",
+    isAi ? "terus-app--ai" : "",
+    isAnatomy ? "terus-app--anatomy" : "",
+  ]
+    .filter(Boolean)
+    .join(" ");
+
   return (
-    <div className="terus-app terus-app--member">
-      <header className="member-topbar">
+    <div className={shellClass}>
+      <header
+        className={`member-topbar${compactTop ? " member-topbar--sculpture" : ""}`}
+      >
         <button
           type="button"
           className="member-topbar__menu"
@@ -39,11 +56,44 @@ export function MemberLayout() {
           onClick={() => setOpen((v) => !v)}
         >
           <span className="visually-hidden">{open ? "Fechar menu" : "Abrir menu"}</span>
-          <span aria-hidden="true" />
-          <span aria-hidden="true" />
-          <span aria-hidden="true" />
+          <span className="member-topbar__burger" aria-hidden="true">
+            <span />
+            <span />
+            <span />
+          </span>
         </button>
-        <LinkBrand />
+
+        {isSculpture ? (
+          <div className="member-topbar__section" aria-label="Escultura Dental">
+            <BrandMark size={28} />
+            <div className="member-topbar__section-text">
+              <p className="member-topbar__section-title">Escultura Dental</p>
+              <HeartRule className="member-topbar__section-rule" />
+            </div>
+          </div>
+        ) : isAi ? (
+          <div className="member-topbar__section" aria-label="Odus">
+            <AiMascot size={48} className="member-topbar__ai-mascot" />
+            <div className="member-topbar__section-text">
+              <p className="member-topbar__section-title">Odus</p>
+              <p className="member-topbar__section-sub">fantasminha IA</p>
+              <HeartRule className="member-topbar__section-rule" />
+            </div>
+          </div>
+        ) : isAnatomy ? (
+          <div className="member-topbar__section" aria-label="Anatomia dental">
+            <BrandMark size={28} />
+            <div className="member-topbar__section-text">
+              <p className="member-topbar__section-title">Anatomia dental</p>
+              <HeartRule className="member-topbar__section-rule" />
+            </div>
+          </div>
+        ) : (
+          <NavLink to="/app" className="member-topbar__brand" aria-label="GB Dental — minha conta">
+            <BrandLockup size="sm" />
+          </NavLink>
+        )}
+
         <span className="member-topbar__user">{user?.name.split(" ")[0]}</span>
       </header>
 
@@ -116,16 +166,8 @@ export function MemberLayout() {
 
       <div className="member-content">
         <Outlet />
-        <SiteFooter />
+        {!isAi && !isAnatomy && <SiteFooter />}
       </div>
     </div>
-  );
-}
-
-function LinkBrand() {
-  return (
-    <NavLink to="/app" className="member-topbar__brand" aria-label="GB Dental — minha conta">
-      <BrandLockup size="sm" />
-    </NavLink>
   );
 }

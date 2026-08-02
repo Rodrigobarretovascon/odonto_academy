@@ -5,6 +5,26 @@ export interface ToothImage {
   placeholderLabel: string;
 }
 
+export type SculptureAnimPhase =
+  | "instruments"
+  | "measure"
+  | "thirds"
+  | "grid"
+  | "faces"
+  | "proximal-draw"
+  | "rough-cut"
+  | "second-cut"
+  | "round"
+  | "vestibular"
+  | "lingual"
+  | "cingulum"
+  | "cervix"
+  | "cusps"
+  | "occlusal"
+  | "root"
+  | "detail"
+  | "polish";
+
 export interface SculptureStep {
   id: number;
   title: string;
@@ -13,6 +33,8 @@ export interface SculptureStep {
   /** Caminho esperado do vídeo da fase (ex.: /videos/tooth-13/fase-3.mp4) */
   video?: string;
   alert?: string;
+  /** Fase visual da animação 3D in-app. */
+  animPhase?: SculptureAnimPhase;
 }
 
 export interface BlockMeasure {

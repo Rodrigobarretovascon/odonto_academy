@@ -24,16 +24,16 @@ export const tooth13: ToothSculptureData = {
   blockMeasures: [
     { label: "Altura real", value: "10,5 mm" },
     { label: "Altura na escultura (1,5×)", value: "~15,8 mm (marcar ~16 mm)" },
-    { label: "Vestíbulo-palatina real", value: "8,4 mm" },
-    { label: "Vestíbulo-palatina na escultura (1,5×)", value: "~12,6 mm (~13 mm)" },
+    { label: "Vestíbulo-lingual real", value: "8,4 mm" },
+    { label: "Vestíbulo-lingual na escultura (1,5×)", value: "~12,6 mm (~13 mm)" },
     { label: "Mesiodistal real", value: "7,9 mm" },
     { label: "Mesiodistal na escultura (1,5×)", value: "~11,9 mm (~12 mm)" },
   ],
 
   blockPreparation: [
-    "Instrumentos: bloco de cera, Le cron, estilete, escova, meia fina, régua.",
+    "Você precisa apenas de um bloco de cera e um Lecron.",
     "Marcar altura ~15,8 mm (quase 16 mm) em todo o bloco.",
-    "Delimitar faces do dente 13: vestibular, distal, palatina, mesial.",
+    "Delimitar faces do dente 13: vestibular, distal, lingual, mesial.",
     "Centralizar no bloco (~20 mm): ~12,6 mm de largura → ~3,5 mm de cada lado.",
     "Dividir em terços (quadriculado) antes do desenho.",
   ],
@@ -45,7 +45,7 @@ export const tooth13: ToothSculptureData = {
     title: "Identifique as faces",
     instructions: [
       "Vestibular — face externa; muito convexa, especialmente no terço médio.",
-      "Palatina — face interna; cristas marginais e elevação central (ponta do cúspide).",
+      "Lingual — face interna; cristas marginais e elevação central (ponta do cúspide).",
       "Mesial — contato com o dente 12; borda mesial mais longa e demarcada.",
       "Distal — contato com o dente 14; borda distal mais curta e inclinada.",
       "Incisal — ponta do cúspide; característica principal do canino.",
@@ -61,7 +61,7 @@ export const tooth13: ToothSculptureData = {
         "Começar pelo corte na face mesial (desenho e quadriculado).",
         "Desenhar o símbolo (cíngulo) na região cervical.",
         "Bossa vestibular estende um pouco além do terço cervical.",
-        "Contorno termina entre o terço médio e o terço palatino-lingual.",
+        "Contorno termina entre o terço médio e o terço lingual-lingual.",
         "Reproduzir desenho simétrico na face distal.",
       ],
       image: img("13-03-proximal.png", "Perfil e desenho nas proximais", "Imagem — desenho da face proximal"),
@@ -77,7 +77,7 @@ export const tooth13: ToothSculptureData = {
         "Mesial cervical mais baixa; atinge terço médio; distal desce um pouco mais.",
       ],
       image: img("13-04-desgaste.png", "Desgaste grosseiro — forma pentagonal", "Imagem — desgaste grosseiro"),
-      alert: "Deixar área espessa na palatina para cristas marginais e ponta do cúspide.",
+      alert: "Deixar área espessa na lingual para cristas marginais e ponta do cúspide.",
     },
     {
       id: 5,
@@ -86,22 +86,22 @@ export const tooth13: ToothSculptureData = {
         "Delimitar vestibular: bloco ~20 mm, largura ~12 → sobram ~8 mm (4 mm de cada lado).",
         "Desenho na vestibular: forma de pentágono; cúspide incisal mais curta e menos inclinada.",
         "Borda distal mais comprida (afasta-se do palato).",
-        "Desgastar com Le cron: maior desgaste na distal que na mesial (formato de lança).",
+        "Desgastar com Lecron: maior desgaste na distal que na mesial (formato de lança).",
         "Vestibular levemente côncava se observada de perfil; arredondar contornos.",
       ],
       image: img("13-05-vestibular.png", "Modelagem da face vestibular", "Imagem — modelagem vestibular"),
     },
     {
       id: 6,
-      title: "Esculpa a palatina",
+      title: "Esculpa a lingual",
       instructions: [
         "Desenhar crista marginal mesial e crista marginal distal.",
         "Crista intermediária na região central — forma a ponta do cúspide (marca do canino).",
         "Deixar elevação central evidente; não cortar a ponta cedo demais.",
-        "Convexidade na vestibular; concavidade e cristas na palatina.",
-        "Corte incisal palatino só após definir a ponta do cúspide.",
+        "Convexidade na vestibular; concavidade e cristas na lingual.",
+        "Corte incisal lingual só após definir a ponta do cúspide.",
       ],
-      image: img("13-06-palatina.png", "Modelagem da face palatina", "Imagem — modelagem palatina"),
+      image: img("13-06-lingual.png", "Modelagem da face lingual", "Imagem — modelagem lingual"),
     },
     {
       id: 7,
@@ -130,7 +130,7 @@ export const tooth13: ToothSculptureData = {
 
   finalViews: [
     { label: "Vestibular", image: img("13-final-vestibular.png", "Vista vestibular final", "Imagem — vista vestibular") },
-    { label: "Palatina", image: img("13-final-palatina.png", "Vista palatina final", "Imagem — vista palatina") },
+    { label: "Lingual", image: img("13-final-lingual.png", "Vista lingual final", "Imagem — vista lingual") },
     { label: "Mesial", image: img("13-final-mesial.png", "Vista mesial final", "Imagem — vista mesial") },
     { label: "Distal", image: img("13-final-distal.png", "Vista distal final", "Imagem — vista distal") },
     { label: "Incisal", image: img("13-final-incisal.png", "Vista incisal final", "Imagem — vista incisal") },
@@ -166,8 +166,8 @@ export const tooth13: ToothSculptureData = {
 
   alerts: [
     "Não remover cera demais no terço médio vestibular no início — região central é mais alta.",
-    "Reservar volume palatino para crista intermediária (ponta do cúspide).",
+    "Reservar volume lingual para crista intermediária (ponta do cúspide).",
     "Desgaste maior na distal que na mesial (formato de lança).",
-    "Instrumentos: Le cron (afiado e de fábrica), estilete, escova, meia fina, régua.",
+    "Você precisa apenas de um bloco de cera e um Lecron.",
   ],
 };

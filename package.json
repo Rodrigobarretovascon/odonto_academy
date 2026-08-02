@@ -14,6 +14,8 @@
     "db:seed:catalog": "npm run seed:catalog --prefix server",
     "setup": "npm run db:up && sleep 2 && npm run db:init && npm run db:seed",
     "build": "tsc -b && vite build",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "preview": "vite preview",
     "extract-images": "node scripts/extract-images.mjs",
     "generate-stl": ".venv/bin/python scripts/generate-tooth-stl.py",
@@ -21,7 +23,10 @@
     "render-test": ".venv/bin/python scripts/render-tooth-views.py --tooth 13",
     "import-conteudos": ".venv/bin/python scripts/import-conteudos-pdf.py",
     "download-dundee": ".venv/bin/python scripts/download-dundee-models.py",
-    "generate-images": "npm run generate-stl && npm run render-views"
+    "generate-images": "npm run generate-stl && npm run render-views",
+    "phase-images:manifest": "node scripts/build-phase-image-manifest.mjs",
+    "phase-images:svg": "node scripts/generate-phase-svgs.mjs && npm run phase-images:manifest",
+    "phase-images:hires": "node scripts/upscale-phase-images.mjs"
   },
   "dependencies": {
     "react": "^19.1.0",
@@ -36,6 +41,7 @@
     "@vitejs/plugin-react": "^4.4.1",
     "sharp": "^0.35.3",
     "typescript": "^5.8.3",
-    "vite": "^6.3.5"
+    "vite": "^6.3.5",
+    "vitest": "^4.1.10"
   }
 }

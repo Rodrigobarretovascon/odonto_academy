@@ -12,8 +12,8 @@ interface AuthState {
   hasAccess: boolean;
   subscription: Subscription | null;
   loading: boolean;
-  login: (email: string, password: string) => Promise<void>;
-  register: (name: string, email: string, password: string) => Promise<void>;
+  login: (email: string, password: string) => Promise<{ user: User; hasAccess: boolean }>;
+  register: (name: string, email: string, password: string) => Promise<{ user: User; hasAccess: boolean }>;
   logout: () => void;
   refresh: () => Promise<void>;
 }
@@ -75,6 +75,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setHasAccess(me.hasAccess);
     setSubscription(me.subscription);
     setLoading(false);
+    return { user: me.user, hasAccess: me.hasAccess || me.user.role === "admin" };
   };
 
   const register = async (name: string, email: string, password: string) => {
@@ -88,6 +89,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setHasAccess(false);
     setSubscription(null);
     setLoading(false);
+    return { user: data.user, hasAccess: false };
   };
 
   const logout = () => {

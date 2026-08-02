@@ -1,16 +1,17 @@
 import type { BlockMeasure, ToothImage } from "../types/tooth";
-import { ImagePlaceholder } from "./ImagePlaceholder";
+import { SexMeasureDiagram } from "./SexMeasureDiagram";
 
 interface MeasurementDiagramProps {
   measures: BlockMeasure[];
   preparation: string[];
   blockImage?: ToothImage;
+  toothNumber: number;
 }
 
 export function MeasurementDiagram({
   measures,
   preparation,
-  blockImage,
+  toothNumber,
 }: MeasurementDiagramProps) {
   return (
     <section className="measurement-diagram" aria-labelledby="measures-heading">
@@ -43,16 +44,9 @@ export function MeasurementDiagram({
           </ul>
         </div>
 
-        <ImagePlaceholder
-          image={
-            blockImage ?? {
-              alt: "Diagrama do bloco de cera",
-              placeholderLabel: "Imagem — diagrama do bloco com medidas",
-            }
-          }
-          variant="diagram"
-          className="measurement-diagram__diagram"
-        />
+        <div className="measurement-diagram__diagram">
+          <SexMeasureDiagram measures={measures} toothNumber={toothNumber} />
+        </div>
       </div>
     </section>
   );

@@ -1,0 +1,22 @@
+Roteiro textual: já preenchido em ../roteiro.md
+Aqui faltam só as imagens.
+
+Coloque as imagens (JPG ou PNG) por fase:
+
+01-antes.jpg   01-durante.jpg   01-depois.jpg
+02-antes.jpg   02-durante.jpg   02-depois.jpg
+03-antes.jpg   03-durante.jpg   03-depois.jpg
+04-antes.jpg   04-durante.jpg   04-depois.jpg
+05-antes.jpg   05-durante.jpg   05-depois.jpg
+06-antes.jpg   06-durante.jpg   06-depois.jpg
+07-antes.jpg   07-durante.jpg   07-depois.jpg
+08-antes.jpg   08-durante.jpg   08-depois.jpg
+09-antes.jpg   09-durante.jpg   09-depois.jpg
+10-antes.jpg   10-durante.jpg   10-depois.jpg
+
+Extras úteis:
+03-mesial.jpg  03-distal.jpg
+07-lingual.jpg
+10-final-vestibular.jpg  10-final-lingual.jpg
+
+“Durante” = instrumento + direção do corte bem visíveis.

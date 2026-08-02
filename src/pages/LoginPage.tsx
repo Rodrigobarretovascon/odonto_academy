@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { PageCard, PageShell } from "../components/PageShell";
+import { SITE } from "../lib/site";
 
 export function LoginPage() {
   const { login } = useAuth();
@@ -17,8 +19,12 @@ export function LoginPage() {
     setLoading(true);
     setError("");
     try {
-      await login(email, password);
-      navigate(from, { replace: true });
+      const result = await login(email, password);
+      if (result.hasAccess || result.user.role === "admin") {
+        navigate(from, { replace: true });
+      } else {
+        navigate("/assinar", { replace: true, state: { needSubscription: true, from } });
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Erro ao entrar");
     } finally {
@@ -27,10 +33,13 @@ export function LoginPage() {
   };
 
   return (
-    <div className="auth-page">
-      <div className="auth-card">
-        <h1>Entrar</h1>
-        <p>Acesse sua conta do GB Dental</p>
+    <PageShell
+      narrow
+      eyebrow="GB Dental · Acesso"
+      title="Entrar"
+      lead="Acesse sua conta do GB Dental para continuar."
+    >
+      <PageCard>
         <form onSubmit={handleSubmit} className="auth-form">
           <label>
             E-mail
@@ -38,7 +47,13 @@ export function LoginPage() {
           </label>
           <label>
             Senha
-            <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required autoComplete="current-password" />
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              autoComplete="current-password"
+            />
           </label>
           {error && <p className="form-error">{error}</p>}
           <button type="submit" className="btn-primary btn-primary--block" disabled={loading}>
@@ -49,9 +64,15 @@ export function LoginPage() {
           <Link to="/recuperar-senha">Esqueci minha senha</Link>
         </p>
         <p className="auth-card__footer">
-          Não tem conta? <Link to="/cadastro">Cadastre-se</Link>
+          Não tem conta? <Link to="/cadastro" state={{ from }}>Cadastre-se</Link>
         </p>
-      </div>
-    </div>
+      </PageCard>
+      <p className="page-shell__support">
+        Dúvidas? WhatsApp{" "}
+        <a href={SITE.whatsappUrl} target="_blank" rel="noopener noreferrer">
+          {SITE.whatsappDisplay}
+        </a>
+      </p>
+    </PageShell>
   );
 }

@@ -1,6 +1,6 @@
 /**
- * Seed: ~10 produtos odontológicos + 5 banners (R$ 0,05 / aparição).
- * Baixa imagens da internet para public/uploads/{products,banners}.
+ * Seed: ~10 produtos odontológicos + banner de materiais (R$ 0,05 / aparição).
+ * Mantém Terus ativo; demais banners ficam desativados para incluir depois.
  *
  * Uso: npm run seed:catalog --prefix server
  */
@@ -236,44 +236,28 @@ const PRODUCTS: ProductSeed[] = [
 
 const BANNERS: BannerSeed[] = [
   {
-    title: "Equipamentos em destaque",
-    description: "Micromotores, canetas e kits para o consultório",
+    title: "Materiais selecionados",
+    description: "para estudantes e profissionais da Odontologia.",
     link_url: "/loja",
     sort_order: 1,
-    imageUrl: "https://images.unsplash.com/photo-1629909615184-74f495363b67?w=1400&q=80",
-    imageFile: "banner-equipamentos.jpg",
+    imageUrl: "",
+    imageFile: "banner-materiais-selecionados.jpg",
   },
   {
-    title: "Brocas e pontas",
-    description: "Linha completa diamantada e carbide",
-    link_url: "/loja",
+    title: "A inteligência artificial",
+    description: "ao lado da sua jornada na Odontologia.",
+    link_url: "/ia",
     sort_order: 2,
-    imageUrl: "https://images.unsplash.com/photo-1606811971618-4486d14f3f99?w=1400&q=80",
-    imageFile: "banner-brocas.jpg",
+    imageUrl: "",
+    imageFile: "banner-ia-odontologia.jpg",
   },
   {
-    title: "Clínica pronta",
-    description: "Instrumentais e esterilização com frete especial",
-    link_url: "/loja",
+    title: "Explore a anatomia dental",
+    description: "de forma visual, completa e fácil de compreender.",
+    link_url: "/app/anatomia",
     sort_order: 3,
-    imageUrl: "https://images.unsplash.com/photo-1588776814546-daab30f310ce?w=1400&q=80",
-    imageFile: "banner-clinica.jpg",
-  },
-  {
-    title: "Academia + materiais",
-    description: "Estude anatomia e pratique com os melhores kits",
-    link_url: "/loja",
-    sort_order: 4,
-    imageUrl: "https://images.unsplash.com/photo-1551076805-e1869033e561?w=1400&q=80",
-    imageFile: "banner-academia.jpg",
-  },
-  {
-    title: "Promo consultório",
-    description: "5 centavos por aparição · campanha parceiros",
-    link_url: "/loja",
-    sort_order: 5,
-    imageUrl: "https://images.unsplash.com/photo-1576091160550-2173dba999ef?w=1400&q=80",
-    imageFile: "banner-promo.jpg",
+    imageUrl: "",
+    imageFile: "banner-anatomia-dental.jpg",
   },
 ];
 
@@ -392,10 +376,14 @@ async function seedBanners(customerId: number) {
   console.log("\nBanners (R$ 0,05 / aparição):");
   for (const b of BANNERS) {
     const localPath = join(BANNERS_DIR, b.imageFile);
-    try {
-      await downloadImage(b.imageUrl, localPath);
-    } catch (err) {
-      console.warn(`  ! imagem ${b.title}:`, err instanceof Error ? err.message : err);
+    if (b.imageUrl) {
+      try {
+        await downloadImage(b.imageUrl, localPath);
+      } catch (err) {
+        console.warn(`  ! imagem ${b.title}:`, err instanceof Error ? err.message : err);
+      }
+    } else if (!existsSync(localPath)) {
+      console.warn(`  ! arquivo local ausente: ${localPath}`);
     }
     const image_url = `/uploads/banners/${b.imageFile}`;
     const existing = await query<{ id: number }>(
@@ -410,7 +398,7 @@ async function seedBanners(customerId: number) {
            valid_until = CURRENT_DATE + INTERVAL '90 days',
            active = true, sort_order = $6, updated_at = NOW()
          WHERE id = $1`,
-        [existing.rows[0].id, b.description, image_url, b.link_url, customerId, b.sort_order],
+        [existing.rows[0].id, b.description || null, image_url, b.link_url, customerId, b.sort_order],
       );
       console.log(`  ~ atualizado ${b.title}`);
     } else {
@@ -419,11 +407,22 @@ async function seedBanners(customerId: number) {
            title, description, image_url, link_url, customer_id,
            cost_per_impression_cents, valid_from, valid_until, active, sort_order
          ) VALUES ($1,$2,$3,$4,$5,5,CURRENT_DATE,CURRENT_DATE + INTERVAL '90 days',true,$6)`,
-        [b.title, b.description, image_url, b.link_url, customerId, b.sort_order],
+        [b.title, b.description || null, image_url, b.link_url, customerId, b.sort_order],
       );
       console.log(`  + criado ${b.title}`);
     }
   }
+
+  /* Mantém banners do seed + Terus ativos; os demais ficam para incluir depois. */
+  const keepTitles = BANNERS.map((b) => b.title);
+  await query(
+    `UPDATE ad_banners SET active = false, updated_at = NOW()
+     WHERE active = true
+       AND title NOT ILIKE '%Terus%'
+       AND NOT (title = ANY($1::text[]))`,
+    [keepTitles],
+  );
+  console.log("  · demais banners desativados (exceto Terus e seed)");
 }
 
 async function main() {

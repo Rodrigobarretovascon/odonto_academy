@@ -319,6 +319,23 @@ export async function migrateSchema() {
     )
   `);
 
+  // Custos / despesas do negócio (compras, marketing, etc.)
+  await query(`
+    CREATE TABLE IF NOT EXISTS business_expenses (
+      id SERIAL PRIMARY KEY,
+      description VARCHAR(255) NOT NULL,
+      category VARCHAR(80) NOT NULL DEFAULT 'geral',
+      amount_cents INTEGER NOT NULL,
+      spent_on DATE NOT NULL DEFAULT CURRENT_DATE,
+      notes TEXT,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      CONSTRAINT business_expenses_amount_check CHECK (amount_cents > 0)
+    )
+  `);
+  await query(
+    `CREATE INDEX IF NOT EXISTS idx_business_expenses_spent_on ON business_expenses (spent_on DESC)`,
+  );
+
   // Orders — sales order + payment gateway prep
   const orderCols: Array<[string, string]> = [
     ["order_number", "VARCHAR(32)"],

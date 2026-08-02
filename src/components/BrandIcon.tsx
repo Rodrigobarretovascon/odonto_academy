@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 
 /** Ícones de linha fina no padrão da identidade Gabriela Barreto. */
-type IconName = "tooth" | "anatomy" | "study" | "chat" | "bag" | "box" | "spark";
+type IconName = "tooth" | "anatomy" | "study" | "chat" | "bag" | "box" | "spark" | "play" | "pencil" | "users";
 
 const paths: Record<IconName, ReactNode> = {
   tooth: (
@@ -65,6 +65,26 @@ const paths: Record<IconName, ReactNode> = {
     <>
       <circle cx="12" cy="12" r="3.2" fill="none" stroke="currentColor" strokeWidth="1.5" />
       <path d="M12 4.5v2.2M12 17.3v2.2M4.5 12h2.2M17.3 12h2.2M6.8 6.8l1.5 1.5M15.7 15.7l1.5 1.5M17.2 6.8l-1.5 1.5M8.3 15.7l-1.5 1.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+    </>
+  ),
+  play: (
+    <>
+      <circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" strokeWidth="1.5" />
+      <path d="M10 8.8v6.4l5.2-3.2L10 8.8Z" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
+    </>
+  ),
+  pencil: (
+    <>
+      <path d="M14.2 5.2 18.8 9.8 9 19.6H4.4V15L14.2 5.2Z" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
+      <path d="M12.6 6.8 17.2 11.4" fill="none" stroke="currentColor" strokeWidth="1.5" />
+    </>
+  ),
+  users: (
+    <>
+      <circle cx="9" cy="9" r="2.4" fill="none" stroke="currentColor" strokeWidth="1.5" />
+      <circle cx="16" cy="10" r="2" fill="none" stroke="currentColor" strokeWidth="1.5" />
+      <path d="M4.5 18.2c.4-2.4 2.2-3.7 4.5-3.7s4.1 1.3 4.5 3.7" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+      <path d="M14.2 14.8c1.7.2 3.1 1.2 3.5 3" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
     </>
   ),
 };

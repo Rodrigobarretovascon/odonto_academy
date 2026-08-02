@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useSearchParams, useNavigate } from "react-router-dom";
 import { api } from "../lib/api";
+import { PageCard, PageShell } from "../components/PageShell";
 
 export function ResetPasswordPage() {
   const [params] = useSearchParams();
@@ -20,7 +21,7 @@ export function ResetPasswordPage() {
         method: "POST",
         body: JSON.stringify({ token, password }),
       });
-      navigate("/login", { replace: true, state: { resetOk: true } });
+      navigate("/acesso", { replace: true, state: { resetOk: true } });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Não foi possível redefinir");
     } finally {
@@ -29,10 +30,13 @@ export function ResetPasswordPage() {
   };
 
   return (
-    <div className="auth-page">
-      <div className="auth-card">
-        <h1>Nova senha</h1>
-        <p>Defina uma nova senha para acessar o GB Dental.</p>
+    <PageShell
+      narrow
+      eyebrow="GB Dental · Acesso"
+      title="Nova senha"
+      lead="Defina uma nova senha para acessar o GB Dental."
+    >
+      <PageCard>
         <form onSubmit={submit} className="auth-form">
           <label>
             Token
@@ -55,9 +59,9 @@ export function ResetPasswordPage() {
           </button>
         </form>
         <p className="auth-card__footer">
-          <Link to="/login">Voltar ao login</Link>
+          <Link to="/acesso">Voltar ao acesso</Link>
         </p>
-      </div>
-    </div>
+      </PageCard>
+    </PageShell>
   );
 }

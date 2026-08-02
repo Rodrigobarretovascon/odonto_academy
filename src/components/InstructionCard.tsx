@@ -2,7 +2,8 @@ import { useState } from "react";
 import type { SculptureStep } from "../types/tooth";
 import { phaseVideoPath } from "../data/tooth-registry";
 import { ImagePlaceholder } from "./ImagePlaceholder";
-import { PageEmptyError } from "./ToothMascot";
+import { SculptureStepVisual } from "./SculptureStepVisual";
+import { WaxStepAnimation } from "./WaxStepAnimation";
 
 interface InstructionCardProps {
   step: SculptureStep;
@@ -11,83 +12,111 @@ interface InstructionCardProps {
 }
 
 export function InstructionCard({ step, compact = false, toothNumber }: InstructionCardProps) {
-  const [videoOpen, setVideoOpen] = useState(false);
-  const [videoFailed, setVideoFailed] = useState(false);
+  const [show3d, setShow3d] = useState(false);
+  const [preferFileVideo, setPreferFileVideo] = useState(false);
+  const [videoReady, setVideoReady] = useState(false);
   const expectedVideo =
     step.video ?? (toothNumber != null ? phaseVideoPath(toothNumber, step.id) : undefined);
+  const phase = step.animPhase ?? "rough-cut";
 
   return (
-    <article className={`instruction-card ${compact ? "instruction-card--compact" : ""}`}>
+    <article
+      id={`passo-${step.id}`}
+      className={`instruction-card instruction-card--guided ${compact ? "instruction-card--compact" : ""}`}
+    >
       <header className="instruction-card__header">
-        <button
-          type="button"
-          className="instruction-card__number instruction-card__number--btn"
-          aria-label={`Abrir vídeo da fase ${step.id}`}
-          onClick={() => {
-            setVideoFailed(false);
-            setVideoOpen(true);
-          }}
-        >
+        <span className="instruction-card__number" aria-hidden="true">
           {step.id}
-        </button>
+        </span>
         <h3 className="instruction-card__title">{step.title}</h3>
       </header>
 
-      <div className="instruction-card__body">
-        <ul className="instruction-card__list">
-          {step.instructions.map((item) => (
-            <li key={item}>{item}</li>
-          ))}
-        </ul>
-
-        {step.image && (
-          <ImagePlaceholder
-            image={step.image}
-            variant="step"
-            className="instruction-card__image"
+      <div className="instruction-card__body instruction-card__body--split">
+        {toothNumber != null && (
+          <SculptureStepVisual
+            phase={phase}
+            toothNumber={toothNumber}
+            stepTitle={step.title}
+            stepId={step.id}
           />
         )}
-      </div>
 
-      {step.alert && (
-        <p className="instruction-card__alert" role="note">
-          {step.alert}
-        </p>
-      )}
+        <div className="instruction-card__copy">
+          <p className="instruction-card__lead">Faça nesta ordem:</p>
+          <ol className="instruction-card__list instruction-card__list--ordered">
+            {step.instructions.map((item) => (
+              <li key={item}>{item}</li>
+            ))}
+          </ol>
 
-      {videoOpen && (
-        <div className="phase-video-modal" role="dialog" aria-modal="true" aria-label={`Vídeo fase ${step.id}`}>
-          <button
-            type="button"
-            className="phase-video-modal__backdrop"
-            aria-label="Fechar"
-            onClick={() => setVideoOpen(false)}
-          />
-          <div className="phase-video-modal__panel">
-            <button type="button" className="phase-video-modal__close" onClick={() => setVideoOpen(false)}>
-              Fechar
-            </button>
-            <h4>
-              Fase {step.id}: {step.title}
-            </h4>
-            {!videoFailed && expectedVideo ? (
-              <video
-                className="phase-video-modal__video"
-                controls
-                preload="metadata"
-                onError={() => setVideoFailed(true)}
-              >
-                <source src={expectedVideo} type="video/mp4" />
-              </video>
-            ) : (
-              <PageEmptyError
-                title="Vídeo ainda não disponível"
-                message={`Arquivo necessário: ${expectedVideo ?? "vídeo da fase"} — não reutilize mídia de outro dente.`}
-              />
-            )}
-          </div>
+          {step.alert && (
+            <p className="instruction-card__alert" role="note">
+              {step.alert}
+            </p>
+          )}
+
+          {step.image && (
+            <ImagePlaceholder
+              image={step.image}
+              variant="step"
+              className="instruction-card__image"
+            />
+          )}
+
+          {toothNumber != null && (
+            <div className="instruction-card__extra">
+              {preferFileVideo && expectedVideo && videoReady ? (
+                <video
+                  className="instruction-card__video-player"
+                  controls
+                  preload="metadata"
+                  playsInline
+                  onError={() => {
+                    setVideoReady(false);
+                    setPreferFileVideo(false);
+                  }}
+                >
+                  <source src={expectedVideo} type="video/mp4" />
+                </video>
+              ) : (
+                <>
+                  <button
+                    type="button"
+                    className="instruction-card__3d-toggle"
+                    aria-expanded={show3d}
+                    onClick={() => setShow3d((v) => !v)}
+                  >
+                    {show3d ? "Ocultar animação 3D" : "Ver também em 3D (bloco → dente)"}
+                  </button>
+                  {show3d && (
+                    <WaxStepAnimation
+                      toothNumber={toothNumber}
+                      stepId={step.id}
+                      stepTitle={step.title}
+                      animPhase={phase}
+                      instructions={step.instructions}
+                    />
+                  )}
+                </>
+              )}
+
+              {expectedVideo && (
+                <video
+                  className="visually-hidden"
+                  preload="metadata"
+                  onLoadedData={() => {
+                    setVideoReady(true);
+                    setPreferFileVideo(true);
+                  }}
+                  onError={() => setVideoReady(false)}
+                >
+                  <source src={expectedVideo} type="video/mp4" />
+                </video>
+              )}
+            </div>
+          )}
         </div>
-      )}
+      </div>
     </article>
   );
 }

@@ -1,12 +1,21 @@
 import { Link } from "react-router-dom";
 import { BrandLockup, HeartRule } from "./BrandMark";
+import { SITE } from "../lib/site";
 
 const EXPERIENCE = [
   "Loja que ensina e inspira",
-  "Conteúdo educativo de qualidade na nossa plataforma online",
-  "Produtos selecionados para apoiar sua saúde bucal",
-  "Experiência de compra acolhedora, segura e cuidadosa em cada detalhe",
+  "Conteúdo educativo de qualidade na plataforma",
+  "Produtos selecionados para a prática odontológica",
+  "Compra acolhedora, segura e cuidadosa",
 ];
+
+const FOOTER_LINKS = [
+  { to: "/", label: "Início" },
+  { to: "/#como-funciona", label: "Como funciona" },
+  { to: "/loja", label: "Loja" },
+  { to: "/assinar", label: "Assinaturas" },
+  { to: "/acesso", label: "Entrar" },
+] as const;
 
 export function SiteFooter() {
   const year = new Date().getFullYear();
@@ -21,36 +30,52 @@ export function SiteFooter() {
           <p className="site-footer__lead">Ensina, orienta e cuida.</p>
         </div>
 
-        <div className="site-footer__experience">
-          <h2 className="site-footer__heading">Experiência</h2>
-          <ul>
-            {EXPERIENCE.map((item) => (
-              <li key={item}>{item}</li>
-            ))}
-          </ul>
-        </div>
+        <div className="site-footer__columns">
+          <section className="site-footer__experience" aria-labelledby="footer-exp">
+            <h2 id="footer-exp" className="site-footer__heading">
+              Experiência
+            </h2>
+            <ul>
+              {EXPERIENCE.map((item) => (
+                <li key={item}>{item}</li>
+              ))}
+            </ul>
+          </section>
 
-        <nav className="site-footer__nav" aria-label="Rodapé">
-          <Link to="/loja">Loja</Link>
-          <Link to="/assinar">Assinar</Link>
-          <Link to="/login">Minha conta</Link>
-          <Link to="/assinar" state={{ needSubscription: true, from: "/perguntas" }}>
-            Perguntas
-          </Link>
-        </nav>
+          <nav className="site-footer__nav" aria-labelledby="footer-nav">
+            <h2 id="footer-nav" className="site-footer__heading">
+              Navegação
+            </h2>
+            <ul>
+              {FOOTER_LINKS.map((link) => (
+                <li key={link.to}>
+                  <Link to={link.to}>{link.label}</Link>
+                </li>
+              ))}
+            </ul>
+          </nav>
+        </div>
       </div>
 
       <HeartRule className="site-footer__rule" />
 
-      <p className="site-footer__manifesto">
-        Ensina. Orienta. Cuida. Conteúdo que educa. Produtos que apoiam. Experiência que acolhe.
-      </p>
+      <div className="site-footer__bottom">
+        <a
+          className="site-footer__whatsapp"
+          href={SITE.whatsappUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <span className="site-footer__whatsapp-label">Dúvidas? Fale conosco</span>
+          <strong>WhatsApp {SITE.whatsappDisplay}</strong>
+        </a>
 
-      <div className="site-footer__meta">
-        <p>© {year} GB Dental</p>
-        <p className="site-footer__credit">
-          Modelos 3D: University of Dundee, School of Dentistry (CC BY)
-        </p>
+        <div className="site-footer__meta">
+          <p>© {year} GB Dental</p>
+          <p className="site-footer__credit">
+            Modelos 3D: University of Dundee, School of Dentistry (CC BY)
+          </p>
+        </div>
       </div>
     </footer>
   );

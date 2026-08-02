@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { api } from "../lib/api";
+import { PageCard, PageShell } from "../components/PageShell";
+import { SITE } from "../lib/site";
 
 export function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
@@ -31,10 +33,13 @@ export function ForgotPasswordPage() {
   };
 
   return (
-    <div className="auth-page">
-      <div className="auth-card">
-        <h1>Recuperar senha</h1>
-        <p>Informe o e-mail da sua conta GB Dental. Enviaremos um link de redefinição.</p>
+    <PageShell
+      narrow
+      eyebrow="GB Dental · Acesso"
+      title="Recuperar senha"
+      lead="Informe o e-mail da sua conta. Enviaremos um link de redefinição."
+    >
+      <PageCard>
         <form onSubmit={submit} className="auth-form">
           <label>
             E-mail
@@ -53,9 +58,15 @@ export function ForgotPasswordPage() {
           </button>
         </form>
         <p className="auth-card__footer">
-          <Link to="/login">Voltar ao login</Link>
+          <Link to="/acesso">Voltar ao acesso</Link>
         </p>
-      </div>
-    </div>
+      </PageCard>
+      <p className="page-shell__support">
+        Dúvidas? WhatsApp{" "}
+        <a href={SITE.whatsappUrl} target="_blank" rel="noopener noreferrer">
+          {SITE.whatsappDisplay}
+        </a>
+      </p>
+    </PageShell>
   );
 }

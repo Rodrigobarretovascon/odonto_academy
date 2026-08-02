@@ -31,7 +31,7 @@ export const DENTAL_QUESTIONS: DentalQuestion[] = [
     id: "q-faces-molar",
     question: "Quais são as faces de um molar?",
     answer:
-      "Um molar permanente apresenta faces vestibular, lingual (ou palatina), mesial, distal e oclusal. Cada face tem relevos próprios (cúspides, sulcos, fossas).",
+      "Um molar permanente apresenta faces vestibular, lingual (ou lingual), mesial, distal e oclusal. Cada face tem relevos próprios (cúspides, sulcos, fossas).",
     category: "anatomia",
     tags: ["molar", "faces"],
   },

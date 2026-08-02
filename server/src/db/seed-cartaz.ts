@@ -147,6 +147,16 @@ async function main() {
     );
     console.log("+ banner", bannerTitle, "customer", terusId);
   }
+
+  await query(
+    `UPDATE ad_banners SET active = false, updated_at = NOW()
+     WHERE active = true
+       AND title NOT ILIKE '%Terus%'
+       AND title NOT ILIKE 'Materiais selecionados%'
+       AND title NOT ILIKE 'A inteligência artificial%'
+       AND title NOT ILIKE 'Explore a anatomia dental%'`,
+  );
+  console.log("· banners ativos: Materiais + IA + Anatomia + Terus");
 }
 
 main()

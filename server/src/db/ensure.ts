@@ -11,15 +11,15 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const PRODUCTS = [
   {
     code: "GB-00001",
-    slug: "academia-mensal",
-    name: "Academia Gabriela Barreto",
+    slug: "gb-dental-mensal",
+    name: "GB Dental",
     subtitle: "Assinatura mensal · conteúdo exclusivo",
     description:
       "Acesso completo por 30 dias à plataforma exclusiva: guia de escultura em cera dos 28 dentes, anatomia dental, visualizador 3D, novidades e assistente IA.",
     price_cents: 4990,
     type: "subscription",
     access_days: 30,
-    image_url: "/images/shop/academia-mensal.svg",
+    image_url: "/images/shop/gb-dental-mensal.svg",
     badge: "Mais popular",
     featured: true,
     sort_order: 1,
@@ -33,7 +33,7 @@ const PRODUCTS = [
     name: "Kit Escultura Profissional",
     subtitle: "Material físico + 90 dias de acesso digital",
     description:
-      "Kit completo para escultura em cera com blocos calibrados, instrumentos essenciais e guia impresso. Inclui 90 dias de acesso à Academia.",
+      "Kit completo para escultura em cera com blocos calibrados, instrumentos essenciais e guia impresso. Inclui 90 dias de acesso ao GB Dental.",
     price_cents: 24990,
     type: "physical",
     access_days: 90,

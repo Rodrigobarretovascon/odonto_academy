@@ -1,10 +1,14 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { PageCard, PageShell } from "../components/PageShell";
+import { SITE } from "../lib/site";
 
 export function RegisterPage() {
   const { register } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const from = (location.state as { from?: string })?.from ?? "/assinar";
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -17,7 +21,7 @@ export function RegisterPage() {
     setError("");
     try {
       await register(name, email, password);
-      navigate("/loja");
+      navigate("/assinar", { replace: true, state: { needSubscription: true, from } });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Erro ao cadastrar");
     } finally {
@@ -26,10 +30,13 @@ export function RegisterPage() {
   };
 
   return (
-    <div className="auth-page">
-      <div className="auth-card">
-        <h1>Criar conta</h1>
-        <p>Cadastre-se para comprar e acessar o conteúdo exclusivo</p>
+    <PageShell
+      narrow
+      eyebrow="GB Dental · Cadastro"
+      title="Criar conta"
+      lead="Informe só o essencial para começar na GB Dental."
+    >
+      <PageCard>
         <form onSubmit={handleSubmit} className="auth-form">
           <label>
             Nome completo
@@ -41,7 +48,14 @@ export function RegisterPage() {
           </label>
           <label>
             Senha (mín. 6 caracteres)
-            <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6} autoComplete="new-password" />
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              minLength={6}
+              autoComplete="new-password"
+            />
           </label>
           {error && <p className="form-error">{error}</p>}
           <button type="submit" className="btn-primary btn-primary--block" disabled={loading}>
@@ -49,9 +63,15 @@ export function RegisterPage() {
           </button>
         </form>
         <p className="auth-card__footer">
-          Já tem conta? <Link to="/login">Entrar</Link>
+          Já tem conta? <Link to="/acesso" state={{ from }}>Entrar</Link>
         </p>
-      </div>
-    </div>
+      </PageCard>
+      <p className="page-shell__support">
+        Dúvidas? WhatsApp{" "}
+        <a href={SITE.whatsappUrl} target="_blank" rel="noopener noreferrer">
+          {SITE.whatsappDisplay}
+        </a>
+      </p>
+    </PageShell>
   );
 }

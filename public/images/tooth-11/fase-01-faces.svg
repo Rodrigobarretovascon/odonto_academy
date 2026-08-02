@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 540" role="img">
+  <rect width="960" height="540" fill="#e8f2f8"/>
+  <text x="480" y="48" text-anchor="middle" font-family="Montserrat,sans-serif" font-size="28" font-weight="700" fill="#1e3a6e">Etapa 1 — Faces do bloco · FDI 11</text>
+  <!-- isometric-ish block as parallelograms -->
+  <!-- Vestibular (front) -->
+  <polygon points="340,150 620,150 620,390 340,390" fill="#cfe8f8" stroke="#1e3a6e" stroke-width="3"/>
+  <text x="480" y="255" text-anchor="middle" font-family="Montserrat,sans-serif" font-size="52" font-weight="800" fill="#1e3a6e">V</text>
+  <text x="480" y="295" text-anchor="middle" font-family="Montserrat,sans-serif" font-size="20" font-weight="700" fill="#2d5596">VESTIBULAR</text>
+  <!-- Distal (right) -->
+  <polygon points="620,150 740,110 740,350 620,390" fill="#fde7c7" stroke="#1e3a6e" stroke-width="3"/>
+  <text x="680" y="245" text-anchor="middle" font-family="Montserrat,sans-serif" font-size="36" font-weight="800" fill="#9a3412">D</text>
+  <text x="680" y="275" text-anchor="middle" font-family="Montserrat,sans-serif" font-size="14" font-weight="700" fill="#9a3412">DISTAL</text>
+  <!-- Mesial callout left -->
+  <rect x="80" y="230" width="150" height="70" rx="12" fill="#d1fae5" stroke="#047857" stroke-width="2"/>
+  <text x="155" y="260" text-anchor="middle" font-family="Montserrat,sans-serif" font-size="28" font-weight="800" fill="#047857">M</text>
+  <text x="155" y="285" text-anchor="middle" font-family="Montserrat,sans-serif" font-size="14" font-weight="700" fill="#047857">MESIAL</text>
+  <path d="M230 265 L335 265" stroke="#047857" stroke-width="3" marker-end="url(#a)"/>
+  <!-- Lingual callout -->
+  <rect x="380" y="420" width="200" height="55" rx="12" fill="#fce7f3" stroke="#be185d" stroke-width="2"/>
+  <text x="480" y="443" text-anchor="middle" font-family="Montserrat,sans-serif" font-size="22" font-weight="800" fill="#be185d">L · LINGUAL</text>
+  <text x="480" y="462" text-anchor="middle" font-family="Montserrat,sans-serif" font-size="12" fill="#9d174d">(face de trás, oposta à V)</text>
+  <!-- Incisal / cervical -->
+  <text x="480" y="130" text-anchor="middle" font-family="Montserrat,sans-serif" font-size="18" font-weight="700" fill="#1e3a6e">↑ INCISAL</text>
+  <text x="280" y="410" text-anchor="middle" font-family="Montserrat,sans-serif" font-size="16" font-weight="700" fill="#1e3a6e">↓ CERVICAL</text>
+  <text x="480" y="515" text-anchor="middle" font-family="Montserrat,sans-serif" font-size="16" fill="#334155">Altura 10,5 mm · MD 8,5 mm · VL 7,0 mm · cera + Lecron</text>
+</svg>

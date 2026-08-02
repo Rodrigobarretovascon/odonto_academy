@@ -5,21 +5,27 @@ import { useAuth } from "../context/AuthContext";
 import { cartLineUnit, useCart } from "../context/CartContext";
 import { InCartBadge } from "../components/InCartBadge";
 
-/** Carrinho da loja (cliente) — sincronizado com o badge do header */
+/** Loja pública: produtos em destaque; carrinho em painel recolhível. */
 export function ShopCartPage() {
   const { user } = useAuth();
   const { items, add, remove, setQuantity, clear, has, quantityOf, totalCents, count } = useCart();
   const navigate = useNavigate();
   const [products, setProducts] = useState<Product[]>([]);
   const [flashId, setFlashId] = useState<number | null>(null);
+  const [cartOpen, setCartOpen] = useState(false);
   const flashTimer = useRef<number | null>(null);
-  const carouselRef = useRef<HTMLDivElement>(null);
+  const prevCount = useRef(count);
 
   useEffect(() => {
     api<Product[]>("/products").then(setProducts).catch(console.error);
   }, []);
 
-  function onCarouselAdd(product: Product) {
+  useEffect(() => {
+    if (count > prevCount.current) setCartOpen(true);
+    prevCount.current = count;
+  }, [count]);
+
+  function onAdd(product: Product) {
     if (product.stock_qty != null && product.stock_qty <= 0) return;
     add(product);
     setFlashId(product.id);
@@ -27,77 +33,115 @@ export function ShopCartPage() {
     flashTimer.current = window.setTimeout(() => setFlashId(null), 900);
   }
 
-  function scrollCarousel(dir: -1 | 1) {
-    carouselRef.current?.scrollBy({ top: dir * 160, left: dir * 180, behavior: "smooth" });
-  }
-
   return (
-    <div className="cart-desk cart-desk--shop">
-      <div className="cart-desk__layout">
-        <div className="cart-desk__main">
-          <header className="cart-desk__head">
-            <div className="cart-desk__head-main">
-              <span className="cart-desk__title">Carrinho</span>
-              <span className="admin-badge is-on">
-                {count} {count === 1 ? "item" : "itens"}
-              </span>
-            </div>
-            <div className="cart-desk__head-actions">
-              <button type="button" className="btn-outline btn-outline--sm" onClick={clear} disabled={!count}>
-                Limpar
-              </button>
-            </div>
-          </header>
+    <div className={`shop-store${cartOpen ? " is-cart-open" : ""}`}>
+      <header className="shop-store__intro">
+        <div>
+          <p className="shop-store__eyebrow">GB Dental · Loja</p>
+          <h1 className="shop-store__title">Materiais selecionados</h1>
+          <p className="shop-store__lead">Toque em um produto para adicionar ao carrinho.</p>
+        </div>
+      </header>
 
-          <section className="cart-desk__customer cart-desk__buyer">
-            {user ? (
-              <p className="cart-desk__buyer-line">
-                Comprador: <strong>{user.name}</strong>
-                <span className="cart-desk__meta-sep" aria-hidden="true" />
-                <span>{user.email}</span>
+      <section id="loja-produtos" className="shop-store__catalog" aria-label="Produtos">
+        <div className="shop-store__grid">
+          {products.map((p) => {
+            const inCart = has(p.id);
+            const out = p.stock_qty != null && p.stock_qty <= 0;
+            return (
+              <button
+                key={p.id}
+                type="button"
+                className={`shop-store__card${inCart ? " is-in-cart" : ""}${flashId === p.id ? " is-flash" : ""}${out ? " is-out" : ""}`}
+                onClick={() => onAdd(p)}
+                disabled={out}
+                title={out ? "Esgotado" : inCart ? "Adicionar +1" : "Adicionar ao carrinho"}
+              >
+                <span className="shop-store__card-img">
+                  {inCart && <InCartBadge quantity={quantityOf(p.id)} />}
+                  <img src={p.image_url} alt="" />
+                </span>
+                <span className="shop-store__card-body">
+                  {p.subtitle && <span className="shop-store__card-sub">{p.subtitle}</span>}
+                  <span className="shop-store__card-name">{p.name}</span>
+                  <span className="shop-store__card-price">
+                    {formatPrice(p.effective_price_cents ?? p.price_cents)}
+                  </span>
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      </section>
+
+      {cartOpen && (
+        <button
+          type="button"
+          className="shop-cart-scrim"
+          aria-label="Fechar carrinho"
+          onClick={() => setCartOpen(false)}
+        />
+      )}
+
+      <aside className={`shop-cart-dock${cartOpen ? " is-open" : ""}${count > 0 ? " has-items" : ""}`} aria-label="Carrinho">
+        <button
+          type="button"
+          className="shop-cart-dock__bar"
+          aria-expanded={cartOpen}
+          onClick={() => setCartOpen((v) => !v)}
+        >
+          <span className="shop-cart-dock__icon" aria-hidden="true">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7">
+              <path d="M6 7h15l-1.4 8.2a2 2 0 0 1-2 1.8H9a2 2 0 0 1-2-1.6L5 4H2" />
+              <circle cx="9" cy="20" r="1.2" />
+              <circle cx="18" cy="20" r="1.2" />
+            </svg>
+            {count > 0 && <span className="shop-cart-dock__badge">{count}</span>}
+          </span>
+          <span className="shop-cart-dock__summary">
+            <strong>{cartOpen ? "Carrinho" : count ? `${count} ${count === 1 ? "item" : "itens"}` : "Carrinho"}</strong>
+            <span>{count ? formatPrice(totalCents) : "Vazio — adicione produtos"}</span>
+          </span>
+          <span className="shop-cart-dock__chevron" aria-hidden="true">
+            {cartOpen ? "▾" : "▴"}
+          </span>
+        </button>
+
+        <div className="shop-cart-dock__panel" hidden={!cartOpen}>
+          <div className="shop-cart-dock__panel-head">
+            {!user ? (
+              <p className="shop-cart-dock__hint">
+                Entre para finalizar.{" "}
+                <Link to="/acesso" state={{ from: "/loja" }} onClick={(e) => e.stopPropagation()}>
+                  Fazer login
+                </Link>
               </p>
             ) : (
-              <p className="cart-desk__buyer-line">
-                Entre na sua conta para finalizar a compra.{" "}
-                <Link to="/login" state={{ from: "/loja" }}>
-                  Entrar
-                </Link>{" "}
-                ou{" "}
-                <Link to="/cadastro" state={{ from: "/loja" }}>
-                  criar conta
-                </Link>
-                .
+              <p className="shop-cart-dock__hint">
+                Comprador: <strong>{user.name}</strong>
               </p>
             )}
-          </section>
+            <button type="button" className="btn-outline btn-outline--sm" onClick={clear} disabled={!count}>
+              Limpar
+            </button>
+          </div>
 
-          <section className="cart-desk__items">
+          <div className="shop-cart-dock__items">
             {items.length === 0 ? (
-              <p className="admin-muted cart-desk__empty">
-                Você ainda não adicionou nada.{" "}
-                <a href="#loja-produtos" className="cart-desk__empty-link">
-                  Quer adicionar?
-                </a>
-              </p>
+              <p className="shop-cart-dock__empty">Nenhum item ainda. Escolha na vitrine acima.</p>
             ) : (
-              <div className="cart-desk__lines">
-                <div className="cart-desk__line cart-desk__line--head" aria-hidden="true">
-                  <span>Produto</span>
-                  <span>Qtd</span>
-                  <span>Preço un.</span>
-                  <span>Total</span>
-                  <span />
-                </div>
+              <ul className="shop-cart-dock__lines">
                 {items.map((line) => {
                   const unit = cartLineUnit(line);
                   return (
-                    <article key={line.product.id} className="cart-desk__line">
-                      <div className="cart-desk__line-product">
-                        <img src={line.product.image_url} alt="" />
+                    <li key={line.product.id} className="shop-cart-dock__line">
+                      <img src={line.product.image_url} alt="" />
+                      <div className="shop-cart-dock__line-info">
                         <strong>{line.product.name}</strong>
+                        <span>{formatPrice(unit)}</span>
                       </div>
-                      <label className="cart-desk__line-qty">
-                        <span className="order-line__label">Qtd</span>
+                      <label className="shop-cart-dock__qty">
+                        <span className="visually-hidden">Quantidade</span>
                         <input
                           type="number"
                           min={1}
@@ -105,88 +149,38 @@ export function ShopCartPage() {
                           onChange={(e) => setQuantity(line.product.id, Number(e.target.value || 1))}
                         />
                       </label>
-                      <div className="cart-desk__line-price">
-                        <span className="order-line__label">Preço un.</span>
-                        <strong>{formatPrice(unit)}</strong>
-                      </div>
-                      <div className="cart-desk__line-total">
-                        <span className="order-line__label">Total</span>
-                        <strong>{formatPrice(unit * line.quantity)}</strong>
-                      </div>
+                      <strong className="shop-cart-dock__line-total">{formatPrice(unit * line.quantity)}</strong>
                       <button
                         type="button"
-                        className="btn-outline btn-outline--sm"
+                        className="shop-cart-dock__remove"
+                        aria-label={`Remover ${line.product.name}`}
                         onClick={() => remove(line.product.id)}
                       >
-                        Remover
+                        ×
                       </button>
-                    </article>
+                    </li>
                   );
                 })}
-              </div>
+              </ul>
             )}
-          </section>
+          </div>
 
-          <footer className="cart-desk__foot">
-            <div className="cart-desk__checkout-bar">
-              <dl className="order-desk__totals order-desk__totals--inline">
-                <div className="is-total">
-                  <dt>Total</dt>
-                  <dd>{formatPrice(totalCents)}</dd>
-                </div>
-              </dl>
-              <button
-                type="button"
-                className="btn-primary cart-desk__submit"
-                disabled={count === 0}
-                onClick={() => navigate(user ? "/checkout" : "/login", { state: { from: "/checkout" } })}
-              >
-                {user ? "Finalizar compra" : "Entrar para comprar"}
-              </button>
+          <footer className="shop-cart-dock__foot">
+            <div className="shop-cart-dock__total">
+              <span>Total</span>
+              <strong>{formatPrice(totalCents)}</strong>
             </div>
+            <button
+              type="button"
+              className="btn-primary cart-desk__submit"
+              disabled={count === 0}
+              onClick={() => navigate(user ? "/checkout" : "/acesso", { state: { from: "/checkout" } })}
+            >
+              {user ? "Finalizar compra" : "Entrar para comprar"}
+            </button>
           </footer>
         </div>
-
-        <aside id="loja-produtos" className="cart-desk__rail" aria-label="Produtos">
-          <div className="cart-desk__rail-head">
-            <p className="cart-desk__rail-title">Produtos</p>
-            <p className="cart-desk__rail-hint">Clique para adicionar (+1)</p>
-            <div className="cart-desk__rail-nav">
-              <button type="button" className="btn-outline btn-outline--sm" onClick={() => scrollCarousel(-1)} aria-label="Anterior">
-                ‹
-              </button>
-              <button type="button" className="btn-outline btn-outline--sm" onClick={() => scrollCarousel(1)} aria-label="Próximo">
-                ›
-              </button>
-            </div>
-          </div>
-          <div className="cart-desk__carousel" ref={carouselRef}>
-            {products.map((p) => {
-              const inCart = has(p.id);
-              const out = p.stock_qty != null && p.stock_qty <= 0;
-              return (
-                <button
-                  key={p.id}
-                  type="button"
-                  className={`cart-desk__tile${inCart ? " is-in-cart" : ""}${flashId === p.id ? " is-flash" : ""}${out ? " is-out" : ""}`}
-                  onClick={() => onCarouselAdd(p)}
-                  disabled={out}
-                  title={out ? "Esgotado" : inCart ? "Adicionar +1" : "Adicionar ao carrinho"}
-                >
-                  <span className="cart-desk__tile-img">
-                    {inCart && <InCartBadge quantity={quantityOf(p.id)} />}
-                    <img src={p.image_url} alt="" />
-                  </span>
-                  <span className="cart-desk__tile-name">{p.name}</span>
-                  <span className="cart-desk__tile-price">
-                    {formatPrice(p.effective_price_cents ?? p.price_cents)}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-        </aside>
-      </div>
+      </aside>
     </div>
   );
 }

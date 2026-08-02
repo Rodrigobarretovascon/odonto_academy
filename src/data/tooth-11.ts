@@ -25,7 +25,7 @@ export const tooth11: ToothSculptureData = {
   blockMeasures: [
     { label: "Altura total do bloco", value: "48 mm" },
     { label: "Largura (mesiodistal)", value: "8,5 mm" },
-    { label: "Espessura (vestíbulo-palatina)", value: "7,0 mm" },
+    { label: "Espessura (vestíbulo-lingual)", value: "7,0 mm" },
     { label: "Área de escultura (incisal)", value: "10 mm" },
     { label: "Base de apoio (não esculpir)", value: "38 mm" },
   ],
@@ -48,7 +48,7 @@ export const tooth11: ToothSculptureData = {
     instructions: [
       "Borda incisal — extremidade superior de corte.",
       "Vestibular — face externa, voltada para os lábios.",
-      "Palatina — face interna, voltada para o palato.",
+      "Lingual — face interna, voltada para a língua.",
       "Mesial — face de contato com o dente 21 (linha média).",
       "Distal — face de contato com o dente 12.",
       "Linha cervical — limite entre área de escultura (10 mm) e base (38 mm).",
@@ -108,17 +108,17 @@ export const tooth11: ToothSculptureData = {
     },
     {
       id: 6,
-      title: "Esculpa a palatina",
+      title: "Esculpa a lingual",
       instructions: [
-        "Crie a fossa palatina côncava.",
+        "Crie a fossa lingual côncava.",
         "Preserve o cíngulo no terço cervical.",
         "Defina crista marginal mesial e crista marginal distal.",
         "Mantenha transições suaves até a borda incisal.",
       ],
       image: img(
-        "06-palatina.png",
-        "Modelagem da face palatina",
-        "Imagem — modelagem palatina",
+        "06-lingual.png",
+        "Modelagem da face lingual",
+        "Imagem — modelagem lingual",
       ),
     },
     {
@@ -128,7 +128,7 @@ export const tooth11: ToothSculptureData = {
         "Verifique nas vistas mesial, distal e incisal.",
         "Arredonde arestas vivas.",
         "O ângulo mesio-incisal deve ser mais reto que o disto-incisal.",
-        "Confira espessura palatina uniforme.",
+        "Confira espessura lingual uniforme.",
       ],
       image: img(
         "07-proporcao-incisal.png",
@@ -159,8 +159,8 @@ export const tooth11: ToothSculptureData = {
       image: img("final-vestibular.png", "Vista vestibular final", "Imagem — vista vestibular"),
     },
     {
-      label: "Palatina",
-      image: img("final-palatina.png", "Vista palatina final", "Imagem — vista palatina"),
+      label: "Lingual",
+      image: img("final-lingual.png", "Vista lingual final", "Imagem — vista lingual"),
     },
     {
       label: "Mesial",
@@ -206,6 +206,6 @@ export const tooth11: ToothSculptureData = {
 
   alerts: [
     "Esculpir somente nos 10 mm superiores — base de 38 mm é apoio.",
-    "Instrumentos: Le cron (afiado e de fábrica), Rollemberg nº 3/3S, espátula 7.",
+    "Você precisa apenas de um bloco de cera e um Lecron.",
   ],
 };

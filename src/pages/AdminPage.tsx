@@ -34,7 +34,16 @@ interface AdminProduct {
 
 interface Dashboard {
   revenueCents: number;
+  costsCents: number;
+  profitCents: number;
+  bannerRevenueCents: number;
+  discountsCents: number;
   ordersCount: number;
+  avgTicketCents: number;
+  monthRevenueCents: number;
+  monthCostsCents: number;
+  monthProfitCents: number;
+  monthOrdersCount: number;
   activeSubscribers: number;
   recentOrders: Array<{
     id: number;
@@ -45,7 +54,15 @@ interface Dashboard {
     products: string;
     channel: string;
   }>;
-  monthlyRevenue: Array<{ month: string; total: string }>;
+  monthly: Array<{ month: string; salesCents: number; costsCents: number; profitCents: number }>;
+  expenses: Array<{
+    id: number;
+    description: string;
+    category: string;
+    amount_cents: number;
+    spent_on: string;
+    notes: string | null;
+  }>;
   lowStock: Array<{ id: number; name: string; stock_qty: number }>;
 }
 
@@ -84,6 +101,13 @@ export function AdminPage() {
   const [products, setProducts] = useState<AdminProduct[]>([]);
   const [form, setForm] = useState(emptyForm);
   const [editingId, setEditingId] = useState<number | null>(null);
+  const [expenseForm, setExpenseForm] = useState({
+    description: "",
+    category: "compra",
+    amount: "",
+    spent_on: new Date().toISOString().slice(0, 10),
+    notes: "",
+  });
 
   function notify(success: string, err = "") {
     setOk(success);
@@ -96,6 +120,48 @@ export function AdminPage() {
 
   async function loadProducts() {
     setProducts(await api<AdminProduct[]>("/admin/products", {}, token));
+  }
+
+  async function saveExpense(e: FormEvent) {
+    e.preventDefault();
+    try {
+      await api(
+        "/admin/expenses",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            description: expenseForm.description,
+            category: expenseForm.category,
+            amount_cents: reaisToCents(expenseForm.amount),
+            spent_on: expenseForm.spent_on || undefined,
+            notes: expenseForm.notes || undefined,
+          }),
+        },
+        token,
+      );
+      setExpenseForm({
+        description: "",
+        category: "compra",
+        amount: "",
+        spent_on: new Date().toISOString().slice(0, 10),
+        notes: "",
+      });
+      await loadDashboard();
+      notify("Custo registrado");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Erro ao salvar custo");
+    }
+  }
+
+  async function removeExpense(id: number) {
+    if (!confirm("Remover este custo?")) return;
+    try {
+      await api(`/admin/expenses/${id}`, { method: "DELETE" }, token);
+      await loadDashboard();
+      notify("Custo removido");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Erro ao remover");
+    }
   }
 
   useEffect(() => {
@@ -183,7 +249,7 @@ export function AdminPage() {
   }
 
   const tabs: { id: Tab; label: string }[] = [
-    { id: "dashboard", label: "Painel" },
+    { id: "dashboard", label: "Início" },
     { id: "products", label: "Produtos" },
     { id: "volume", label: "Preço volume" },
     { id: "inventory", label: "Inventário" },
@@ -207,7 +273,7 @@ export function AdminPage() {
         <div>
           <p className="admin-page__eyebrow">Área restrita · Admin</p>
           <h1>Administração GB Dental</h1>
-          <p>Produtos, volume, inventário, clientes, PDV, cupons e banners</p>
+          <p>Início financeiro, produtos, estoque, vendas, cupons e banners</p>
         </div>
         <div className="admin-page__nav">
           <button type="button" className="btn-outline" onClick={() => navigate(-1)}>
@@ -246,20 +312,191 @@ export function AdminPage() {
 
       {tab === "dashboard" && dashboard && (
         <>
-          <div className="admin-stats">
-            <article className="stat-card stat-card--gold">
-              <span>Receita total</span>
-              <strong>{formatPrice(dashboard.revenueCents)}</strong>
-            </article>
-            <article className="stat-card">
-              <span>Carrinho / vendas</span>
-              <strong>{dashboard.ordersCount}</strong>
-            </article>
-            <article className="stat-card">
-              <span>Assinantes ativos</span>
-              <strong>{dashboard.activeSubscribers}</strong>
-            </article>
+          <section className="admin-section">
+            <h2>Resumo financeiro</h2>
+            <p className="admin-muted">Visão geral do que você ganhou, gastou e o resultado.</p>
+            <div className="admin-stats">
+              <article className="stat-card stat-card--gold">
+                <span>Ganhando (vendas)</span>
+                <strong>{formatPrice(dashboard.revenueCents)}</strong>
+              </article>
+              <article className="stat-card stat-card--warn">
+                <span>Gastei (custos)</span>
+                <strong>{formatPrice(dashboard.costsCents)}</strong>
+              </article>
+              <article className={`stat-card${dashboard.profitCents >= 0 ? " stat-card--ok" : " stat-card--warn"}`}>
+                <span>Lucro</span>
+                <strong>{formatPrice(dashboard.profitCents)}</strong>
+              </article>
+              <article className="stat-card">
+                <span>Vendas pagas</span>
+                <strong>{dashboard.ordersCount}</strong>
+              </article>
+              <article className="stat-card">
+                <span>Ticket médio</span>
+                <strong>{formatPrice(dashboard.avgTicketCents)}</strong>
+              </article>
+              <article className="stat-card">
+                <span>Assinantes ativos</span>
+                <strong>{dashboard.activeSubscribers}</strong>
+              </article>
+            </div>
+          </section>
+
+          <section className="admin-section">
+            <h2>Este mês</h2>
+            <div className="admin-stats">
+              <article className="stat-card">
+                <span>Receita do mês</span>
+                <strong>{formatPrice(dashboard.monthRevenueCents)}</strong>
+              </article>
+              <article className="stat-card">
+                <span>Custos do mês</span>
+                <strong>{formatPrice(dashboard.monthCostsCents)}</strong>
+              </article>
+              <article className="stat-card">
+                <span>Resultado do mês</span>
+                <strong>{formatPrice(dashboard.monthProfitCents)}</strong>
+              </article>
+              <article className="stat-card">
+                <span>Vendas no mês</span>
+                <strong>{dashboard.monthOrdersCount}</strong>
+              </article>
+            </div>
+            {(dashboard.bannerRevenueCents > 0 || dashboard.discountsCents > 0) && (
+              <ul className="admin-monthly admin-monthly--notes">
+                {dashboard.bannerRevenueCents > 0 && (
+                  <li>
+                    <span>Banners (a receber de anunciantes)</span>
+                    <strong>{formatPrice(dashboard.bannerRevenueCents)}</strong>
+                  </li>
+                )}
+                {dashboard.discountsCents > 0 && (
+                  <li>
+                    <span>Descontos concedidos</span>
+                    <strong>{formatPrice(dashboard.discountsCents)}</strong>
+                  </li>
+                )}
+              </ul>
+            )}
+          </section>
+
+          {dashboard.monthly.length > 0 && (
+            <section className="admin-section">
+              <h2>Últimos meses</h2>
+              <div className="comparison-table-wrapper">
+                <table className="comparison-table">
+                  <thead>
+                    <tr>
+                      <th>Mês</th>
+                      <th>Vendas</th>
+                      <th>Custos</th>
+                      <th>Lucro</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {dashboard.monthly.map((m) => (
+                      <tr key={m.month}>
+                        <td>{m.month}</td>
+                        <td>{formatPrice(m.salesCents)}</td>
+                        <td>{formatPrice(m.costsCents)}</td>
+                        <td>{formatPrice(m.profitCents)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </section>
+          )}
+
+          <div className="admin-grid admin-grid--finance">
+            <section className="admin-section">
+              <h2>Registrar custo</h2>
+              <p className="admin-muted">Compras, frete, marketing e outros gastos do negócio.</p>
+              <form className="admin-form" onSubmit={saveExpense}>
+                <FieldLabel label="Descrição" tip="O que foi gasto (ex.: reposição de estoque, anúncio).">
+                  <input
+                    value={expenseForm.description}
+                    onChange={(e) => setExpenseForm({ ...expenseForm, description: e.target.value })}
+                    required
+                  />
+                </FieldLabel>
+                <FieldLabel label="Categoria">
+                  <select
+                    value={expenseForm.category}
+                    onChange={(e) => setExpenseForm({ ...expenseForm, category: e.target.value })}
+                  >
+                    <option value="compra">Compra / estoque</option>
+                    <option value="marketing">Marketing</option>
+                    <option value="operacao">Operação</option>
+                    <option value="frete">Frete</option>
+                    <option value="geral">Geral</option>
+                  </select>
+                </FieldLabel>
+                <FieldLabel label="Valor (R$)" tip="Valor gasto em reais.">
+                  <input
+                    value={expenseForm.amount}
+                    onChange={(e) => setExpenseForm({ ...expenseForm, amount: e.target.value })}
+                    placeholder="0,00"
+                    required
+                  />
+                </FieldLabel>
+                <FieldLabel label="Data">
+                  <input
+                    type="date"
+                    value={expenseForm.spent_on}
+                    onChange={(e) => setExpenseForm({ ...expenseForm, spent_on: e.target.value })}
+                  />
+                </FieldLabel>
+                <FieldLabel label="Observação" tip="Opcional.">
+                  <input
+                    value={expenseForm.notes}
+                    onChange={(e) => setExpenseForm({ ...expenseForm, notes: e.target.value })}
+                  />
+                </FieldLabel>
+                <button type="submit" className="btn-primary">
+                  Salvar custo
+                </button>
+              </form>
+            </section>
+
+            <section className="admin-section">
+              <h2>Custos recentes</h2>
+              {dashboard.expenses.length === 0 ? (
+                <p className="admin-muted">Nenhum custo registrado ainda.</p>
+              ) : (
+                <div className="comparison-table-wrapper">
+                  <table className="comparison-table">
+                    <thead>
+                      <tr>
+                        <th>Data</th>
+                        <th>Descrição</th>
+                        <th>Categoria</th>
+                        <th>Valor</th>
+                        <th />
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {dashboard.expenses.map((ex) => (
+                        <tr key={ex.id}>
+                          <td>{new Date(ex.spent_on).toLocaleDateString("pt-BR")}</td>
+                          <td>{ex.description}</td>
+                          <td>{ex.category}</td>
+                          <td>{formatPrice(ex.amount_cents)}</td>
+                          <td>
+                            <button type="button" className="btn-outline btn-outline--sm" onClick={() => removeExpense(ex.id)}>
+                              Remover
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </section>
           </div>
+
           {dashboard.lowStock.length > 0 && (
             <section className="admin-section">
               <h2>Estoque baixo</h2>
@@ -273,6 +510,7 @@ export function AdminPage() {
               </ul>
             </section>
           )}
+
           <section className="admin-section">
             <h2>Vendas recentes</h2>
             <div className="comparison-table-wrapper">

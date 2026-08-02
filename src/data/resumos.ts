@@ -10,8 +10,8 @@ export const RESUMOS: ResumoItem[] = [
   {
     id: "r-faces",
     title: "Faces do dente",
-    preview: "Vestibular, lingual/palatina, mesial, distal e incisal/oclusal — o mapa básico para estudar e esculpir.",
-    body: "Cada dente permanente apresenta faces orientadas no arco. A vestibular olha para lábios ou bochechas; a lingual/palatina para a cavidade oral interna; mesial e distal relacionam-se à linha média; a face de mastigação é incisal (anteriores) ou oclusal (posteriores). [Revisão odontológica pendente antes de uso clínico definitivo.]",
+    preview: "Vestibular, lingual, mesial, distal e incisal/oclusal — o mapa básico para estudar e esculpir.",
+    body: "Cada dente permanente apresenta faces orientadas no arco. A vestibular olha para lábios ou bochechas; a lingual para a cavidade oral interna; mesial e distal relacionam-se à linha média; a face de mastigação é incisal (anteriores) ou oclusal (posteriores). [Revisão odontológica pendente antes de uso clínico definitivo.]",
     topic: "Anatomia",
   },
   {

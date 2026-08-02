@@ -1,0 +1,23 @@
+Roteiro textual: já preenchido em ../roteiro.md
+Aqui faltam só os arquivos de vídeo.
+
+Coloque os clipes MP4, um por fase, com estes nomes:
+
+01-instrumentais-bloco.mp4
+02-tercos.mp4
+03-desenho-proximal.mp4
+04-primeiro-corte.mp4
+05-segundo-corte.mp4
+06-arredondamento.mp4
+07-fossa-cingulo.mp4
+08-colo.mp4
+09-raiz.mp4
+10-detalhes-finais.mp4
+
+Opcional (segundo ângulo):
+03-desenho-proximal-mesial.mp4
+03-desenho-proximal-distal.mp4
+07-fossa-cingulo-lingual.mp4
+
+Duração sugerida: 10–40 segundos por clipe.
+Não use vídeos de terceiros.

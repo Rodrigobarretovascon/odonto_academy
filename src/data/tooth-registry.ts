@@ -1,4 +1,12 @@
 import type { ToothSculptureData, ToothViewData } from "../types/tooth";
+import { sculptureScriptFor } from "./sculpture-scripts";
+
+export {
+  resolvePhaseGuideImage,
+  resolveStepGuideImage,
+  resolveStepGuideSvg,
+} from "./phase-images";
+export type { ResolvedPhaseImage, PhaseImageFormat } from "./phase-images";
 
 type Jaw = "upper" | "lower";
 type ToothKind = "incisor" | "canine" | "premolar" | "molar";
@@ -7,7 +15,7 @@ interface ToothMeta {
   number: number;
   name: string;
   shortName: string;
-  navGroup: "upper-r" | "upper-l" | "lower-l" | "lower-r";
+  navGroup: string;
   kind: ToothKind;
   jaw: Jaw;
   contralateral: number;
@@ -15,7 +23,7 @@ interface ToothMeta {
   blockMeasures: Array<{ label: string; value: string }>;
 }
 
-const IMAGE_CACHE = "v5";
+const IMAGE_CACHE = "v12-dentistica";
 
 const img = (number: number, file: string, alt: string, placeholderLabel: string) => ({
   src: `/images/tooth-${number}/${file}?v=${IMAGE_CACHE}`,
@@ -23,17 +31,14 @@ const img = (number: number, file: string, alt: string, placeholderLabel: string
   placeholderLabel,
 });
 
-/** Ordem padronizada E→D: Vestibular, Lingual/Palatina, Mesial, Distal, Incisal/Oclusal.
- *  Cada rótulo aponta para o arquivo correspondente (sem troca cruzada de faces). */
 function finalViews(number: number, meta: Pick<ToothMeta, "jaw" | "kind">): ToothViewData[] {
   const backKey = meta.jaw === "upper" ? "palatina" : "lingual";
   const topKey = meta.kind === "incisor" || meta.kind === "canine" ? "incisal" : "oclusal";
   const topLabel = topKey === "incisal" ? "Incisal" : "Oclusal";
-  const innerLabel = meta.jaw === "upper" ? "Palatina" : "Lingual";
 
   const slots: Array<{ label: string; file: string; alt: string }> = [
     { label: "Vestibular", file: `${number}-final-vestibular.png`, alt: "Vista vestibular final" },
-    { label: innerLabel, file: `${number}-final-${backKey}.png`, alt: `Vista ${innerLabel.toLowerCase()} final` },
+    { label: "Lingual", file: `${number}-final-${backKey}.png`, alt: "Vista lingual final" },
     { label: "Mesial", file: `${number}-final-mesial.png`, alt: "Vista mesial final" },
     { label: "Distal", file: `${number}-final-distal.png`, alt: "Vista distal final" },
     { label: topLabel, file: `${number}-final-${topKey}.png`, alt: `Vista ${topLabel.toLowerCase()} final` },
@@ -46,83 +51,43 @@ function finalViews(number: number, meta: Pick<ToothMeta, "jaw" | "kind">): Toot
 }
 
 function buildTooth(meta: ToothMeta): ToothSculptureData {
-  const innerFace = meta.jaw === "upper" ? "palatina" : "lingual";
+  const altura = meta.blockMeasures.find((m) => /altura/i.test(m.label))?.value;
+  const md = meta.blockMeasures.find((m) => /mesio/i.test(m.label))?.value;
+  const vl = meta.blockMeasures.find((m) => /vestíbulo|vestibulo|lingual/i.test(m.label))?.value;
+  const script = sculptureScriptFor(
+    meta.number,
+    meta.kind,
+    meta.jaw,
+    { altura, md, vl },
+    meta.name,
+  );
+  const facesStep =
+    script.find((s) => s.animPhase === "faces") ??
+    script.find((s) => s.animPhase === "measure") ??
+    script[0];
+
   return {
     number: meta.number,
     name: meta.name,
     contralateralNumber: meta.contralateral,
     contralateralName: meta.contralateralName,
     title: `${meta.name} · FDI ${meta.number}`,
-    subtitle: `Arcada ${meta.jaw === "upper" ? "superior" : "inferior"} · contralateral FDI ${meta.contralateral}`,
+    subtitle: `Arcada ${meta.jaw === "upper" ? "superior" : "inferior"} · FDI ${meta.number}`,
     contralateralNote: undefined,
     blockMeasures: meta.blockMeasures,
     blockPreparation: [
-      "Selecione o bloco de cera com as dimensões indicadas.",
-      "Marque a linha cervical com régua — ela separa coroa e raiz na escultura.",
-      "Com o estilete, trace linhas leves dividindo o bloco em terços (incisal, médio, cervical).",
-      "Marque as faces: vestibular, " + innerFace + ", mesial e distal antes de desbastar.",
-      "Não remova cera demais nesta fase; as marcações guiam todo o procedimento.",
+      `Use os valores da tabela oferecida acima: altura ${altura ?? "—"}, mesiodistal ${md ?? "—"} e vestíbulo-lingual ${vl ?? "—"}.`,
+      "Marque esses valores no bloco de cera com o Lecron — eles guiam toda a escultura.",
+      `Oriente as faces V, L, M e D do dente ${meta.number}. Materiais: apenas cera e Lecron.`,
     ],
     faceIdentification: {
-      id: 2,
-      title: "Identifique e marque as faces",
-      instructions: [
-        "Vestibular — face externa voltada para lábios ou bochechas.",
-        `${innerFace.charAt(0).toUpperCase()}${innerFace.slice(1)} — face interna voltada para palato ou língua.`,
-        "Mesial — face que aponta para a linha média do arco.",
-        "Distal — face que se afasta da linha média.",
-        meta.kind === "molar" || meta.kind === "premolar"
-          ? "Oclusal — superfície de mastigação com cúspides, sulcos e fossas."
-          : "Incisal — borda de corte ou cúspide principal.",
-        "Use linhas finas na cera para delimitar cada face antes do desgaste.",
-      ],
+      id: facesStep.id,
+      title: facesStep.title,
+      instructions: facesStep.instructions,
+      alert: facesStep.alert,
+      animPhase: facesStep.animPhase,
     },
-    steps: [
-      {
-        id: 3,
-        title: "Desenhe o perfil nas proximais",
-        instructions: ["Trace o contorno nas faces mesial e distal.", "Projete a curva vestibular e a linha cervical."],
-      },
-      {
-        id: 4,
-        title: "Faça o desgaste grosseiro",
-        instructions: ["Remova o excesso de cera fora do perfil.", "Preserve volume para detalhes finais."],
-      },
-      {
-        id: 5,
-        title: "Forme a vestibular",
-        instructions: ["Modele a convexidade vestibular.", "Arredonde transições cervicais e incisais/oclusais."],
-      },
-      {
-        id: 6,
-        title: `Esculpa a ${innerFace}`,
-        instructions: [`Defina cristas e concavidades na face ${innerFace}.`, "Mantenha espessura uniforme."],
-      },
-      {
-        id: 7,
-        title: "Ajuste proporções",
-        instructions: ["Verifique simetria nas vistas mesial, distal e superior.", "Corrija inclinações e espessuras."],
-      },
-      {
-        id: 8,
-        title: "Finalize os detalhes",
-        instructions: ["Refine anatomia superficial.", "Polimento final com escova e meia fina."],
-      },
-      ...(meta.kind === "molar" || meta.kind === "premolar"
-        ? [
-            {
-              id: 9,
-              title: "Esculpindo a oclusal e os sulcos",
-              instructions: [
-                "Identifique as cúspides e o padrão oclusal do dente.",
-                "Escave os sulcos centrais com Le cron ou instrumento fino — profundidade uniforme.",
-                "Mantenha paredes inclinadas e fossas arredondadas; evite sulcos muito profundos.",
-                "Compare com o visualizador 3D e as vistas finais.",
-              ],
-            },
-          ]
-        : []),
-    ],
+    steps: script.map(({ animPhase, ...s }) => ({ ...s, animPhase })),
     finalViews: finalViews(meta.number, meta),
     contralateralDifferences: [
       {
@@ -133,31 +98,31 @@ function buildTooth(meta: ToothMeta): ToothSculptureData {
       {
         aspect: "Procedimento",
         primaryTooth: "Mesmos passos descritos nesta página.",
-        contralateralTooth: "Repetir trocando mesial ↔ distal.",
+        contralateralTooth: "Abrir o dente contralateral na navegação para ver o roteiro dele.",
       },
     ],
     alerts: [
-      "Instrumentos: Le cron, estilete, escova, meia fina, régua.",
-      "Não remover cera demais nas fases iniciais.",
+      "Materiais: bloco de cera e Lecron.",
+      "Não remover cera demais nas fases iniciais — preserve margem de segurança.",
     ],
   };
 }
 
 const METAS: ToothMeta[] = [
-  { number: 11, name: "Incisivo central superior direito", shortName: "Inc. Central", navGroup: "upper-r", kind: "incisor", jaw: "upper", contralateral: 21, contralateralName: "Incisivo central superior esquerdo", blockMeasures: [{ label: "Altura da coroa", value: "10,5 mm" }, { label: "Mesiodistal", value: "8,5 mm" }, { label: "Vestíbulo-palatina", value: "7,0 mm" }] },
-  { number: 12, name: "Incisivo lateral superior direito", shortName: "Inc. Lateral", navGroup: "upper-r", kind: "incisor", jaw: "upper", contralateral: 22, contralateralName: "Incisivo lateral superior esquerdo", blockMeasures: [{ label: "Altura da coroa", value: "9,0 mm" }, { label: "Mesiodistal", value: "6,5 mm" }, { label: "Vestíbulo-palatina", value: "6,0 mm" }] },
-  { number: 13, name: "Canino superior direito", shortName: "Canino", navGroup: "upper-r", kind: "canine", jaw: "upper", contralateral: 23, contralateralName: "Canino superior esquerdo", blockMeasures: [{ label: "Altura da coroa", value: "10,5 mm" }, { label: "Mesiodistal", value: "7,9 mm" }, { label: "Vestíbulo-palatina", value: "8,4 mm" }] },
-  { number: 14, name: "Primeiro pré-molar superior direito", shortName: "1º Pré-M", navGroup: "upper-r", kind: "premolar", jaw: "upper", contralateral: 24, contralateralName: "Primeiro pré-molar superior esquerdo", blockMeasures: [{ label: "Altura da coroa", value: "8,5 mm" }, { label: "Mesiodistal", value: "7,0 mm" }, { label: "Vestíbulo-palatina", value: "9,0 mm" }] },
-  { number: 15, name: "Segundo pré-molar superior direito", shortName: "2º Pré-M", navGroup: "upper-r", kind: "premolar", jaw: "upper", contralateral: 25, contralateralName: "Segundo pré-molar superior esquerdo", blockMeasures: [{ label: "Altura da coroa", value: "8,0 mm" }, { label: "Mesiodistal", value: "7,0 mm" }, { label: "Vestíbulo-palatina", value: "8,5 mm" }] },
-  { number: 16, name: "Primeiro molar superior direito", shortName: "1º Molar", navGroup: "upper-r", kind: "molar", jaw: "upper", contralateral: 26, contralateralName: "Primeiro molar superior esquerdo", blockMeasures: [{ label: "Altura da coroa", value: "7,5 mm" }, { label: "Mesiodistal", value: "10,5 mm" }, { label: "Vestíbulo-palatina", value: "11,0 mm" }] },
-  { number: 17, name: "Segundo molar superior direito", shortName: "2º Molar", navGroup: "upper-r", kind: "molar", jaw: "upper", contralateral: 27, contralateralName: "Segundo molar superior esquerdo", blockMeasures: [{ label: "Altura da coroa", value: "7,0 mm" }, { label: "Mesiodistal", value: "10,0 mm" }, { label: "Vestíbulo-palatina", value: "10,0 mm" }] },
-  { number: 21, name: "Incisivo central superior esquerdo", shortName: "Inc. Central", navGroup: "upper-l", kind: "incisor", jaw: "upper", contralateral: 11, contralateralName: "Incisivo central superior direito", blockMeasures: [{ label: "Altura da coroa", value: "10,5 mm" }, { label: "Mesiodistal", value: "8,5 mm" }, { label: "Vestíbulo-palatina", value: "7,0 mm" }] },
-  { number: 22, name: "Incisivo lateral superior esquerdo", shortName: "Inc. Lateral", navGroup: "upper-l", kind: "incisor", jaw: "upper", contralateral: 12, contralateralName: "Incisivo lateral superior direito", blockMeasures: [{ label: "Altura da coroa", value: "9,0 mm" }, { label: "Mesiodistal", value: "6,5 mm" }, { label: "Vestíbulo-palatina", value: "6,0 mm" }] },
-  { number: 23, name: "Canino superior esquerdo", shortName: "Canino", navGroup: "upper-l", kind: "canine", jaw: "upper", contralateral: 13, contralateralName: "Canino superior direito", blockMeasures: [{ label: "Altura da coroa", value: "10,5 mm" }, { label: "Mesiodistal", value: "7,9 mm" }, { label: "Vestíbulo-palatina", value: "8,4 mm" }] },
-  { number: 24, name: "Primeiro pré-molar superior esquerdo", shortName: "1º Pré-M", navGroup: "upper-l", kind: "premolar", jaw: "upper", contralateral: 14, contralateralName: "Primeiro pré-molar superior direito", blockMeasures: [{ label: "Altura da coroa", value: "8,5 mm" }, { label: "Mesiodistal", value: "7,0 mm" }, { label: "Vestíbulo-palatina", value: "9,0 mm" }] },
-  { number: 25, name: "Segundo pré-molar superior esquerdo", shortName: "2º Pré-M", navGroup: "upper-l", kind: "premolar", jaw: "upper", contralateral: 15, contralateralName: "Segundo pré-molar superior direito", blockMeasures: [{ label: "Altura da coroa", value: "8,0 mm" }, { label: "Mesiodistal", value: "7,0 mm" }, { label: "Vestíbulo-palatina", value: "8,5 mm" }] },
-  { number: 26, name: "Primeiro molar superior esquerdo", shortName: "1º Molar", navGroup: "upper-l", kind: "molar", jaw: "upper", contralateral: 16, contralateralName: "Primeiro molar superior direito", blockMeasures: [{ label: "Altura da coroa", value: "7,5 mm" }, { label: "Mesiodistal", value: "10,5 mm" }, { label: "Vestíbulo-palatina", value: "11,0 mm" }] },
-  { number: 27, name: "Segundo molar superior esquerdo", shortName: "2º Molar", navGroup: "upper-l", kind: "molar", jaw: "upper", contralateral: 17, contralateralName: "Segundo molar superior direito", blockMeasures: [{ label: "Altura da coroa", value: "7,0 mm" }, { label: "Mesiodistal", value: "10,0 mm" }, { label: "Vestíbulo-palatina", value: "10,0 mm" }] },
+  { number: 11, name: "Incisivo central superior direito", shortName: "Inc. Central", navGroup: "upper-r", kind: "incisor", jaw: "upper", contralateral: 21, contralateralName: "Incisivo central superior esquerdo", blockMeasures: [{ label: "Altura da coroa", value: "10,5 mm" }, { label: "Mesiodistal", value: "8,5 mm" }, { label: "Vestíbulo-lingual", value: "7,0 mm" }] },
+  { number: 12, name: "Incisivo lateral superior direito", shortName: "Inc. Lateral", navGroup: "upper-r", kind: "incisor", jaw: "upper", contralateral: 22, contralateralName: "Incisivo lateral superior esquerdo", blockMeasures: [{ label: "Altura da coroa", value: "9,0 mm" }, { label: "Mesiodistal", value: "6,5 mm" }, { label: "Vestíbulo-lingual", value: "6,0 mm" }] },
+  { number: 13, name: "Canino superior direito", shortName: "Canino", navGroup: "upper-r", kind: "canine", jaw: "upper", contralateral: 23, contralateralName: "Canino superior esquerdo", blockMeasures: [{ label: "Altura da coroa", value: "10,5 mm" }, { label: "Mesiodistal", value: "7,9 mm" }, { label: "Vestíbulo-lingual", value: "8,4 mm" }] },
+  { number: 14, name: "Primeiro pré-molar superior direito", shortName: "1º Pré-M", navGroup: "upper-r", kind: "premolar", jaw: "upper", contralateral: 24, contralateralName: "Primeiro pré-molar superior esquerdo", blockMeasures: [{ label: "Altura da coroa", value: "8,5 mm" }, { label: "Mesiodistal", value: "7,0 mm" }, { label: "Vestíbulo-lingual", value: "9,0 mm" }] },
+  { number: 15, name: "Segundo pré-molar superior direito", shortName: "2º Pré-M", navGroup: "upper-r", kind: "premolar", jaw: "upper", contralateral: 25, contralateralName: "Segundo pré-molar superior esquerdo", blockMeasures: [{ label: "Altura da coroa", value: "8,0 mm" }, { label: "Mesiodistal", value: "7,0 mm" }, { label: "Vestíbulo-lingual", value: "8,5 mm" }] },
+  { number: 16, name: "Primeiro molar superior direito", shortName: "1º Molar", navGroup: "upper-r", kind: "molar", jaw: "upper", contralateral: 26, contralateralName: "Primeiro molar superior esquerdo", blockMeasures: [{ label: "Altura da coroa", value: "7,5 mm" }, { label: "Mesiodistal", value: "10,5 mm" }, { label: "Vestíbulo-lingual", value: "11,0 mm" }] },
+  { number: 17, name: "Segundo molar superior direito", shortName: "2º Molar", navGroup: "upper-r", kind: "molar", jaw: "upper", contralateral: 27, contralateralName: "Segundo molar superior esquerdo", blockMeasures: [{ label: "Altura da coroa", value: "7,0 mm" }, { label: "Mesiodistal", value: "10,0 mm" }, { label: "Vestíbulo-lingual", value: "10,0 mm" }] },
+  { number: 21, name: "Incisivo central superior esquerdo", shortName: "Inc. Central", navGroup: "upper-l", kind: "incisor", jaw: "upper", contralateral: 11, contralateralName: "Incisivo central superior direito", blockMeasures: [{ label: "Altura da coroa", value: "10,5 mm" }, { label: "Mesiodistal", value: "8,5 mm" }, { label: "Vestíbulo-lingual", value: "7,0 mm" }] },
+  { number: 22, name: "Incisivo lateral superior esquerdo", shortName: "Inc. Lateral", navGroup: "upper-l", kind: "incisor", jaw: "upper", contralateral: 12, contralateralName: "Incisivo lateral superior direito", blockMeasures: [{ label: "Altura da coroa", value: "9,0 mm" }, { label: "Mesiodistal", value: "6,5 mm" }, { label: "Vestíbulo-lingual", value: "6,0 mm" }] },
+  { number: 23, name: "Canino superior esquerdo", shortName: "Canino", navGroup: "upper-l", kind: "canine", jaw: "upper", contralateral: 13, contralateralName: "Canino superior direito", blockMeasures: [{ label: "Altura da coroa", value: "10,5 mm" }, { label: "Mesiodistal", value: "7,9 mm" }, { label: "Vestíbulo-lingual", value: "8,4 mm" }] },
+  { number: 24, name: "Primeiro pré-molar superior esquerdo", shortName: "1º Pré-M", navGroup: "upper-l", kind: "premolar", jaw: "upper", contralateral: 14, contralateralName: "Primeiro pré-molar superior direito", blockMeasures: [{ label: "Altura da coroa", value: "8,5 mm" }, { label: "Mesiodistal", value: "7,0 mm" }, { label: "Vestíbulo-lingual", value: "9,0 mm" }] },
+  { number: 25, name: "Segundo pré-molar superior esquerdo", shortName: "2º Pré-M", navGroup: "upper-l", kind: "premolar", jaw: "upper", contralateral: 15, contralateralName: "Segundo pré-molar superior direito", blockMeasures: [{ label: "Altura da coroa", value: "8,0 mm" }, { label: "Mesiodistal", value: "7,0 mm" }, { label: "Vestíbulo-lingual", value: "8,5 mm" }] },
+  { number: 26, name: "Primeiro molar superior esquerdo", shortName: "1º Molar", navGroup: "upper-l", kind: "molar", jaw: "upper", contralateral: 16, contralateralName: "Primeiro molar superior direito", blockMeasures: [{ label: "Altura da coroa", value: "7,5 mm" }, { label: "Mesiodistal", value: "10,5 mm" }, { label: "Vestíbulo-lingual", value: "11,0 mm" }] },
+  { number: 27, name: "Segundo molar superior esquerdo", shortName: "2º Molar", navGroup: "upper-l", kind: "molar", jaw: "upper", contralateral: 17, contralateralName: "Segundo molar superior direito", blockMeasures: [{ label: "Altura da coroa", value: "7,0 mm" }, { label: "Mesiodistal", value: "10,0 mm" }, { label: "Vestíbulo-lingual", value: "10,0 mm" }] },
   { number: 31, name: "Incisivo central inferior esquerdo", shortName: "Inc. Central", navGroup: "lower-l", kind: "incisor", jaw: "lower", contralateral: 41, contralateralName: "Incisivo central inferior direito", blockMeasures: [{ label: "Altura da coroa", value: "9,0 mm" }, { label: "Mesiodistal", value: "5,4 mm" }, { label: "Vestíbulo-lingual", value: "6,0 mm" }] },
   { number: 32, name: "Incisivo lateral inferior esquerdo", shortName: "Inc. Lateral", navGroup: "lower-l", kind: "incisor", jaw: "lower", contralateral: 42, contralateralName: "Incisivo lateral inferior direito", blockMeasures: [{ label: "Altura da coroa", value: "9,5 mm" }, { label: "Mesiodistal", value: "6,0 mm" }, { label: "Vestíbulo-lingual", value: "6,0 mm" }] },
   { number: 33, name: "Canino inferior esquerdo", shortName: "Canino", navGroup: "lower-l", kind: "canine", jaw: "lower", contralateral: 43, contralateralName: "Canino inferior direito", blockMeasures: [{ label: "Altura da coroa", value: "11,0 mm" }, { label: "Mesiodistal", value: "7,0 mm" }, { label: "Vestíbulo-lingual", value: "8,0 mm" }] },
@@ -194,7 +159,7 @@ export const toothNavItems = METAS.map((m) => ({
   number: m.number,
 }));
 
-/** Vídeo esperado por fase (placeholder até o arquivo existir). */
+/** Vídeo esperado por fase (quando houver gravação própria). */
 export function phaseVideoPath(toothNumber: number, phaseId: number) {
   return `/videos/tooth-${toothNumber}/fase-${phaseId}.mp4`;
 }
