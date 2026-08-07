@@ -26,7 +26,7 @@ export function MemberHomePage() {
         )}
       </header>
       <div className="member-home__grid">
-        <Link to="/app/escultura/13" className="member-tile member-tile--featured">
+        <Link to="/app/escultura/11" className="member-tile member-tile--featured">
           <BrandIcon name="tooth" />
           <h2>Escultura em cera</h2>
           <p>28 dentes · fases · vistas finais</p>

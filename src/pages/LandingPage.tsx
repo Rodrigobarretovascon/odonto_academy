@@ -9,7 +9,7 @@ import { SITE } from "../lib/site";
 
 const FEATURES = [
   { title: "Resumos", desc: "Sínteses para revisar com foco.", to: "/resumos", icon: "spark" as const, needSub: true },
-  { title: "Escultura em cera", desc: "28 dentes FDI, fases e vistas finais.", to: "/app/escultura/13", icon: "tooth" as const, needSub: true },
+  { title: "Escultura em cera", desc: "28 dentes FDI, fases e vistas finais.", to: "/app/escultura/11", icon: "tooth" as const, needSub: true },
   { title: "Anatomia dental", desc: "Atlas vivo da boca e do periodonto.", to: "/app/anatomia", icon: "anatomy" as const, needSub: true },
   { title: "Visualizador 3D", desc: "Gire e estude cada dente em 3D.", to: "/app/visualizador-3d", icon: "spark" as const, needSub: true },
   { title: "IA para tirar dúvidas", desc: "Apoio educacional no chat.", to: "/app/ia", icon: "chat" as const, needSub: true },
