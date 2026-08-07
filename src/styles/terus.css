@@ -272,18 +272,19 @@ button.terus-nav__link--action {
 
 .home-plan {
   display: grid;
-  grid-template-columns: 4.5rem minmax(0, 1fr);
-  gap: 0.9rem;
-  align-items: center;
-  padding: 0.75rem 0.9rem;
+  gap: 0;
+  padding: 0;
   background: #fff;
   border: 1px solid rgba(214, 230, 250, 0.95);
   border-radius: 12px;
   box-shadow: none;
+  overflow: hidden;
   transition: border-color 0.15s ease, background 0.15s ease;
 }
 
-.home-plan:hover {
+.home-plan:hover,
+.home-plan.is-open,
+.home-plan:focus-within {
   border-color: var(--gb-blue-mid);
   background: #fbfdff;
 }
@@ -291,6 +292,14 @@ button.terus-nav__link--action {
 .home-plan--featured {
   border-color: rgba(201, 169, 106, 0.55);
   background: linear-gradient(180deg, #fffdf8 0%, #ffffff 100%);
+}
+
+.home-plan__main {
+  display: grid;
+  grid-template-columns: 4.5rem minmax(0, 1fr);
+  gap: 0.9rem;
+  align-items: center;
+  padding: 0.75rem 0.9rem;
 }
 
 .home-plan__ribbon {
@@ -327,6 +336,99 @@ button.terus-nav__link--action {
   gap: 0.75rem 1rem;
   align-items: center;
   min-width: 0;
+}
+
+.home-plan__toggle {
+  margin-top: 0.45rem;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--gb-navy);
+  text-decoration: underline;
+  text-underline-offset: 0.18em;
+  cursor: pointer;
+  opacity: 0.8;
+}
+
+.home-plan__toggle:hover,
+.home-plan__toggle:focus-visible {
+  opacity: 1;
+}
+
+.home-plan__benefits {
+  display: grid;
+  gap: 0.55rem;
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  padding: 0 0.9rem;
+  border-top: 1px solid transparent;
+  pointer-events: none;
+  transition:
+    max-height 0.28s ease,
+    opacity 0.2s ease,
+    padding 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.home-plan.is-open .home-plan__benefits {
+  max-height: 28rem;
+  opacity: 1;
+  padding: 0.75rem 0.9rem 0.9rem;
+  border-top-color: rgba(214, 230, 250, 0.95);
+  pointer-events: auto;
+}
+
+.home-plan__benefits-label {
+  margin: 0;
+  font-size: 0.66rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--gb-blue-600);
+}
+
+.home-plan__benefits-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 0.4rem;
+}
+
+.home-plan__benefit {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.5rem;
+  align-items: start;
+  padding: 0.45rem 0.5rem;
+  border-radius: 8px;
+  text-decoration: none;
+  color: inherit;
+  transition: background 0.12s ease;
+}
+
+.home-plan__benefit:hover {
+  background: var(--gb-blue-light);
+}
+
+.home-plan__benefit strong {
+  display: block;
+  font-size: 0.82rem;
+  color: var(--gb-navy);
+  font-weight: 600;
+}
+
+.home-plan__benefit small {
+  display: block;
+  margin-top: 0.1rem;
+  font-size: 0.72rem;
+  line-height: 1.3;
+  color: var(--color-muted);
 }
 
 .home-plan__copy {
@@ -505,7 +607,7 @@ button.terus-nav__link--action {
     align-items: start;
   }
 
-  .home-plan {
+  .home-plan__main {
     grid-template-columns: 3.5rem minmax(0, 1fr);
     gap: 0.7rem;
     padding: 0.65rem 0.75rem;
@@ -527,6 +629,10 @@ button.terus-nav__link--action {
     grid-template-columns: 1fr auto;
     align-items: center;
     width: 100%;
+  }
+
+  .home-plan__benefits-list {
+    grid-template-columns: 1fr;
   }
 }
 

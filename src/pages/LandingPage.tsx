@@ -23,6 +23,8 @@ function isSubscription(p: Product) {
 export function LandingPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+  const [pinnedBenefitsId, setPinnedBenefitsId] = useState<number | null>(null);
+  const [hoverBenefitsId, setHoverBenefitsId] = useState<number | null>(null);
   const { hasAccess, user } = useAuth();
   const { add, has, quantityOf } = useCart();
 
@@ -48,7 +50,7 @@ export function LandingPage() {
 
   return (
     <div className="landing landing--store">
-      <section className="home-store" aria-label="Loja GB Dental">
+      <section className="home-store" aria-label="Loja GB Dental" id="explore">
         <div className="home-store__inner">
           <section className="home-plans" aria-labelledby="home-plans-title">
             <div className="home-plans__head">
@@ -76,43 +78,92 @@ export function LandingPage() {
                 const effective = p.effective_price_cents ?? p.price_cents;
                 const onPromo = effective < p.price_cents;
                 const inCart = has(p.id);
+                const benefitsOpen = pinnedBenefitsId === p.id || hoverBenefitsId === p.id;
+                const panelId = `plan-benefits-${p.id}`;
+
                 return (
                   <article
                     key={p.id}
-                    className={`home-plan${p.featured ? " home-plan--featured" : ""}${inCart ? " is-in-cart" : ""}`}
+                    className={`home-plan${p.featured ? " home-plan--featured" : ""}${inCart ? " is-in-cart" : ""}${benefitsOpen ? " is-open" : ""}`}
+                    onMouseEnter={() => setHoverBenefitsId(p.id)}
+                    onMouseLeave={() => setHoverBenefitsId((id) => (id === p.id ? null : id))}
                   >
-                    <div className="home-plan__media" aria-hidden="true">
-                      <img src={p.image_url} alt="" />
-                    </div>
-                    <div className="home-plan__body">
-                      <div className="home-plan__copy">
-                        {(p.featured || p.badge) && (
-                          <span className="home-plan__ribbon">
-                            {p.featured ? "Recomendado" : p.badge}
-                          </span>
-                        )}
-                        <h3>{p.name}</h3>
-                        <p className="home-plan__kicker">{p.subtitle}</p>
-                        {p.characteristics && p.characteristics.length > 0 && (
-                          <p className="home-plan__perks-inline">
-                            {p.characteristics.slice(0, 3).join(" · ")}
-                          </p>
-                        )}
+                    <div className="home-plan__main">
+                      <div className="home-plan__media" aria-hidden="true">
+                        <img src={p.image_url} alt="" />
                       </div>
-                      <div className="home-plan__buy">
-                        <div>
-                          {onPromo && (
-                            <s className="home-plan__price-old">{formatPrice(p.price_cents)}</s>
+                      <div className="home-plan__body">
+                        <div className="home-plan__copy">
+                          {(p.featured || p.badge) && (
+                            <span className="home-plan__ribbon">
+                              {p.featured ? "Recomendado" : p.badge}
+                            </span>
                           )}
-                          <p className="home-plan__price">{formatPrice(effective)}</p>
-                          {p.access_days > 0 && (
-                            <p className="home-plan__term">{p.access_days} dias</p>
+                          <h3>{p.name}</h3>
+                          <p className="home-plan__kicker">{p.subtitle}</p>
+                          {p.characteristics && p.characteristics.length > 0 && (
+                            <p className="home-plan__perks-inline">
+                              {p.characteristics.slice(0, 3).join(" · ")}
+                            </p>
                           )}
+                          <button
+                            type="button"
+                            className="home-plan__toggle"
+                            aria-expanded={benefitsOpen}
+                            aria-controls={panelId}
+                            onClick={() =>
+                              setPinnedBenefitsId((id) => (id === p.id ? null : p.id))
+                            }
+                          >
+                            {pinnedBenefitsId === p.id
+                              ? "Ocultar o que libera"
+                              : "O que a assinatura libera"}
+                          </button>
                         </div>
-                        <button type="button" className="btn-primary btn-primary--sm" onClick={() => add(p)}>
-                          {inCart ? `Carrinho (${quantityOf(p.id)})` : "Assinar"}
-                        </button>
+                        <div className="home-plan__buy">
+                          <div>
+                            {onPromo && (
+                              <s className="home-plan__price-old">{formatPrice(p.price_cents)}</s>
+                            )}
+                            <p className="home-plan__price">{formatPrice(effective)}</p>
+                            {p.access_days > 0 && (
+                              <p className="home-plan__term">{p.access_days} dias</p>
+                            )}
+                          </div>
+                          <button type="button" className="btn-primary btn-primary--sm" onClick={() => add(p)}>
+                            {inCart ? `Carrinho (${quantityOf(p.id)})` : "Assinar"}
+                          </button>
+                        </div>
                       </div>
+                    </div>
+
+                    <div
+                      id={panelId}
+                      className="home-plan__benefits"
+                      aria-hidden={!benefitsOpen}
+                    >
+                      <p className="home-plan__benefits-label">Inclui na assinatura</p>
+                      <ul className="home-plan__benefits-list">
+                        {FEATURES.map((f) => {
+                          const to = featureTo(f);
+                          return (
+                            <li key={f.title}>
+                              <Link
+                                to={to}
+                                state={to === "/acesso" ? { from: f.to } : undefined}
+                                className="home-plan__benefit"
+                                tabIndex={benefitsOpen ? undefined : -1}
+                              >
+                                <BrandIcon name={f.icon} size={18} />
+                                <span>
+                                  <strong>{f.title}</strong>
+                                  <small>{f.desc}</small>
+                                </span>
+                              </Link>
+                            </li>
+                          );
+                        })}
+                      </ul>
                     </div>
                   </article>
                 );
@@ -155,37 +206,9 @@ export function LandingPage() {
             <Link to="/assinar" className="btn-primary">
               Ver assinaturas
             </Link>
-            <Link to="/#explore" className="btn-outline">
-              Explorar conteúdos
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      <section className="home-band home-band--soft" id="explore" aria-labelledby="explore-title">
-        <div className="home-band__inner">
-          <header className="home-band__header">
-            <p className="home-store__eyebrow">Conteúdos</p>
-            <h2 id="explore-title">O que a assinatura libera</h2>
-          </header>
-          <div className="home-features">
-            {FEATURES.map((f) => {
-              const to = featureTo(f);
-              return (
-                <Link
-                  key={f.title}
-                  to={to}
-                  state={to === "/acesso" ? { from: f.to } : undefined}
-                  className="home-feature"
-                >
-                  <BrandIcon name={f.icon} size={22} />
-                  <span>
-                    <strong>{f.title}</strong>
-                    <small>{f.desc}</small>
-                  </span>
-                </Link>
-              );
-            })}
+            <a href="#explore" className="btn-outline">
+              Ver planos
+            </a>
           </div>
         </div>
       </section>
