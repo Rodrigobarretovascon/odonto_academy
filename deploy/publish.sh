@@ -3,12 +3,14 @@
 #
 # Uso (no Mac, na pasta do projeto):
 #   bash deploy/publish.sh
-#   bash deploy/publish.sh root@10.100.15.2
-#   REMOTE=ubuntu@10.100.15.2 APP_DIR=/var/www/gbdental bash deploy/publish.sh
+#   bash deploy/publish.sh ubuntu@10.100.15.2
+#   REMOTE=usuario@10.100.15.2 APP_DIR=/var/www/gbdental bash deploy/publish.sh
+#
+# Nota: root SSH costuma estar desabilitado — use um usuário com sudo (ex.: ubuntu).
 #
 set -euo pipefail
 
-REMOTE="${1:-${REMOTE:-root@10.100.15.2}}"
+REMOTE="${1:-${REMOTE:-ubuntu@10.100.15.2}}"
 APP_DIR="${APP_DIR:-/var/www/gbdental}"
 REPO_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 
@@ -17,7 +19,7 @@ cd "$REPO_DIR"
 npm run build
 
 echo "→ Destino: ${REMOTE}:${APP_DIR}"
-ssh -o ConnectTimeout=10 "$REMOTE" "mkdir -p '${APP_DIR}'"
+ssh -o ConnectTimeout=10 "$REMOTE" "sudo mkdir -p '${APP_DIR}' && sudo chown -R \"\$(whoami):\$(whoami)\" '${APP_DIR}'"
 
 echo "→ Enviando arquivos (rsync)…"
 rsync -az --delete \
@@ -68,19 +70,19 @@ fi
 grep -q '^NODE_ENV=production' .env 2>/dev/null || echo 'NODE_ENV=production' >> .env
 grep -q '^PORT=' .env 2>/dev/null || echo 'PORT=3001' >> .env
 
-install -m 644 deploy/gbdental.service /etc/systemd/system/gbdental.service
 NPM_BIN="$(command -v npm)"
-sed -i "s|/usr/bin/npm|${NPM_BIN}|g" /etc/systemd/system/gbdental.service
+sudo install -m 644 deploy/gbdental.service /etc/systemd/system/gbdental.service
+sudo sed -i "s|/usr/bin/npm|${NPM_BIN}|g" /etc/systemd/system/gbdental.service
 
-systemctl daemon-reload
-systemctl enable gbdental
-systemctl restart gbdental
+sudo systemctl daemon-reload
+sudo systemctl enable gbdental
+sudo systemctl restart gbdental
 sleep 2
-systemctl --no-pager --full status gbdental | head -25 || true
+sudo systemctl --no-pager --full status gbdental | head -25 || true
 
 echo "→ Health check local…"
 curl -fsS http://127.0.0.1:3001/api/health || {
-  echo "Health falhou. Veja: journalctl -u gbdental -n 80 --no-pager"
+  echo "Health falhou. Veja: sudo journalctl -u gbdental -n 80 --no-pager"
   exit 1
 }
 echo
@@ -90,6 +92,6 @@ REMOTE
 echo
 echo "Próximos passos no servidor (se ainda não fez):"
 echo "  1) Editar ${APP_DIR}/.env (DATABASE_URL, JWT_SECRET)"
-echo "  2) Nginx já em /etc/nginx/conf.d/gbdental.conf → nginx -t && systemctl reload nginx"
-echo "  3) Quando DNS Active: certbot --nginx -d gbdental.com.br -d www.gbdental.com.br"
+echo "  2) Nginx já em /etc/nginx/conf.d/gbdental.conf → sudo nginx -t && sudo systemctl reload nginx"
+echo "  3) Quando DNS Active: sudo certbot --nginx -d gbdental.com.br -d www.gbdental.com.br"
 echo "  4) Testar: curl -H 'Host: gbdental.com.br' http://10.100.15.2/api/health"
