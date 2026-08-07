@@ -202,6 +202,16 @@ export function PublicLayout() {
           )}
         </div>
       </header>
+
+      {location.pathname === "/" && (
+        <div className="terus-masthead">
+          <p className="terus-masthead__line">
+            Seu espaço para <em>aprender</em>, <em>praticar</em> e aperfeiçoar a{" "}
+            <em>escultura dental</em>.
+          </p>
+        </div>
+      )}
+
       {location.pathname === "/" && <PromoBannerRail />}
       <main className="terus-main">
         <Outlet />
