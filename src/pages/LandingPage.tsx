@@ -185,13 +185,10 @@ export function LandingPage() {
 
             <h1 className="opening__headline">
               <span className="opening__line">
-                Seu espaço para <em>aprender</em>,
+                Seu espaço para <em>aprender</em>, <em>praticar</em> e
               </span>
               <span className="opening__line">
-                <em>praticar</em> e aperfeiçoar
-              </span>
-              <span className="opening__line">
-                a <em>escultura dental</em>.
+                aperfeiçoar a <em>escultura dental</em>.
               </span>
             </h1>
 

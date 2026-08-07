@@ -782,14 +782,14 @@ html {
 }
 
 .opening__brand {
-  margin: 0 0 1.15rem;
+  margin: 0 0 0.75rem;
   line-height: 0;
   animation: opening-rise 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 .opening__brand .gb-lockup__img {
-  height: clamp(4.25rem, 11vw, 6.5rem);
-  max-width: min(100%, 30rem);
+  height: clamp(3.75rem, 9.5vw, 5.75rem);
+  max-width: min(100%, 28rem);
   filter: drop-shadow(0 10px 28px rgba(45, 85, 150, 0.12));
 }
 
@@ -798,12 +798,12 @@ html {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.12em;
-  max-width: min(22rem, 92vw);
+  gap: 0.05em;
+  max-width: min(34rem, 94vw);
   font-family: var(--gb-font-display);
-  font-size: clamp(1.7rem, 3.5vw, 2.65rem);
+  font-size: clamp(1.55rem, 3.1vw, 2.35rem);
   font-weight: 600;
-  line-height: 1.22;
+  line-height: 1.18;
   letter-spacing: -0.02em;
   color: var(--gb-navy);
   text-wrap: balance;
@@ -821,7 +821,7 @@ html {
 }
 
 .opening__tagline {
-  margin: 1rem 0 0;
+  margin: 0.7rem 0 0;
   font-size: 0.72rem;
   font-weight: 500;
   letter-spacing: 0.28em;
@@ -834,7 +834,7 @@ html {
   display: block;
   width: min(11rem, 46vw);
   height: 2px;
-  margin: 0.85rem 0 0;
+  margin: 0.65rem 0 0;
   border-radius: 999px;
   background: linear-gradient(
     90deg,
@@ -7652,10 +7652,10 @@ body:has(.terus-app--ai) {
   }
 
   .opening__headline {
-    max-width: min(19.5rem, 94vw);
-    font-size: clamp(1.55rem, 6.2vw, 1.95rem);
-    line-height: 1.26;
-    gap: 0.08em;
+    max-width: min(28rem, 94vw);
+    font-size: clamp(1.4rem, 5.4vw, 1.85rem);
+    line-height: 1.2;
+    gap: 0.04em;
   }
 
   .questions-toolbar,
