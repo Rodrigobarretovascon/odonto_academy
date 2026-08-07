@@ -6,7 +6,7 @@ export function FieldLabel({
   children,
 }: {
   label: string;
-  tip: string;
+  tip?: string;
   children: ReactNode;
 }) {
   const [open, setOpen] = useState(false);
@@ -35,6 +35,7 @@ export function FieldLabel({
     <label className={`admin-field${open ? " is-tip-open" : ""}`}>
       <span className="admin-field__label">
         {label}
+        {tip ? (
         <button
           ref={tipRef}
           type="button"
@@ -54,6 +55,7 @@ export function FieldLabel({
             {tip}
           </span>
         </button>
+        ) : null}
       </span>
       {children}
     </label>
@@ -64,6 +66,10 @@ export function reaisToCents(value: string) {
   const n = Number(String(value).replace(",", "."));
   if (Number.isNaN(n)) return 0;
   return Math.round(n * 100);
+}
+
+export function centsToReaisInput(cents: number) {
+  return (Math.max(0, Number(cents) || 0) / 100).toFixed(2).replace(".", ",");
 }
 
 export type AdminProductLite = {

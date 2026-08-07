@@ -4,6 +4,7 @@ import { useAuth } from "../context/AuthContext";
 import { BrandLockup, BrandMark, HeartRule } from "../components/BrandMark";
 import { AiMascot } from "../components/AiMascot";
 import { SiteFooter } from "../components/SiteFooter";
+import { ThemeToggle } from "../components/ThemeToggle";
 
 const NAV = [
   { to: "/app/resumos", label: "Resumos" },
@@ -94,6 +95,7 @@ export function MemberLayout() {
           </NavLink>
         )}
 
+        <ThemeToggle className="theme-toggle--member" />
         <span className="member-topbar__user">{user?.name.split(" ")[0]}</span>
       </header>
 

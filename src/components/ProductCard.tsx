@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { formatPrice, type Product } from "../lib/api";
 import { useCart } from "../context/CartContext";
 import { InCartBadge } from "./InCartBadge";
+import { ProductImageCarousel, productImageSlides } from "./ProductImageCarousel";
 
 interface ProductCardProps {
   product: Product;
@@ -19,7 +20,7 @@ export function ProductCard({ product, detailed }: ProductCardProps) {
     <article className={`product-card${detailed ? " product-card--detailed" : ""}${inCart ? " is-in-cart" : ""}`}>
       <div className="product-card__image-wrap">
         {inCart && <InCartBadge quantity={quantityOf(product.id)} />}
-        <img src={product.image_url} alt="" className="product-card__image" />
+        <ProductImageCarousel images={productImageSlides(product)} alt={product.name} />
         {product.badge && <span className="product-card__badge">{product.badge}</span>}
       </div>
       <div className="product-card__body">
@@ -34,9 +35,6 @@ export function ProductCard({ product, detailed }: ProductCardProps) {
           </ul>
         )}
         <div className="product-card__meta">
-          {product.access_days > 0 && (
-            <span className="product-card__tag">{product.access_days} dias de acesso</span>
-          )}
           {product.stock_qty != null && (
             <span className="product-card__tag">
               {outOfStock ? "Esgotado" : `${product.stock_qty} em estoque`}

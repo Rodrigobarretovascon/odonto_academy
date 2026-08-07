@@ -1,5 +1,8 @@
 :root {
-  /* Identidade GB Dental */
+  /* Identidade GB Dental — modo diurno (padrão) */
+  color-scheme: light;
+  --gb-brand: #2d5596;
+  --gb-brand-deep: #1e3a6e;
   --gb-navy: #2d5596;
   --gb-blue-mid: #b2cee6;
   --gb-blue-soft: #d6e6fa;
@@ -7,13 +10,17 @@
   --gb-rose: #f6b6c6;
   --gb-rose-deep: #e89aab;
   --gb-white: #ffffff;
+  --gb-surface: #ffffff;
+  --gb-surface-2: #fafcfe;
   --gb-blue-900: #1e3a6e;
   --gb-blue-800: #2d5596;
   --gb-blue-700: #3d6aad;
   --gb-blue-600: #5a7fb8;
-  --gb-gold: var(--gb-rose);
-  --gb-gold-light: #fde8ee;
-  --gb-gold-dark: var(--gb-rose-deep);
+  --gb-gold: #c9a96a;
+  --gb-gold-light: #f3ebd8;
+  --gb-gold-dark: #a8894f;
+  --gb-gold-soft: #f3ebd8;
+  --gb-gold-mist: rgba(201, 169, 106, 0.18);
   --gb-cream: var(--gb-white);
   --gb-radius: 14px;
   --gb-shadow: 0 10px 36px rgba(45, 85, 150, 0.1);
@@ -21,7 +28,7 @@
   --gb-font-body: "Montserrat", system-ui, sans-serif;
 
   --color-bg: var(--gb-white);
-  --color-surface: #ffffff;
+  --color-surface: var(--gb-surface);
   --color-title: var(--gb-navy);
   --color-accent: var(--gb-blue-600);
   --color-accent-light: var(--gb-blue-light);
@@ -36,6 +43,38 @@
   --font-display: var(--gb-font-display);
   --slide-max-width: 1320px;
   --page-gutter: clamp(1.25rem, 4vw, 2.5rem);
+}
+
+html[data-theme="dark"] {
+  color-scheme: dark;
+  --gb-brand: #5b8fd4;
+  --gb-brand-deep: #3d6fad;
+  --gb-navy: #d7e4f5;
+  --gb-blue-mid: #3a5070;
+  --gb-blue-soft: #1c2638;
+  --gb-blue-light: #121820;
+  --gb-white: #101014;
+  --gb-surface: #14141a;
+  --gb-surface-2: #1a1a22;
+  --gb-blue-900: #f2f6fc;
+  --gb-blue-800: #5b8fd4;
+  --gb-blue-700: #6ea0e0;
+  --gb-blue-600: #9bb6d8;
+  --gb-gold-light: #2a2418;
+  --gb-gold-dark: #d4b87a;
+  --gb-gold-soft: #2a2418;
+  --gb-gold-mist: rgba(201, 169, 106, 0.14);
+  --gb-cream: var(--gb-white);
+  --gb-shadow: 0 12px 40px rgba(0, 0, 0, 0.55);
+  --color-bg: #050506;
+  --color-surface: var(--gb-surface);
+  --color-title: var(--gb-navy);
+  --color-accent: var(--gb-blue-700);
+  --color-accent-light: var(--gb-blue-light);
+  --color-border: var(--gb-blue-soft);
+  --color-text: #c9d4e6;
+  --color-muted: #8b9bb5;
+  --color-alert-bg: #1a1014;
 }
 
 *,
@@ -290,7 +329,7 @@ ul {
 }
 
 .sculpture-area .dental-page__final-3d {
-  background: #fff;
+  background: var(--gb-surface);
   border: 1px solid var(--color-border);
   border-radius: 14px;
   padding: 1.35rem 1.5rem;
@@ -500,7 +539,7 @@ ul {
   height: 2.25rem;
   padding: 0 0.55rem;
   border-radius: 9px;
-  background: #fff;
+  background: var(--gb-surface);
   border: 1px solid #d6e0ee;
   color: #2d5596;
   font-size: 0.8rem;
@@ -623,7 +662,7 @@ ul {
 .instruction-card__3d-toggle {
   justify-self: start;
   border: 1px solid #d6e0ee;
-  background: #fff;
+  background: var(--gb-surface);
   color: #2d5596;
   border-radius: 8px;
   padding: 0.4rem 0.7rem;
@@ -775,7 +814,7 @@ ul {
   border: 1px solid #d4dce8;
   border-radius: 12px;
   overflow: hidden;
-  background: #fff;
+  background: var(--gb-surface);
   box-shadow: 0 1px 0 rgba(45, 85, 150, 0.04);
 }
 
@@ -920,7 +959,7 @@ ul {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #fff;
+  background: var(--gb-surface);
   border: 1px solid var(--color-border);
   border-radius: 6px;
   overflow: hidden;
@@ -1067,7 +1106,7 @@ ul {
   max-height: calc(92vh - 3rem);
   width: auto;
   height: auto;
-  background: #fff;
+  background: var(--gb-surface);
   border-radius: var(--radius);
   box-shadow: 0 24px 48px rgba(0, 0, 0, 0.35);
 }
@@ -1483,7 +1522,7 @@ ul {
 
 .lesson-player__nav-btn {
   border: 1px solid #d6e0ee;
-  background: #fff;
+  background: var(--gb-surface);
   color: #2d5596;
   border-radius: 999px;
   padding: 0.65rem 1.25rem;
@@ -1519,7 +1558,7 @@ ul {
   height: 2.35rem;
   border-radius: 999px;
   border: 1px solid #d6e0ee;
-  background: #fff;
+  background: var(--gb-surface);
   color: #2d5596;
   font: inherit;
   font-size: 0.88rem;
@@ -1681,7 +1720,7 @@ ul {
 }
 
 .lesson-player__text {
-  background: #fff;
+  background: var(--gb-surface);
   border: 1px solid var(--color-border, #d6e6fa);
   border-radius: 16px;
   padding: 1.5rem 1.6rem 1.65rem;
@@ -1774,7 +1813,7 @@ ul {
 }
 
 .lesson-player__stage {
-  background: #fff;
+  background: var(--gb-surface);
   border: 1px solid var(--color-border, #d6e6fa);
   border-radius: 16px;
   padding: 0.85rem;
@@ -1860,7 +1899,7 @@ ul {
 
 .lesson-player__ctrl {
   border: 1px solid #d6e0ee;
-  background: #fff;
+  background: var(--gb-surface);
   color: #2d5596;
   border-radius: 8px;
   padding: 0.4rem 0.7rem;

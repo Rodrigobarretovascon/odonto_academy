@@ -4,7 +4,8 @@ import { useCart } from "../context/CartContext";
 import { useAuth } from "../context/AuthContext";
 import { BrandLockup } from "../components/BrandMark";
 import { SiteFooter } from "../components/SiteFooter";
-import { PromoBannerRail } from "../components/PromoBannerRail";
+import { ThemeToggle } from "../components/ThemeToggle";
+import { SITE } from "../lib/site";
 
 export function PublicLayout() {
   const { count } = useCart();
@@ -43,9 +44,7 @@ export function PublicLayout() {
   const navLink = ({ isActive }: { isActive: boolean }) =>
     `terus-nav__link${isActive ? " terus-nav__link--active" : ""}`;
 
-  const howActive = location.pathname === "/como-funciona" || location.hash === "#como-funciona";
-  const contentsActive =
-    location.pathname === "/recursos" || location.hash === "#explore" || location.pathname === "/perguntas";
+  const salesActive = location.pathname === "/" && location.hash === "#vendas";
 
   const goTopAndClose = () => {
     setMenuOpen(false);
@@ -58,10 +57,10 @@ export function PublicLayout() {
         <Link
           to="/"
           className="terus-brand"
-          aria-label="GB Dental — início"
+          aria-label={`${SITE.brand} — início`}
           onClick={() => window.scrollTo({ top: 0, left: 0, behavior: "auto" })}
         >
-          <BrandLockup size="sm" />
+          <BrandLockup size="md" />
         </Link>
 
         <button
@@ -83,6 +82,13 @@ export function PublicLayout() {
               <NavLink to="/" end className={navLink} onClick={goTopAndClose}>
                 Início
               </NavLink>
+              <Link
+                to="/#vendas"
+                className={`terus-nav__link${salesActive ? " terus-nav__link--active" : ""}`}
+                onClick={() => setMenuOpen(false)}
+              >
+                Vendas
+              </Link>
               <NavLink to="/loja" className={navLink} onClick={goTopAndClose}>
                 Loja
               </NavLink>
@@ -103,18 +109,11 @@ export function PublicLayout() {
                 Início
               </NavLink>
               <Link
-                to="/#como-funciona"
-                className={`terus-nav__link${howActive ? " terus-nav__link--active" : ""}`}
+                to="/#vendas"
+                className={`terus-nav__link${salesActive ? " terus-nav__link--active" : ""}`}
                 onClick={() => setMenuOpen(false)}
               >
-                Como funciona
-              </Link>
-              <Link
-                to="/#explore"
-                className={`terus-nav__link${contentsActive ? " terus-nav__link--active" : ""}`}
-                onClick={() => setMenuOpen(false)}
-              >
-                Conteúdos
+                Vendas
               </Link>
               <NavLink to="/loja" className={navLink} onClick={goTopAndClose}>
                 Loja
@@ -147,6 +146,7 @@ export function PublicLayout() {
         </nav>
 
         <div className="terus-header__actions">
+          <ThemeToggle />
           <Link to="/loja" className="terus-cart-btn" aria-label={`Carrinho, ${count} itens`}>
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
               <path d="M6 7h15l-1.4 8.2a2 2 0 0 1-2 1.8H9a2 2 0 0 1-2-1.6L5 4H2" />
@@ -202,7 +202,6 @@ export function PublicLayout() {
           )}
         </div>
       </header>
-      {location.pathname === "/" && <PromoBannerRail />}
       <main className="terus-main">
         <Outlet />
       </main>

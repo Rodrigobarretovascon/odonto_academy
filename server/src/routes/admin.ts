@@ -62,99 +62,244 @@ const PRODUCT_SELECT = `
   created_at, updated_at
 `;
 
-router.get("/dashboard", async (_req, res) => {
-  const [revenue, orders, subs, recent, lowStock, monthSales, monthCosts, bannerBill, discounts] =
-    await Promise.all([
-      query<{ total: string }>(
-        `SELECT COALESCE(SUM(total_cents), 0) AS total FROM orders WHERE status = 'paid'`,
-      ),
-      query<{ count: string }>(`SELECT COUNT(*) AS count FROM orders WHERE status = 'paid'`),
-      query<{ count: string }>(
-        `SELECT COUNT(DISTINCT user_id) AS count FROM subscriptions WHERE active = true AND expires_at > NOW()`,
-      ),
-      query(
-        `SELECT o.id, o.total_cents, o.created_at, o.channel, u.name AS customer, u.email,
-                COALESCE(o.guest_name, u.name) AS display_name,
-                string_agg(p.name, ', ') AS products
-         FROM orders o
-         LEFT JOIN users u ON u.id = o.user_id
-         JOIN order_items oi ON oi.order_id = o.id
-         JOIN products p ON p.id = oi.product_id
-         WHERE o.status = 'paid'
-         GROUP BY o.id, u.name, u.email
-         ORDER BY o.created_at DESC LIMIT 20`,
-      ),
-      query(
-        `SELECT id, name, stock_qty FROM product_catalog
-         WHERE stock_qty IS NOT NULL AND stock_qty <= 5 AND active = true
-         ORDER BY stock_qty ASC`,
-      ),
-      query<{ total: string; count: string }>(
-        `SELECT COALESCE(SUM(total_cents), 0) AS total, COUNT(*)::text AS count
-         FROM orders
-         WHERE status = 'paid'
-           AND date_trunc('month', COALESCE(paid_at, created_at)) = date_trunc('month', CURRENT_DATE)`,
-      ),
-      query<{ total: string }>(
-        `SELECT COALESCE(SUM(amount_cents), 0) AS total
-         FROM business_expenses
-         WHERE date_trunc('month', spent_on) = date_trunc('month', CURRENT_DATE)`,
-      ),
-      query<{ total: string }>(
-        `SELECT COALESCE(SUM(impression_count * cost_per_impression_cents), 0) AS total
-         FROM ad_banners`,
-      ),
-      query<{ total: string }>(
-        `SELECT COALESCE(SUM(discount_cents + coupon_discount_cents), 0) AS total
-         FROM orders WHERE status = 'paid'`,
-      ),
-    ]);
+async function listProductImages(productId: number) {
+  const r = await query<{ id: number; image_url: string; sort_order: number }>(
+    `SELECT id, image_url, sort_order FROM product_images
+     WHERE product_id = $1 ORDER BY sort_order ASC, id ASC`,
+    [productId],
+  );
+  return r.rows;
+}
 
-  const monthlySales = await query<{ month: string; total: string }>(
+async function imagesByProductIds(ids: number[]) {
+  const map = new Map<number, Array<{ id: number; image_url: string; sort_order: number }>>();
+  if (ids.length === 0) return map;
+  const r = await query<{ id: number; product_id: number; image_url: string; sort_order: number }>(
+    `SELECT id, product_id, image_url, sort_order FROM product_images
+     WHERE product_id = ANY($1::int[])
+     ORDER BY sort_order ASC, id ASC`,
+    [ids],
+  );
+  for (const row of r.rows) {
+    const list = map.get(row.product_id) ?? [];
+    list.push({ id: row.id, image_url: row.image_url, sort_order: row.sort_order });
+    map.set(row.product_id, list);
+  }
+  return map;
+}
+
+/** Mantém products.image_url = primeira imagem do carrossel (compatibilidade). */
+async function syncProductCover(productId: number) {
+  const imgs = await listProductImages(productId);
+  const cover = imgs[0]?.image_url ?? null;
+  await query(`UPDATE products SET image_url = $2, updated_at = NOW() WHERE id = $1`, [productId, cover]);
+  return imgs;
+}
+
+router.get("/dashboard", async (_req, res) => {
+  const [
+    revenue,
+    orders,
+    unitsSoldRow,
+    monthSales,
+    monthUnitsRow,
+    unitCostRow,
+    fixedCostRow,
+    monthFixedRow,
+    subs,
+    recent,
+    lowStock,
+    bannerBill,
+    discounts,
+  ] = await Promise.all([
+    query<{ total: string }>(
+      `SELECT COALESCE(SUM(total_cents), 0) AS total FROM orders WHERE status = 'paid'`,
+    ),
+    query<{ count: string }>(`SELECT COUNT(*) AS count FROM orders WHERE status = 'paid'`),
+    query<{ total: string }>(
+      `SELECT COALESCE(SUM(oi.quantity), 0)::text AS total
+       FROM order_items oi
+       JOIN orders o ON o.id = oi.order_id
+       WHERE o.status = 'paid'`,
+    ),
+    query<{ total: string; count: string }>(
+      `SELECT COALESCE(SUM(total_cents), 0) AS total, COUNT(*)::text AS count
+       FROM orders
+       WHERE status = 'paid'
+         AND date_trunc('month', COALESCE(paid_at, created_at)) = date_trunc('month', CURRENT_DATE)`,
+    ),
+    query<{ total: string }>(
+      `SELECT COALESCE(SUM(oi.quantity), 0)::text AS total
+       FROM order_items oi
+       JOIN orders o ON o.id = oi.order_id
+       WHERE o.status = 'paid'
+         AND date_trunc('month', COALESCE(o.paid_at, o.created_at)) = date_trunc('month', CURRENT_DATE)`,
+    ),
+    query<{ total: string }>(
+      `SELECT COALESCE(SUM(amount_cents), 0) AS total
+       FROM business_expenses
+       WHERE cost_mode = 'per_unit'`,
+    ),
+    query<{ total: string }>(
+      `SELECT COALESCE(SUM(amount_cents), 0) AS total
+       FROM business_expenses
+       WHERE cost_mode = 'fixed'`,
+    ),
+    query<{ total: string }>(
+      `SELECT COALESCE(SUM(amount_cents), 0) AS total
+       FROM business_expenses
+       WHERE cost_mode = 'fixed'
+         AND date_trunc('month', spent_on) = date_trunc('month', CURRENT_DATE)`,
+    ),
+    query<{ count: string }>(
+      `SELECT COUNT(DISTINCT user_id) AS count FROM subscriptions WHERE active = true AND expires_at > NOW()`,
+    ),
+    query(
+      `SELECT o.id, o.total_cents, o.created_at, o.channel, u.name AS customer, u.email,
+              COALESCE(o.guest_name, u.name) AS display_name,
+              string_agg(p.name, ', ') AS products
+       FROM orders o
+       LEFT JOIN users u ON u.id = o.user_id
+       JOIN order_items oi ON oi.order_id = o.id
+       JOIN products p ON p.id = oi.product_id
+       WHERE o.status = 'paid'
+       GROUP BY o.id, u.name, u.email
+       ORDER BY o.created_at DESC LIMIT 20`,
+    ),
+    query(
+      `SELECT id, name, stock_qty FROM product_catalog
+       WHERE stock_qty IS NOT NULL AND stock_qty <= 5 AND active = true
+       ORDER BY stock_qty ASC`,
+    ),
+    query<{ total: string }>(
+      `SELECT COALESCE(SUM(impression_count * cost_per_impression_cents), 0) AS total
+       FROM ad_banners`,
+    ),
+    query<{ total: string }>(
+      `SELECT COALESCE(SUM(discount_cents + coupon_discount_cents), 0) AS total
+       FROM orders WHERE status = 'paid'`,
+    ),
+  ]);
+
+  const unitsSold = Number(unitsSoldRow.rows[0].total);
+  const monthUnitsSold = Number(monthUnitsRow.rows[0].total);
+  const unitCostCents = Number(unitCostRow.rows[0].total);
+  const fixedCostCents = Number(fixedCostRow.rows[0].total);
+  const variableCostsCents = unitCostCents * unitsSold;
+  const costsCents = variableCostsCents + fixedCostCents;
+  const monthFixedCents = Number(monthFixedRow.rows[0].total);
+  const monthVariableCostsCents = unitCostCents * monthUnitsSold;
+  const monthCostsCents = monthVariableCostsCents + monthFixedCents;
+
+  const monthlyUnits = await query<{ month: string; units: string }>(
+    `SELECT to_char(date_trunc('month', COALESCE(o.paid_at, o.created_at)), 'YYYY-MM') AS month,
+            COALESCE(SUM(oi.quantity), 0)::text AS units
+     FROM order_items oi
+     JOIN orders o ON o.id = oi.order_id
+     WHERE o.status = 'paid'
+     GROUP BY 1 ORDER BY 1 DESC LIMIT 12`,
+  );
+  const unitsByMonth = new Map(monthlyUnits.rows.map((r) => [r.month, Number(r.units)]));
+
+  const monthlyFixed = await query<{ month: string; total: string }>(
+    `SELECT to_char(date_trunc('month', spent_on), 'YYYY-MM') AS month,
+            SUM(amount_cents)::text AS total
+     FROM business_expenses
+     WHERE cost_mode = 'fixed'
+     GROUP BY 1 ORDER BY 1 DESC LIMIT 12`,
+  );
+  const fixedByMonth = new Map(monthlyFixed.rows.map((r) => [r.month, Number(r.total)]));
+
+  const monthlySalesOnly = await query<{ month: string; total: string }>(
     `SELECT to_char(date_trunc('month', COALESCE(paid_at, created_at)), 'YYYY-MM') AS month,
-            SUM(total_cents) AS total
+            SUM(total_cents)::text AS total
      FROM orders WHERE status = 'paid'
      GROUP BY 1 ORDER BY 1 DESC LIMIT 6`,
   );
 
-  const monthlyExpenses = await query<{ month: string; total: string }>(
-    `SELECT to_char(date_trunc('month', spent_on), 'YYYY-MM') AS month,
-            SUM(amount_cents) AS total
-     FROM business_expenses
-     GROUP BY 1 ORDER BY 1 DESC LIMIT 6`,
-  );
-
-  const expenseByMonth = new Map(monthlyExpenses.rows.map((r) => [r.month, Number(r.total)]));
-  const monthly = monthlySales.rows.map((r) => {
-    const sales = Number(r.total);
-    const costs = expenseByMonth.get(r.month) ?? 0;
-    return { month: r.month, salesCents: sales, costsCents: costs, profitCents: sales - costs };
-  });
-  for (const [month, costs] of expenseByMonth) {
-    if (!monthly.some((m) => m.month === month)) {
-      monthly.push({ month, salesCents: 0, costsCents: costs, profitCents: -costs });
-    }
-  }
-  monthly.sort((a, b) => b.month.localeCompare(a.month));
+  const monthKeys = new Set<string>([
+    ...monthlySalesOnly.rows.map((r) => r.month),
+    ...fixedByMonth.keys(),
+    ...unitsByMonth.keys(),
+  ]);
+  const monthly = [...monthKeys]
+    .sort((a, b) => b.localeCompare(a))
+    .slice(0, 6)
+    .map((month) => {
+      const sales = Number(monthlySalesOnly.rows.find((r) => r.month === month)?.total ?? 0);
+      const units = unitsByMonth.get(month) ?? 0;
+      const costs = unitCostCents * units + (fixedByMonth.get(month) ?? 0);
+      return { month, salesCents: sales, costsCents: costs, profitCents: sales - costs, unitsSold: units };
+    });
 
   const expenses = await query(
-    `SELECT id, description, category, amount_cents, spent_on, notes, created_at
+    `SELECT id, description, category, amount_cents, cost_mode, spent_on, notes, created_at
      FROM business_expenses
      ORDER BY spent_on DESC, id DESC
-     LIMIT 30`,
+     LIMIT 50`,
+  );
+
+  const costsByCategory = await query<{
+    category: string;
+    unit_total: string;
+    fixed_total: string;
+    count: string;
+  }>(
+    `SELECT category,
+            COALESCE(SUM(amount_cents) FILTER (WHERE cost_mode = 'per_unit'), 0)::text AS unit_total,
+            COALESCE(SUM(amount_cents) FILTER (WHERE cost_mode = 'fixed'), 0)::text AS fixed_total,
+            COUNT(*)::text AS count
+     FROM business_expenses
+     GROUP BY category
+     ORDER BY (
+       COALESCE(SUM(amount_cents) FILTER (WHERE cost_mode = 'per_unit'), 0) * $1
+       + COALESCE(SUM(amount_cents) FILTER (WHERE cost_mode = 'fixed'), 0)
+     ) DESC`,
+    [unitsSold],
+  );
+
+  const recentCustomers = await query(
+    `SELECT
+       COALESCE(NULLIF(TRIM(c.name), ''), NULLIF(TRIM(o.guest_name), ''), NULLIF(TRIM(u.name), ''), 'Cliente') AS name,
+       COALESCE(NULLIF(TRIM(c.phone), ''), NULLIF(TRIM(o.customer_phone), '')) AS phone,
+       COALESCE(NULLIF(TRIM(c.email), ''), NULLIF(TRIM(u.email), '')) AS email,
+       MAX(COALESCE(o.paid_at, o.created_at)) AS last_order_at,
+       COUNT(*)::int AS orders_count,
+       COALESCE(SUM(o.total_cents), 0)::int AS total_spent_cents
+     FROM orders o
+     LEFT JOIN customers c ON c.id = o.customer_id
+     LEFT JOIN users u ON u.id = o.user_id
+     WHERE o.status = 'paid'
+     GROUP BY 1, 2, 3
+     ORDER BY MAX(COALESCE(o.paid_at, o.created_at)) DESC
+     LIMIT 12`,
   );
 
   const revenueCents = Number(revenue.rows[0].total);
   const ordersCount = Number(orders.rows[0].count);
   const monthRevenueCents = Number(monthSales.rows[0].total);
   const monthOrdersCount = Number(monthSales.rows[0].count);
-  const monthCostsCents = Number(monthCosts.rows[0].total);
   const bannerRevenueCents = Number(bannerBill.rows[0].total);
   const discountsCents = Number(discounts.rows[0].total);
-  const totalCosts = await query<{ total: string }>(
-    `SELECT COALESCE(SUM(amount_cents), 0) AS total FROM business_expenses`,
-  );
-  const costsCents = Number(totalCosts.rows[0].total);
+  const activeSubscribers = Number(subs.rows[0].count);
+
+  const live = {
+    revenueCents,
+    costsCents,
+    ordersCount,
+    activeSubscribers,
+    monthRevenueCents,
+    monthCostsCents,
+    monthOrdersCount,
+    bannerRevenueCents,
+    discountsCents,
+    unitsSold,
+    unitCostCents,
+    fixedCostCents,
+    variableCostsCents,
+    monthVariableCostsCents,
+    monthFixedCents,
+  };
 
   res.json({
     revenueCents,
@@ -163,22 +308,109 @@ router.get("/dashboard", async (_req, res) => {
     bannerRevenueCents,
     discountsCents,
     ordersCount,
+    unitsSold,
+    monthUnitsSold,
+    unitCostCents,
+    fixedCostCents,
+    variableCostsCents,
+    monthVariableCostsCents,
+    monthFixedCents,
     avgTicketCents: ordersCount > 0 ? Math.round(revenueCents / ordersCount) : 0,
     monthRevenueCents,
     monthCostsCents,
     monthProfitCents: monthRevenueCents - monthCostsCents,
     monthOrdersCount,
-    activeSubscribers: Number(subs.rows[0].count),
+    activeSubscribers,
     recentOrders: recent.rows,
+    recentCustomers: recentCustomers.rows,
+    costsByCategory: costsByCategory.rows.map((r) => {
+      const unitCents = Number(r.unit_total);
+      const fixedCents = Number(r.fixed_total);
+      return {
+        category: r.category,
+        unitCents,
+        fixedCents,
+        amountCents: unitCents * unitsSold + fixedCents,
+        count: Number(r.count),
+      };
+    }),
     monthly,
     expenses: expenses.rows,
     lowStock: lowStock.rows,
+    manualEnabled: false,
+    live,
   });
 });
 
+router.get("/finance-overrides", async (_req, res) => {
+  const r = await query(
+    `SELECT enabled, revenue_cents, costs_cents, orders_count, active_subscribers,
+            month_revenue_cents, month_costs_cents, month_orders_count,
+            banner_revenue_cents, discounts_cents, updated_at
+     FROM finance_dashboard_overrides WHERE id = 1`,
+  );
+  res.json(r.rows[0] ?? { enabled: false });
+});
+
+router.put("/finance-overrides", async (req, res) => {
+  try {
+    const body = req.body as Record<string, unknown>;
+    const num = (key: string, fallback = 0) => {
+      const v = Number(body[key] ?? fallback);
+      if (!Number.isFinite(v) || v < 0) throw new Error(`Valor inválido: ${key}`);
+      return Math.round(v);
+    };
+    const enabled = Boolean(body.enabled);
+    const updated = await query(
+      `INSERT INTO finance_dashboard_overrides (
+         id, enabled, revenue_cents, costs_cents, orders_count, active_subscribers,
+         month_revenue_cents, month_costs_cents, month_orders_count,
+         banner_revenue_cents, discounts_cents, updated_at
+       ) VALUES (1, $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, NOW())
+       ON CONFLICT (id) DO UPDATE SET
+         enabled = EXCLUDED.enabled,
+         revenue_cents = EXCLUDED.revenue_cents,
+         costs_cents = EXCLUDED.costs_cents,
+         orders_count = EXCLUDED.orders_count,
+         active_subscribers = EXCLUDED.active_subscribers,
+         month_revenue_cents = EXCLUDED.month_revenue_cents,
+         month_costs_cents = EXCLUDED.month_costs_cents,
+         month_orders_count = EXCLUDED.month_orders_count,
+         banner_revenue_cents = EXCLUDED.banner_revenue_cents,
+         discounts_cents = EXCLUDED.discounts_cents,
+         updated_at = NOW()
+       RETURNING enabled, revenue_cents, costs_cents, orders_count, active_subscribers,
+                 month_revenue_cents, month_costs_cents, month_orders_count,
+                 banner_revenue_cents, discounts_cents, updated_at`,
+      [
+        enabled,
+        num("revenue_cents"),
+        num("costs_cents"),
+        num("orders_count"),
+        num("active_subscribers"),
+        num("month_revenue_cents"),
+        num("month_costs_cents"),
+        num("month_orders_count"),
+        num("banner_revenue_cents"),
+        num("discounts_cents"),
+      ],
+    );
+    res.json(updated.rows[0]);
+  } catch (err) {
+    res.status(400).json({ error: err instanceof Error ? err.message : "Erro ao salvar valores" });
+  }
+});
+
+function normalizeCostMode(raw: unknown, category: string): "per_unit" | "fixed" {
+  if (raw === "fixed" || raw === "per_unit") return raw;
+  const cat = category.trim().toLowerCase();
+  if (["marketing", "operacao", "geral"].includes(cat)) return "fixed";
+  return "per_unit";
+}
+
 router.get("/expenses", async (_req, res) => {
   const rows = await query(
-    `SELECT id, description, category, amount_cents, spent_on, notes, created_at
+    `SELECT id, description, category, amount_cents, cost_mode, spent_on, notes, created_at
      FROM business_expenses
      ORDER BY spent_on DESC, id DESC
      LIMIT 100`,
@@ -192,30 +424,72 @@ router.post("/expenses", async (req, res) => {
       description?: string;
       category?: string;
       amount_cents?: number;
+      cost_mode?: string;
       spent_on?: string;
       notes?: string;
     };
     const description = String(body.description ?? "").trim();
     const amount = Number(body.amount_cents ?? 0);
+    const category = String(body.category ?? "geral").trim() || "geral";
     if (!description || !(amount > 0)) {
       res.status(400).json({ error: "Descrição e valor são obrigatórios" });
       return;
     }
+    const costMode = normalizeCostMode(body.cost_mode, category);
     const inserted = await query(
-      `INSERT INTO business_expenses (description, category, amount_cents, spent_on, notes)
-       VALUES ($1, $2, $3, COALESCE($4::date, CURRENT_DATE), $5)
-       RETURNING id, description, category, amount_cents, spent_on, notes, created_at`,
-      [
-        description,
-        String(body.category ?? "geral").trim() || "geral",
-        Math.round(amount),
-        body.spent_on || null,
-        body.notes?.trim() || null,
-      ],
+      `INSERT INTO business_expenses (description, category, amount_cents, cost_mode, spent_on, notes)
+       VALUES ($1, $2, $3, $4, COALESCE($5::date, CURRENT_DATE), $6)
+       RETURNING id, description, category, amount_cents, cost_mode, spent_on, notes, created_at`,
+      [description, category, Math.round(amount), costMode, body.spent_on || null, body.notes?.trim() || null],
     );
     res.status(201).json(inserted.rows[0]);
   } catch (err) {
     res.status(400).json({ error: err instanceof Error ? err.message : "Erro ao salvar custo" });
+  }
+});
+
+router.put("/expenses/:id", async (req, res) => {
+  try {
+    const id = Number(req.params.id);
+    if (!Number.isFinite(id)) {
+      res.status(400).json({ error: "ID inválido" });
+      return;
+    }
+    const body = req.body as {
+      description?: string;
+      category?: string;
+      amount_cents?: number;
+      cost_mode?: string;
+      spent_on?: string;
+      notes?: string;
+    };
+    const description = String(body.description ?? "").trim();
+    const amount = Number(body.amount_cents ?? 0);
+    const category = String(body.category ?? "geral").trim() || "geral";
+    if (!description || !(amount > 0)) {
+      res.status(400).json({ error: "Descrição e valor são obrigatórios" });
+      return;
+    }
+    const costMode = normalizeCostMode(body.cost_mode, category);
+    const updated = await query(
+      `UPDATE business_expenses
+       SET description = $2,
+           category = $3,
+           amount_cents = $4,
+           cost_mode = $5,
+           spent_on = COALESCE($6::date, spent_on),
+           notes = $7
+       WHERE id = $1
+       RETURNING id, description, category, amount_cents, cost_mode, spent_on, notes, created_at`,
+      [id, description, category, Math.round(amount), costMode, body.spent_on || null, body.notes?.trim() || null],
+    );
+    if (!updated.rows[0]) {
+      res.status(404).json({ error: "Custo não encontrado" });
+      return;
+    }
+    res.json(updated.rows[0]);
+  } catch (err) {
+    res.status(400).json({ error: err instanceof Error ? err.message : "Erro ao atualizar custo" });
   }
 });
 
@@ -238,11 +512,17 @@ router.get("/products", async (_req, res) => {
     list.push(v);
     byProduct.set(v.product_id, list);
   }
+  const imagesMap = await imagesByProductIds(products.rows.map((p) => Number(p.id)));
   res.json(
-    products.rows.map((p) => ({
-      ...p,
-      volume_prices: byProduct.get(p.id) ?? [],
-    })),
+    products.rows.map((p) => {
+      const images = imagesMap.get(Number(p.id)) ?? [];
+      return {
+        ...p,
+        volume_prices: byProduct.get(p.id) ?? [],
+        images,
+        image_urls: images.map((i) => i.image_url),
+      };
+    }),
   );
 });
 
@@ -380,20 +660,144 @@ router.patch("/products/:id", async (req, res) => {
   }
 });
 
+router.delete("/products/:id", async (req, res) => {
+  try {
+    const id = Number(req.params.id);
+    if (!Number.isFinite(id)) {
+      res.status(400).json({ error: "ID inválido" });
+      return;
+    }
+    const current = await query(`SELECT id, name FROM products WHERE id = $1`, [id]);
+    if (!current.rows[0]) {
+      res.status(404).json({ error: "Produto não encontrado" });
+      return;
+    }
+
+    const linked = await query<{ src: string }>(
+      `SELECT 'pedido' AS src FROM order_items WHERE product_id = $1
+       UNION ALL
+       SELECT 'assinatura' FROM subscriptions WHERE product_id = $1
+       UNION ALL
+       SELECT 'estoque' FROM stock_movements WHERE product_id = $1
+       UNION ALL
+       SELECT 'inventario' FROM inventory_count_lines WHERE product_id = $1
+       LIMIT 1`,
+      [id],
+    );
+
+    if (linked.rows[0]) {
+      await query(`UPDATE products SET active = false, updated_at = NOW() WHERE id = $1`, [id]);
+      res.json({
+        ok: true,
+        deactivated: true,
+        message: `Produto vinculado a ${linked.rows[0].src} — foi desativado (não apagado).`,
+      });
+      return;
+    }
+
+    await query(`DELETE FROM product_volume_prices WHERE product_id = $1`, [id]);
+    await query(`DELETE FROM volume_price_tiers WHERE schedule_id IN (SELECT id FROM volume_price_schedules WHERE product_id = $1)`, [id]);
+    await query(`DELETE FROM volume_price_schedules WHERE product_id = $1`, [id]);
+    await query(`DELETE FROM products WHERE id = $1`, [id]);
+    res.json({ ok: true, deactivated: false, message: "Produto removido do catálogo." });
+  } catch (err) {
+    res.status(400).json({ error: err instanceof Error ? err.message : "Erro ao remover produto" });
+  }
+});
+
 router.post("/products/:id/photo", upload.single("photo"), async (req, res) => {
   if (!req.file) {
     res.status(400).json({ error: "Arquivo obrigatório" });
     return;
   }
   const id = Number(req.params.id);
+  const exists = await query(`SELECT id FROM products WHERE id = $1`, [id]);
+  if (!exists.rows[0]) {
+    res.status(404).json({ error: "Produto não encontrado" });
+    return;
+  }
   const imageUrl = `/uploads/products/${req.file.filename}`;
-  await query(`UPDATE products SET image_url = $2, updated_at = NOW() WHERE id = $1`, [id, imageUrl]);
+  const maxOrder = await query<{ m: number | null }>(
+    `SELECT MAX(sort_order) AS m FROM product_images WHERE product_id = $1`,
+    [id],
+  );
+  const sortOrder = Number(maxOrder.rows[0]?.m ?? -1) + 1;
+  await query(
+    `INSERT INTO product_images (product_id, image_url, sort_order) VALUES ($1, $2, $3)`,
+    [id, imageUrl, sortOrder],
+  );
+  const images = await syncProductCover(id);
+  const result = await query(`SELECT ${PRODUCT_SELECT} FROM product_catalog WHERE id = $1`, [id]);
+  res.json({ ...result.rows[0], images, image_urls: images.map((i) => i.image_url) });
+});
+
+router.post("/products/:id/photos", upload.array("photos", 12), async (req, res) => {
+  const id = Number(req.params.id);
+  const files = Array.isArray(req.files) ? req.files : [];
+  if (!files.length) {
+    res.status(400).json({ error: "Envie ao menos uma imagem" });
+    return;
+  }
+  const exists = await query(`SELECT id FROM products WHERE id = $1`, [id]);
+  if (!exists.rows[0]) {
+    res.status(404).json({ error: "Produto não encontrado" });
+    return;
+  }
+  const maxOrder = await query<{ m: number | null }>(
+    `SELECT MAX(sort_order) AS m FROM product_images WHERE product_id = $1`,
+    [id],
+  );
+  let sortOrder = Number(maxOrder.rows[0]?.m ?? -1) + 1;
+  for (const file of files) {
+    const imageUrl = `/uploads/products/${file.filename}`;
+    await query(
+      `INSERT INTO product_images (product_id, image_url, sort_order) VALUES ($1, $2, $3)`,
+      [id, imageUrl, sortOrder],
+    );
+    sortOrder += 1;
+  }
+  const images = await syncProductCover(id);
+  const result = await query(`SELECT ${PRODUCT_SELECT} FROM product_catalog WHERE id = $1`, [id]);
+  res.json({ ...result.rows[0], images, image_urls: images.map((i) => i.image_url) });
+});
+
+router.get("/products/:id/images", async (req, res) => {
+  const id = Number(req.params.id);
+  res.json(await listProductImages(id));
+});
+
+router.delete("/products/:id/images/:imageId", async (req, res) => {
+  const id = Number(req.params.id);
+  const imageId = Number(req.params.imageId);
+  await query(`DELETE FROM product_images WHERE id = $1 AND product_id = $2`, [imageId, id]);
+  const images = await syncProductCover(id);
   const result = await query(`SELECT ${PRODUCT_SELECT} FROM product_catalog WHERE id = $1`, [id]);
   if (!result.rows[0]) {
     res.status(404).json({ error: "Produto não encontrado" });
     return;
   }
-  res.json(result.rows[0]);
+  res.json({ ...result.rows[0], images, image_urls: images.map((i) => i.image_url) });
+});
+
+router.post("/products/:id/images/:imageId/cover", async (req, res) => {
+  const id = Number(req.params.id);
+  const imageId = Number(req.params.imageId);
+  const img = await query<{ id: number }>(
+    `SELECT id FROM product_images WHERE id = $1 AND product_id = $2`,
+    [imageId, id],
+  );
+  if (!img.rows[0]) {
+    res.status(404).json({ error: "Imagem não encontrada" });
+    return;
+  }
+  await query(
+    `UPDATE product_images SET sort_order = sort_order + 1 WHERE product_id = $1`,
+    [id],
+  );
+  await query(`UPDATE product_images SET sort_order = 0 WHERE id = $1`, [imageId]);
+  const images = await syncProductCover(id);
+  const result = await query(`SELECT ${PRODUCT_SELECT} FROM product_catalog WHERE id = $1`, [id]);
+  res.json({ ...result.rows[0], images, image_urls: images.map((i) => i.image_url) });
 });
 
 router.post("/banners/:id/photo", uploadBanner.single("photo"), async (req, res) => {

@@ -1,43 +1,10 @@
 import { Link } from "react-router-dom";
-import { useEffect, useRef, useState, type CSSProperties } from "react";
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { api, type Product } from "../lib/api";
 import { useAuth } from "../context/AuthContext";
-import { ProductCard } from "../components/ProductCard";
-import { BrandIcon } from "../components/BrandIcon";
 import { BrandLockup } from "../components/BrandMark";
+import { ProductImageCarousel, productImageSlides } from "../components/ProductImageCarousel";
 import { SITE } from "../lib/site";
-
-const FEATURES = [
-  { title: "Resumos", desc: "Sínteses para revisar com foco.", to: "/resumos", icon: "spark" as const, needSub: true },
-  { title: "Escultura em cera", desc: "28 dentes FDI, fases e vistas finais.", to: "/app/escultura/13", icon: "tooth" as const, needSub: true },
-  { title: "Anatomia dental", desc: "Atlas vivo da boca e do periodonto.", to: "/app/anatomia", icon: "anatomy" as const, needSub: true },
-  { title: "Visualizador 3D", desc: "Gire e estude cada dente em 3D.", to: "/app/visualizador-3d", icon: "spark" as const, needSub: true },
-  { title: "IA para tirar dúvidas", desc: "Apoio educacional no chat.", to: "/app/ia", icon: "chat" as const, needSub: true },
-  { title: "Perguntas odontológicas", desc: "Perguntas e respostas por tema.", to: "/perguntas", icon: "chat" as const, needSub: true },
-  { title: "Loja", desc: "Produtos e planos de acesso.", to: "/loja", icon: "tooth" as const, needSub: false },
-  { title: "Novidades", desc: "Atualizações da plataforma.", to: "/app/novidades", icon: "spark" as const, needSub: true },
-];
-
-const HOW_BENEFITS = [
-  {
-    icon: "bag" as const,
-    title: "Comprar materiais selecionados",
-    text: "Itens cuidadosamente escolhidos para a prática clínica e acadêmica.",
-    to: "/loja" as const,
-  },
-  {
-    icon: "study" as const,
-    title: "Estudar conteúdos exclusivos",
-    text: "Material organizado para revisar e evoluir com método.",
-    to: "/acesso" as const,
-  },
-  {
-    icon: "anatomy" as const,
-    title: "Anatomia e escultura na prática",
-    text: "Aprenda anatomia e escultura dental de forma visual e aplicada.",
-    to: "/acesso" as const,
-  },
-];
 
 function stage(p: number, a: number, b: number) {
   if (b <= a) return p >= b ? 1 : 0;
@@ -59,7 +26,13 @@ export function LandingPage() {
     api<Product[]>("/products").then(setProducts).catch(console.error);
   }, []);
 
-  /* Progresso da abertura + atmosfera global */
+  const salesItems = useMemo(() => {
+    const base = products;
+    if (base.length === 0) return [];
+    const copies = base.length < 4 ? 3 : 2;
+    return Array.from({ length: copies }, () => base).flat();
+  }, [products]);
+
   useEffect(() => {
     const track = openingRef.current;
     const landing = landingRef.current;
@@ -101,7 +74,6 @@ export function LandingPage() {
     };
   }, []);
 
-  /* Capítulos: revelação contínua pelo quanto estão na viewport */
   useEffect(() => {
     const root = storyRef.current;
     if (!root) return;
@@ -132,25 +104,12 @@ export function LandingPage() {
     return () => io.disconnect();
   }, []);
 
-  const canAccessMembers = Boolean(hasAccess || user?.role === "admin");
-
-  const featureTo = (f: (typeof FEATURES)[number]) => {
-    if (f.needSub && !canAccessMembers) return "/acesso";
-    if (f.to.startsWith("/app") && !user) return "/acesso";
-    return f.to;
-  };
-
-  const featureState = (f: (typeof FEATURES)[number], to: string) => {
-    if (to === "/acesso") return { from: f.to };
-    return undefined;
-  };
-
-  const ctasIn = stage(progress, 0.06, 0.26);
-  const exit = stage(progress, 0.48, 1);
-  const scrollHint = Math.max(0, 1 - stage(progress, 0.03, 0.18));
-  const contentOpacity = Math.max(0, 1 - exit);
-  const contentY = exit * -56;
-  const ctasOpacity = Math.max(0, ctasIn * (1 - exit));
+  const contentOpacity = 1 - stage(progress, 0.55, 0.92) * 0.35;
+  const contentY = stage(progress, 0.4, 0.95) * -28;
+  const exit = stage(progress, 0.62, 1);
+  const scrollHint = 1 - stage(progress, 0.08, 0.35);
+  const ctasIn = stage(progress, 0.12, 0.38);
+  const ctasOpacity = ctasIn * (1 - exit * 0.85);
   const ctasY = (1 - ctasIn) * 20 + exit * -24;
   const ctasInteractive = ctasOpacity > 0.4 && exit < 0.75;
   const stickyFade = Math.max(0, 1 - stage(progress, 0.72, 1) * 0.55);
@@ -162,11 +121,11 @@ export function LandingPage() {
       <section ref={openingRef} className="opening" aria-label="Abertura">
         <div className="opening__sticky" style={{ opacity: stickyFade } as CSSProperties}>
           <div className="opening__media" aria-hidden="true">
-            <img
-              src="/uploads/banners/banner-gb-dental.jpg"
-              alt=""
-              className="opening__media-img"
-            />
+            <div className="opening__sky" />
+            <div className="opening__orb opening__orb--a" />
+            <div className="opening__orb opening__orb--b" />
+            <div className="opening__orb opening__orb--c" />
+            <div className="opening__sheen" />
           </div>
           <div className="opening__veil" aria-hidden="true" />
 
@@ -179,7 +138,7 @@ export function LandingPage() {
               } as CSSProperties
             }
           >
-            <div className="opening__brand">
+            <div className="opening__brand" aria-label={SITE.brand}>
               <BrandLockup size="lg" />
             </div>
 
@@ -227,9 +186,9 @@ export function LandingPage() {
           </div>
 
           <a
-            href="#explore"
+            href="#vendas"
             className="opening__scroll"
-            aria-label="Continuar para o conteúdo"
+            aria-label="Continuar para as vendas"
             style={{ opacity: scrollHint * contentOpacity } as CSSProperties}
             tabIndex={scrollHint > 0.2 ? undefined : -1}
           >
@@ -242,117 +201,47 @@ export function LandingPage() {
       </section>
 
       <div ref={storyRef} className="landing__story">
-        <section className="story-chapter story-chapter--how" data-chapter="how" id="como-funciona">
-          <div className="story-chapter__inner story-chapter__inner--wide">
-            <header className="story-chapter__header story-chapter__header--how">
-              <p className="story-chapter__eyebrow">Como funciona</p>
-              <h2>Muito mais do que uma loja de materiais odontológicos</h2>
-              <p className="story-chapter__lead">
-                A GB Dental nasceu para reunir, em um único lugar, tudo o que estudantes e profissionais de
-                Odontologia precisam para evoluir.
+        <section className="story-chapter sales-showcase" data-chapter="sales" id="vendas">
+          <div className="story-chapter__inner sales-showcase__inner">
+            {salesItems.length === 0 ? (
+              <p className="admin-muted" style={{ textAlign: "center" }}>
+                Em breve novos produtos na loja.
               </p>
-            </header>
-
-            <div className="how-mission">
-              <p>
-                Aqui você encontra materiais cuidadosamente selecionados para a prática clínica e acadêmica,
-                mas nosso propósito vai muito além da venda de produtos.
-              </p>
-              <p>
-                Nossa missão é ensinar, revisar e desenvolver habilidades por meio de conteúdos de qualidade,
-                aulas, materiais exclusivos e orientações práticas — tornando o aprendizado mais acessível,
-                organizado e eficiente.
-              </p>
-            </div>
-
-            <p className="how-grid__intro">Na GB Dental você poderá:</p>
-            <div className="how-grid">
-              {HOW_BENEFITS.map((b, i) => {
-                const body = (
-                  <>
-                    <BrandIcon name={b.icon} size={26} />
-                    <h3>{b.title}</h3>
-                    <p>{b.text}</p>
-                  </>
-                );
-                const style = { "--card-i": i } as CSSProperties;
-                if ("to" in b && b.to) {
-                  return (
-                    <Link
-                      key={b.title}
-                      to={b.to}
-                      className="how-card how-card--link story-card"
-                      style={style}
-                    >
-                      {body}
-                    </Link>
-                  );
-                }
-                return (
-                  <article key={b.title} className="how-card story-card" style={style}>
-                    {body}
-                  </article>
-                );
-              })}
-            </div>
-
-            <div className="how-cta">
-              <Link to="/assinar" className="btn-primary btn-primary--lg">
-                Conhecer assinaturas
-              </Link>
-              <Link to="/#explore" className="btn-outline btn-outline--lg">
-                Ver conteúdos
-              </Link>
-            </div>
-          </div>
-        </section>
-
-        <section className="story-chapter" data-chapter="explore" id="explore">
-          <div className="story-chapter__inner">
-            <header className="story-chapter__header">
-              <p className="story-chapter__eyebrow">Da descoberta ao estudo</p>
-              <h2>Explore a plataforma</h2>
-              <p>Cada recurso abre um caminho — toque e transforme sua forma de aprender.</p>
-            </header>
-            <div className="story-chapter__grid feature-grid feature-grid--dense">
-              {FEATURES.map((f, i) => {
-                const to = featureTo(f);
-                return (
-                  <Link
-                    key={f.title}
-                    to={to}
-                    state={featureState(f, to)}
-                    className="feature-card feature-card--link story-card"
-                    style={{ "--card-i": i } as CSSProperties}
-                  >
-                    <BrandIcon name={f.icon} />
-                    <h3>{f.title}</h3>
-                    <p>{f.desc}</p>
-                    {f.needSub && <span className="feature-card__tag">Assinantes</span>}
-                  </Link>
-                );
-              })}
-            </div>
-          </div>
-        </section>
-
-        <section className="story-chapter" data-chapter="shop" id="patrocinadores">
-          <div className="story-chapter__inner">
-            <header className="story-chapter__header">
-              <p className="story-chapter__eyebrow">Loja</p>
-              <h2>Patrocinadores e produtos</h2>
-              <p>Apoios e itens da loja — visíveis na página inicial.</p>
-            </header>
-            <div className="story-chapter__grid product-grid">
-              {products.map((p, i) => (
-                <div key={p.id} className="story-card" style={{ "--card-i": i } as CSSProperties}>
-                  <ProductCard product={p} />
+            ) : (
+              <div className="sales-marquee" aria-label="Produtos à venda">
+                <div className="sales-marquee__track">
+                  {[0, 1].map((loop) => (
+                    <div key={loop} className="sales-marquee__group" aria-hidden={loop === 1 || undefined}>
+                      {salesItems.map((p, i) => {
+                        return (
+                          <Link
+                            key={`${loop}-${p.id}-${i}`}
+                            to="/loja"
+                            className="sales-marquee__card"
+                            title={p.name}
+                          >
+                            <span className="sales-marquee__media">
+                              <ProductImageCarousel
+                                images={productImageSlides(p)}
+                                alt={p.name}
+                                autoplayMs={2800 + (i % 4) * 400}
+                                showControls={false}
+                              />
+                            </span>
+                          </Link>
+                        );
+                      })}
+                    </div>
+                  ))}
                 </div>
-              ))}
+              </div>
+            )}
+
+            <div className="sales-showcase__cta">
+              <Link to="/loja" className="btn-primary btn-primary--lg">
+                Ver todos na loja
+              </Link>
             </div>
-            <p className="section__note story-chapter__note">
-              Imagens ilustrativas · Produtos sujeitos a disponibilidade
-            </p>
           </div>
         </section>
 

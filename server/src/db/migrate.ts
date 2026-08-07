@@ -335,6 +335,52 @@ export async function migrateSchema() {
   await query(
     `CREATE INDEX IF NOT EXISTS idx_business_expenses_spent_on ON business_expenses (spent_on DESC)`,
   );
+  // per_unit = custo a cada unidade vendida; fixed = gasto único (não multiplica)
+  await query(`ALTER TABLE business_expenses ADD COLUMN IF NOT EXISTS cost_mode VARCHAR(20) NOT NULL DEFAULT 'per_unit'`);
+  await query(`
+    DO $$ BEGIN
+      ALTER TABLE business_expenses
+        ADD CONSTRAINT business_expenses_cost_mode_check
+        CHECK (cost_mode IN ('per_unit', 'fixed'));
+    EXCEPTION
+      WHEN duplicate_object THEN NULL;
+    END $$
+  `);
+  // Categorias tipicamente por unidade
+  await query(`
+    UPDATE business_expenses
+    SET cost_mode = 'per_unit'
+    WHERE category IN ('produto', 'embalagem', 'brinde', 'frete', 'compra')
+      AND (cost_mode IS NULL OR cost_mode = 'per_unit')
+  `);
+
+  // Valores do resumo financeiro editáveis no painel (substituem o cálculo automático quando enabled)
+  await query(`
+    CREATE TABLE IF NOT EXISTS finance_dashboard_overrides (
+      id INTEGER PRIMARY KEY DEFAULT 1 CHECK (id = 1),
+      enabled BOOLEAN NOT NULL DEFAULT false,
+      revenue_cents INTEGER NOT NULL DEFAULT 0,
+      costs_cents INTEGER NOT NULL DEFAULT 0,
+      orders_count INTEGER NOT NULL DEFAULT 0,
+      active_subscribers INTEGER NOT NULL DEFAULT 0,
+      month_revenue_cents INTEGER NOT NULL DEFAULT 0,
+      month_costs_cents INTEGER NOT NULL DEFAULT 0,
+      month_orders_count INTEGER NOT NULL DEFAULT 0,
+      banner_revenue_cents INTEGER NOT NULL DEFAULT 0,
+      discounts_cents INTEGER NOT NULL DEFAULT 0,
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      CONSTRAINT finance_dashboard_overrides_nonneg CHECK (
+        revenue_cents >= 0 AND costs_cents >= 0 AND orders_count >= 0
+        AND active_subscribers >= 0 AND month_revenue_cents >= 0
+        AND month_costs_cents >= 0 AND month_orders_count >= 0
+        AND banner_revenue_cents >= 0 AND discounts_cents >= 0
+      )
+    )
+  `);
+  await query(`
+    INSERT INTO finance_dashboard_overrides (id) VALUES (1)
+    ON CONFLICT (id) DO NOTHING
+  `);
 
   // Orders — sales order + payment gateway prep
   const orderCols: Array<[string, string]> = [
@@ -427,6 +473,28 @@ export async function migrateSchema() {
     FROM products p
     LEFT JOIN product_prices pr ON pr.product_id = p.id
     LEFT JOIN product_inventory inv ON inv.product_id = p.id
+  `);
+
+  // Galeria / carrossel de imagens por produto
+  await query(`
+    CREATE TABLE IF NOT EXISTS product_images (
+      id SERIAL PRIMARY KEY,
+      product_id INTEGER NOT NULL REFERENCES products(id) ON DELETE CASCADE,
+      image_url VARCHAR(500) NOT NULL,
+      sort_order INTEGER NOT NULL DEFAULT 0,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    )
+  `);
+  await query(
+    `CREATE INDEX IF NOT EXISTS idx_product_images_product ON product_images (product_id, sort_order, id)`,
+  );
+  // Backfill: capa atual vira primeira imagem do carrossel
+  await query(`
+    INSERT INTO product_images (product_id, image_url, sort_order)
+    SELECT p.id, p.image_url, 0
+    FROM products p
+    WHERE p.image_url IS NOT NULL AND p.image_url <> ''
+      AND NOT EXISTS (SELECT 1 FROM product_images pi WHERE pi.product_id = p.id)
   `);
 
   await query(`
