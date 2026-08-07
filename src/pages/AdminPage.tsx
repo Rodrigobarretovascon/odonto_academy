@@ -421,7 +421,7 @@ export function AdminPage() {
                     required
                   />
                 </FieldLabel>
-                <FieldLabel label="Categoria">
+                <FieldLabel label="Categoria" tip="Organiza onde o dinheiro vai.">
                   <select
                     value={expenseForm.category}
                     onChange={(e) => setExpenseForm({ ...expenseForm, category: e.target.value })}
@@ -441,7 +441,7 @@ export function AdminPage() {
                     required
                   />
                 </FieldLabel>
-                <FieldLabel label="Data">
+                <FieldLabel label="Data" tip="Data em que o custo foi realizado.">
                   <input
                     type="date"
                     value={expenseForm.spent_on}

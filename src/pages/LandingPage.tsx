@@ -267,33 +267,18 @@ export function LandingPage() {
 
             <p className="how-grid__intro">Na GB Dental você poderá:</p>
             <div className="how-grid">
-              {HOW_BENEFITS.map((b, i) => {
-                const body = (
-                  <>
-                    <BrandIcon name={b.icon} size={26} />
-                    <h3>{b.title}</h3>
-                    <p>{b.text}</p>
-                  </>
-                );
-                const style = { "--card-i": i } as CSSProperties;
-                if ("to" in b && b.to) {
-                  return (
-                    <Link
-                      key={b.title}
-                      to={b.to}
-                      className="how-card how-card--link story-card"
-                      style={style}
-                    >
-                      {body}
-                    </Link>
-                  );
-                }
-                return (
-                  <article key={b.title} className="how-card story-card" style={style}>
-                    {body}
-                  </article>
-                );
-              })}
+              {HOW_BENEFITS.map((b, i) => (
+                <Link
+                  key={b.title}
+                  to={b.to}
+                  className="how-card how-card--link story-card"
+                  style={{ "--card-i": i } as CSSProperties}
+                >
+                  <BrandIcon name={b.icon} size={26} />
+                  <h3>{b.title}</h3>
+                  <p>{b.text}</p>
+                </Link>
+              ))}
             </div>
 
             <div className="how-cta">
