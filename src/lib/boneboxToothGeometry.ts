@@ -112,14 +112,14 @@ function deformCrown(
     if (kind === "central" || kind === "lateral") {
       // Face vestibular convexa + borda incisal fina
       if (z > 0) {
-        const boss = 0.035 * Math.exp(-((ny + 0.15) / 0.55) ** 2) * (1 - Math.abs(nx) * 0.4);
+        const boss = 0.035 * Math.exp(-Math.pow((ny + 0.15) / 0.55, 2)) * (1 - Math.abs(nx) * 0.4);
         z += boss;
         // lóbulos / mamelões
         z -= 0.012 * Math.sin(nx * Math.PI * 1.5) * Math.max(0, 0.9 - Math.abs(ny));
       } else {
         // cíngulo + fossa lingual
         if (ny < -0.05) {
-          z -= 0.055 * Math.exp(-((ny + 0.25) / 0.28) ** 2) * (1 - Math.abs(nx) * 0.7);
+          z -= 0.055 * Math.exp(-Math.pow((ny + 0.25) / 0.28, 2)) * (1 - Math.abs(nx) * 0.7);
         } else {
           z += 0.04 * Math.sin(((ny + 0.05) / 0.7) * Math.PI) * (1 - Math.abs(nx));
         }
@@ -150,15 +150,15 @@ function deformCrown(
       if (z > 0) {
         z += 0.03 * (1 - Math.abs(nx)) * Math.max(0, 1 - Math.abs(ny));
       } else if (ny < 0) {
-        z -= 0.04 * Math.exp(-((ny + 0.2) / 0.3) ** 2);
+        z -= 0.04 * Math.exp(-Math.pow((ny + 0.2) / 0.3, 2));
       }
     }
 
     if (kind === "premolar") {
       // duas cúspides (V e L)
       if (ny > 0.05) {
-        const cuspV = Math.exp(-((nz - 0.35) / 0.45) ** 2) * Math.exp(-(nx / 0.7) ** 2);
-        const cuspL = Math.exp(-((nz + 0.35) / 0.45) ** 2) * Math.exp(-(nx / 0.7) ** 2);
+        const cuspV = Math.exp(-Math.pow((nz - 0.35) / 0.45, 2)) * Math.exp(-Math.pow(nx / 0.7, 2));
+        const cuspL = Math.exp(-Math.pow((nz + 0.35) / 0.45, 2)) * Math.exp(-Math.pow(nx / 0.7, 2));
         y += (cuspV * 0.055 + cuspL * (n === 4 ? 0.04 : 0.048));
         // sulco central
         if (Math.abs(nz) < 0.25) y -= 0.022 * (1 - Math.abs(nz) / 0.25);
@@ -174,7 +174,7 @@ function deformCrown(
       if (ny > 0) {
         const cx = nx > 0 ? 0.4 : -0.4;
         const cz = nz > 0 ? 0.35 : -0.35;
-        const cusp = Math.exp(-((nx - cx) / 0.55) ** 2) * Math.exp(-((nz - cz) / 0.5) ** 2);
+        const cusp = Math.exp(-Math.pow((nx - cx) / 0.55, 2)) * Math.exp(-Math.pow((nz - cz) / 0.5, 2));
         y += cusp * (n === 8 ? 0.035 : 0.05);
         if (Math.abs(nx) < 0.2) y -= 0.02;
         if (Math.abs(nz) < 0.18) y -= 0.015;
