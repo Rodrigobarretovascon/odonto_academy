@@ -14,6 +14,7 @@ export function ProductCard({ product, detailed }: ProductCardProps) {
   const onPromo = effective < product.price_cents;
   const outOfStock = product.stock_qty != null && product.stock_qty <= 0;
   const inCart = has(product.id);
+  const highlights = product.characteristics?.slice(0, 3) ?? [];
 
   return (
     <article className={`product-card${detailed ? " product-card--detailed" : ""}${inCart ? " is-in-cart" : ""}`}>
@@ -25,39 +26,46 @@ export function ProductCard({ product, detailed }: ProductCardProps) {
       <div className="product-card__body">
         <p className="product-card__subtitle">{product.subtitle}</p>
         <h3 className="product-card__title">{product.name}</h3>
-        {detailed && <p className="product-card__desc">{product.description}</p>}
-        {product.characteristics && product.characteristics.length > 0 && (
-          <ul className="product-card__chips">
-            {product.characteristics.slice(0, 4).map((c) => (
-              <li key={c}>{c}</li>
-            ))}
-          </ul>
+
+        {detailed && product.description && (
+          <p className="product-card__desc">{product.description}</p>
         )}
-        <div className="product-card__meta">
-          {product.access_days > 0 && (
-            <span className="product-card__tag">{product.access_days} dias de acesso</span>
-          )}
-          {product.stock_qty != null && (
-            <span className="product-card__tag">
-              {outOfStock ? "Esgotado" : `${product.stock_qty} em estoque`}
+
+        {detailed && highlights.length > 0 && (
+          <p className="product-card__highlights">{highlights.join(" · ")}</p>
+        )}
+
+        <div className="product-card__footer">
+          <div className="product-card__pricing">
+            <span className="product-card__price">
+              {onPromo && <s className="product-card__price-old">{formatPrice(product.price_cents)}</s>}
+              {formatPrice(effective)}
             </span>
+            {product.access_days > 0 && (
+              <span className="product-card__note">{product.access_days} dias de acesso</span>
+            )}
+            {product.stock_qty != null && (
+              <span className={`product-card__note${outOfStock ? " is-out" : ""}`}>
+                {outOfStock ? "Esgotado" : "Em estoque"}
+              </span>
+            )}
+          </div>
+
+          <button
+            type="button"
+            className="btn-primary btn-primary--block"
+            onClick={() => add(product)}
+            disabled={outOfStock}
+          >
+            {outOfStock ? "Indisponível" : inCart ? "Adicionar +1" : "Adicionar ao carrinho"}
+          </button>
+
+          {inCart && (
+            <Link to="/loja" className="product-card__link">
+              Ver carrinho →
+            </Link>
           )}
-          <span className="product-card__price">
-            {onPromo && <s className="product-card__price-old">{formatPrice(product.price_cents)}</s>}
-            {formatPrice(effective)}
-          </span>
         </div>
-        <button
-          type="button"
-          className="btn-primary btn-primary--block"
-          onClick={() => add(product)}
-          disabled={outOfStock}
-        >
-          {outOfStock ? "Indisponível" : inCart ? "Adicionar +1" : "Adicionar ao carrinho"}
-        </button>
-        <Link to="/loja" className="product-card__link">
-          Ver carrinho →
-        </Link>
       </div>
     </article>
   );
