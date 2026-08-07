@@ -3,14 +3,14 @@
 #
 # Uso (no Mac, na pasta do projeto):
 #   bash deploy/publish.sh
-#   bash deploy/publish.sh ubuntu@10.100.15.2
+#   bash deploy/publish.sh admgolden@10.100.15.2
 #   REMOTE=usuario@10.100.15.2 APP_DIR=/var/www/gbdental bash deploy/publish.sh
 #
-# Nota: root SSH costuma estar desabilitado — use um usuário com sudo (ex.: ubuntu).
+# Nota: root SSH está desabilitado — use admgolden (sudo) neste servidor.
 #
 set -euo pipefail
 
-REMOTE="${1:-${REMOTE:-ubuntu@10.100.15.2}}"
+REMOTE="${1:-${REMOTE:-admgolden@10.100.15.2}}"
 APP_DIR="${APP_DIR:-/var/www/gbdental}"
 REPO_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 
