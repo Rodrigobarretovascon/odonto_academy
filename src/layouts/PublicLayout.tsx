@@ -64,18 +64,12 @@ export function PublicLayout() {
           <BrandLockup size="sm" />
         </Link>
 
-        <button
-          type="button"
-          className="terus-nav-toggle"
-          aria-expanded={menuOpen}
-          aria-controls="public-nav"
-          onClick={() => setMenuOpen((v) => !v)}
-        >
-          <span className="visually-hidden">{menuOpen ? "Fechar menu" : "Abrir menu"}</span>
-          <span aria-hidden="true" />
-          <span aria-hidden="true" />
-          <span aria-hidden="true" />
-        </button>
+        {location.pathname === "/" && (
+          <p className="terus-header__tagline">
+            Seu espaço para <em>aprender</em>, <em>praticar</em> e aperfeiçoar a{" "}
+            <em>escultura dental</em>.
+          </p>
+        )}
 
         <nav id="public-nav" className={`terus-nav${menuOpen ? " is-open" : ""}`} aria-label="Principal">
           {!user ? (
@@ -200,22 +194,23 @@ export function PublicLayout() {
               )}
             </div>
           )}
+
+          <button
+            type="button"
+            className="terus-nav-toggle"
+            aria-expanded={menuOpen}
+            aria-controls="public-nav"
+            onClick={() => setMenuOpen((v) => !v)}
+          >
+            <span className="visually-hidden">{menuOpen ? "Fechar menu" : "Abrir menu"}</span>
+            <span className="terus-nav-toggle__bars" aria-hidden="true">
+              <span />
+              <span />
+              <span />
+            </span>
+          </button>
         </div>
       </header>
-
-      {location.pathname === "/" && (
-        <div className="terus-masthead" aria-label="Mensagem da marca">
-          <p className="terus-masthead__line">
-            <span>Seu espaço para</span>
-            <em>aprender</em>
-            <span className="terus-masthead__dot" aria-hidden="true" />
-            <em>praticar</em>
-            <span className="terus-masthead__dot" aria-hidden="true" />
-            <span>aperfeiçoar a</span>
-            <em>escultura dental</em>
-          </p>
-        </div>
-      )}
 
       {location.pathname === "/" && <PromoBannerRail />}
       <main className="terus-main">
