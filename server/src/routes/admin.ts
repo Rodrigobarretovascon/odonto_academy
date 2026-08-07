@@ -63,117 +63,122 @@ const PRODUCT_SELECT = `
 `;
 
 router.get("/dashboard", async (_req, res) => {
-  const [revenue, orders, subs, recent, lowStock, monthSales, monthCosts, bannerBill, discounts] =
-    await Promise.all([
-      query<{ total: string }>(
-        `SELECT COALESCE(SUM(total_cents), 0) AS total FROM orders WHERE status = 'paid'`,
-      ),
-      query<{ count: string }>(`SELECT COUNT(*) AS count FROM orders WHERE status = 'paid'`),
-      query<{ count: string }>(
-        `SELECT COUNT(DISTINCT user_id) AS count FROM subscriptions WHERE active = true AND expires_at > NOW()`,
-      ),
-      query(
-        `SELECT o.id, o.total_cents, o.created_at, o.channel, u.name AS customer, u.email,
-                COALESCE(o.guest_name, u.name) AS display_name,
-                string_agg(p.name, ', ') AS products
-         FROM orders o
-         LEFT JOIN users u ON u.id = o.user_id
-         JOIN order_items oi ON oi.order_id = o.id
-         JOIN products p ON p.id = oi.product_id
-         WHERE o.status = 'paid'
-         GROUP BY o.id, u.name, u.email
-         ORDER BY o.created_at DESC LIMIT 20`,
-      ),
-      query(
-        `SELECT id, name, stock_qty FROM product_catalog
-         WHERE stock_qty IS NOT NULL AND stock_qty <= 5 AND active = true
-         ORDER BY stock_qty ASC`,
-      ),
-      query<{ total: string; count: string }>(
-        `SELECT COALESCE(SUM(total_cents), 0) AS total, COUNT(*)::text AS count
-         FROM orders
-         WHERE status = 'paid'
-           AND date_trunc('month', COALESCE(paid_at, created_at)) = date_trunc('month', CURRENT_DATE)`,
-      ),
-      query<{ total: string }>(
-        `SELECT COALESCE(SUM(amount_cents), 0) AS total
-         FROM business_expenses
-         WHERE date_trunc('month', spent_on) = date_trunc('month', CURRENT_DATE)`,
-      ),
-      query<{ total: string }>(
-        `SELECT COALESCE(SUM(impression_count * cost_per_impression_cents), 0) AS total
-         FROM ad_banners`,
-      ),
-      query<{ total: string }>(
-        `SELECT COALESCE(SUM(discount_cents + coupon_discount_cents), 0) AS total
-         FROM orders WHERE status = 'paid'`,
-      ),
-    ]);
+  try {
+    const [revenue, orders, subs, recent, lowStock, monthSales, monthCosts, bannerBill, discounts] =
+      await Promise.all([
+        query<{ total: string }>(
+          `SELECT COALESCE(SUM(total_cents), 0) AS total FROM orders WHERE status = 'paid'`,
+        ),
+        query<{ count: string }>(`SELECT COUNT(*) AS count FROM orders WHERE status = 'paid'`),
+        query<{ count: string }>(
+          `SELECT COUNT(DISTINCT user_id) AS count FROM subscriptions WHERE active = true AND expires_at > NOW()`,
+        ),
+        query(
+          `SELECT o.id, o.total_cents, o.created_at, o.channel, u.name AS customer, u.email,
+                  COALESCE(o.guest_name, u.name) AS display_name,
+                  string_agg(p.name, ', ') AS products
+           FROM orders o
+           LEFT JOIN users u ON u.id = o.user_id
+           JOIN order_items oi ON oi.order_id = o.id
+           JOIN products p ON p.id = oi.product_id
+           WHERE o.status = 'paid'
+           GROUP BY o.id, u.name, u.email
+           ORDER BY o.created_at DESC LIMIT 20`,
+        ),
+        query(
+          `SELECT id, name, stock_qty FROM product_catalog
+           WHERE stock_qty IS NOT NULL AND stock_qty <= 5 AND active = true
+           ORDER BY stock_qty ASC`,
+        ),
+        query<{ total: string; count: string }>(
+          `SELECT COALESCE(SUM(total_cents), 0) AS total, COUNT(*)::text AS count
+           FROM orders
+           WHERE status = 'paid'
+             AND date_trunc('month', COALESCE(paid_at, created_at)) = date_trunc('month', CURRENT_DATE)`,
+        ),
+        query<{ total: string }>(
+          `SELECT COALESCE(SUM(amount_cents), 0) AS total
+           FROM business_expenses
+           WHERE date_trunc('month', spent_on) = date_trunc('month', CURRENT_DATE)`,
+        ),
+        query<{ total: string }>(
+          `SELECT COALESCE(SUM(impression_count * cost_per_impression_cents), 0) AS total
+           FROM ad_banners`,
+        ),
+        query<{ total: string }>(
+          `SELECT COALESCE(SUM(discount_cents + coupon_discount_cents), 0) AS total
+           FROM orders WHERE status = 'paid'`,
+        ),
+      ]);
 
-  const monthlySales = await query<{ month: string; total: string }>(
-    `SELECT to_char(date_trunc('month', COALESCE(paid_at, created_at)), 'YYYY-MM') AS month,
-            SUM(total_cents) AS total
-     FROM orders WHERE status = 'paid'
-     GROUP BY 1 ORDER BY 1 DESC LIMIT 6`,
-  );
+    const monthlySales = await query<{ month: string; total: string }>(
+      `SELECT to_char(date_trunc('month', COALESCE(paid_at, created_at)), 'YYYY-MM') AS month,
+              SUM(total_cents) AS total
+       FROM orders WHERE status = 'paid'
+       GROUP BY 1 ORDER BY 1 DESC LIMIT 6`,
+    );
 
-  const monthlyExpenses = await query<{ month: string; total: string }>(
-    `SELECT to_char(date_trunc('month', spent_on), 'YYYY-MM') AS month,
-            SUM(amount_cents) AS total
-     FROM business_expenses
-     GROUP BY 1 ORDER BY 1 DESC LIMIT 6`,
-  );
+    const monthlyExpenses = await query<{ month: string; total: string }>(
+      `SELECT to_char(date_trunc('month', spent_on), 'YYYY-MM') AS month,
+              SUM(amount_cents) AS total
+       FROM business_expenses
+       GROUP BY 1 ORDER BY 1 DESC LIMIT 6`,
+    );
 
-  const expenseByMonth = new Map(monthlyExpenses.rows.map((r) => [r.month, Number(r.total)]));
-  const monthly = monthlySales.rows.map((r) => {
-    const sales = Number(r.total);
-    const costs = expenseByMonth.get(r.month) ?? 0;
-    return { month: r.month, salesCents: sales, costsCents: costs, profitCents: sales - costs };
-  });
-  for (const [month, costs] of expenseByMonth) {
-    if (!monthly.some((m) => m.month === month)) {
-      monthly.push({ month, salesCents: 0, costsCents: costs, profitCents: -costs });
+    const expenseByMonth = new Map(monthlyExpenses.rows.map((r) => [r.month, Number(r.total)]));
+    const monthly = monthlySales.rows.map((r) => {
+      const sales = Number(r.total);
+      const costs = expenseByMonth.get(r.month) ?? 0;
+      return { month: r.month, salesCents: sales, costsCents: costs, profitCents: sales - costs };
+    });
+    for (const [month, costs] of expenseByMonth) {
+      if (!monthly.some((m) => m.month === month)) {
+        monthly.push({ month, salesCents: 0, costsCents: costs, profitCents: -costs });
+      }
     }
+    monthly.sort((a, b) => b.month.localeCompare(a.month));
+
+    const expenses = await query(
+      `SELECT id, description, category, amount_cents, spent_on, notes, created_at
+       FROM business_expenses
+       ORDER BY spent_on DESC, id DESC
+       LIMIT 30`,
+    );
+
+    const revenueCents = Number(revenue.rows[0].total);
+    const ordersCount = Number(orders.rows[0].count);
+    const monthRevenueCents = Number(monthSales.rows[0].total);
+    const monthOrdersCount = Number(monthSales.rows[0].count);
+    const monthCostsCents = Number(monthCosts.rows[0].total);
+    const bannerRevenueCents = Number(bannerBill.rows[0].total);
+    const discountsCents = Number(discounts.rows[0].total);
+    const totalCosts = await query<{ total: string }>(
+      `SELECT COALESCE(SUM(amount_cents), 0) AS total FROM business_expenses`,
+    );
+    const costsCents = Number(totalCosts.rows[0].total);
+
+    res.json({
+      revenueCents,
+      costsCents,
+      profitCents: revenueCents - costsCents,
+      bannerRevenueCents,
+      discountsCents,
+      ordersCount,
+      avgTicketCents: ordersCount > 0 ? Math.round(revenueCents / ordersCount) : 0,
+      monthRevenueCents,
+      monthCostsCents,
+      monthProfitCents: monthRevenueCents - monthCostsCents,
+      monthOrdersCount,
+      activeSubscribers: Number(subs.rows[0].count),
+      recentOrders: recent.rows,
+      monthly,
+      expenses: expenses.rows,
+      lowStock: lowStock.rows,
+    });
+  } catch (err) {
+    console.error("GET /admin/dashboard:", err);
+    res.status(500).json({ error: "Erro ao carregar painel" });
   }
-  monthly.sort((a, b) => b.month.localeCompare(a.month));
-
-  const expenses = await query(
-    `SELECT id, description, category, amount_cents, spent_on, notes, created_at
-     FROM business_expenses
-     ORDER BY spent_on DESC, id DESC
-     LIMIT 30`,
-  );
-
-  const revenueCents = Number(revenue.rows[0].total);
-  const ordersCount = Number(orders.rows[0].count);
-  const monthRevenueCents = Number(monthSales.rows[0].total);
-  const monthOrdersCount = Number(monthSales.rows[0].count);
-  const monthCostsCents = Number(monthCosts.rows[0].total);
-  const bannerRevenueCents = Number(bannerBill.rows[0].total);
-  const discountsCents = Number(discounts.rows[0].total);
-  const totalCosts = await query<{ total: string }>(
-    `SELECT COALESCE(SUM(amount_cents), 0) AS total FROM business_expenses`,
-  );
-  const costsCents = Number(totalCosts.rows[0].total);
-
-  res.json({
-    revenueCents,
-    costsCents,
-    profitCents: revenueCents - costsCents,
-    bannerRevenueCents,
-    discountsCents,
-    ordersCount,
-    avgTicketCents: ordersCount > 0 ? Math.round(revenueCents / ordersCount) : 0,
-    monthRevenueCents,
-    monthCostsCents,
-    monthProfitCents: monthRevenueCents - monthCostsCents,
-    monthOrdersCount,
-    activeSubscribers: Number(subs.rows[0].count),
-    recentOrders: recent.rows,
-    monthly,
-    expenses: expenses.rows,
-    lowStock: lowStock.rows,
-  });
 });
 
 router.get("/expenses", async (_req, res) => {
