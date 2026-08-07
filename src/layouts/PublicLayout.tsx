@@ -166,7 +166,7 @@ export function PublicLayout() {
                     Minha conta
                   </Link>
                   {hasAccess && (
-                    <Link to="/app/escultura/13" role="menuitem">
+                    <Link to="/app/escultura/11" role="menuitem">
                       Área de assinante
                     </Link>
                   )}

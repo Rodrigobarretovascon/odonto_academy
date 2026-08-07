@@ -38,7 +38,7 @@ function step(
 }
 
 /** Técnica regressiva — Incisivo central superior (FDI 11 ou 21).
- * Materiais: apenas bloco de cera + Lecron.
+ * Roteiro fiel ao vídeo didático (materiais, faces, proximais, anatomia, polimento).
  * Textos só do dente atual (sem citar o contralateral).
  */
 export function upperCentralIncisorScript(
@@ -55,54 +55,51 @@ export function upperCentralIncisorScript(
   const vl = measures?.vl ?? "7,0 mm";
   const mesialHint =
     fdi === 11
-      ? "No dente 11, a mesial fica voltada para a linha média; a distal fica para o lado do incisivo lateral."
-      : "No dente 21, a mesial fica voltada para a linha média; a distal fica para o lado do incisivo lateral.";
+      ? "No 11, a mesial olha para a linha média; a distal fica voltada ao incisivo lateral."
+      : "No 21, a mesial olha para a linha média; a distal fica voltada ao incisivo lateral.";
 
   return [
-    step(1, "Preparar o bloco e orientar as faces", "faces", [
-      `Você vai esculpir o ${name}. Materiais: só bloco de cera e Lecron.`,
-      `Use os valores da tabela oferecida acima: altura da coroa ${altura}, mesiodistal ${md} e vestíbulo-lingual ${vl}. Marque esses valores no bloquinho com o Lecron e esculture seguindo essa tabela.`,
-      "Com a ponta do Lecron, marque a altura nas quatro faces do bloco. Cada face do bloquinho corresponde a uma face do dente: vestibular (V), lingual (L), mesial (M) e distal (D). Mantenha as linhas alinhadas.",
-      `Determine primeiro a face vestibular (para frente). A oposta é a lingual. As laterais são mesial e distal. ${mesialHint} Mesial e distal NÃO são iguais — defina isso agora para a anatomia ficar correta.`,
-    ], `Materiais: cera + Lecron. Use os valores da tabela acima (${altura} · MD ${md} · VL ${vl}). Confira V / L / M / D na imagem antes de remover volume.`),
+    step(1, "Materiais, medidas e faces", "faces", [
+      `Escultura do ${name}. Separe: bloco de cera, régua, Lecron (ou estilete), escova e meia fina.`,
+      `Planeje o tamanho com a régua. Valores-guia: altura ${altura}, mesiodistal ${md}, vestíbulo-palatino ${vl}. Pode ser proporcional (não precisa ser tamanho real).`,
+      "Limite as quatro faces do bloco com o Lecron — cada lado do bloquinho será uma face do dente.",
+      `Defina primeiro a vestibular (V). A oposta é a palatina (P). As laterais são mesial (M) e distal (D). ${mesialHint} M e D não são iguais — fixe isso antes de cortar.`,
+    ], `Materiais: cera, régua, Lecron, escova e meia fina. Confira V / P / M / D antes de remover volume.`),
 
-    step(2, "Desenhar as proximais e fazer a redução grosseira", "rough-cut", [
-      "Nesta etapa o trabalho começa na face MESIAL (M) — veja o selo “FACE EM TRABALHO: MESIAL” na imagem. Depois repita o mesmo raciocínio na face DISTAL (D).",
-      "É interessante começar pelas proximais. Com o Lecron, desenhe o perfil na face mesial (o “acidente”): a inclinação e a região do cíngulo, partindo da vestibular. O desenho é só um esboço — ele guia a remoção de cera e deve deixar margem de segurança (faixa verde na imagem).",
-      "Ainda com o Lecron, retire a cera vermelha (fora da margem), acompanhando o formato do desenho. Mantenha a cera regular — remova em camadas limpas, sem lascar. O terço incisal sai com mais facilidade; o cuidado maior começa no terço cervical — nunca retire fundo de uma vez perto do colo.",
-      "O que você tirar na face mesial precisa refletir na face distal. A distal é menor e mais empinada: dá para tirar um pouco mais de cera nela, sem exagerar a diferença. Confira se as duas laterais estão coerentes antes de seguir.",
-      "Desenhe também as bordas mesial e distal nas faces vestibular e lingual. As duas faces convergem para cervical: comece a reduzir a cera respeitando essa convergência. Forçar demais no colo fratura a cera — preserve volume nessa região frágil.",
-      "Na lingual há formação do cíngulo. Há muito excesso de cera, mas não retire em linha reta: se ficar reto, a peça parece “poltrona”. O dente natural tem cíngulo — remova um pouco a mais onde precisa até a forma lembrar o dente. Ao fim desta etapa você já tem um esboço grosseiro.",
-    ], "Face em foco: MESIAL (depois DISTAL). Margem de segurança (verde). Cervical = zona de risco. Só Lecron na cera."),
+    step(2, "Desenho proximal e corte grosseiro", "rough-cut", [
+      "Comece pelas proximais — de preferência a mesial. Desenhe o perfil: inclinação, região do cíngulo e saída da vestibular. É só um esboço com margem de segurança.",
+      "Corte acompanhando o desenho, em pedaços controlados. O terço incisal sai fácil; o cervical exige calma — nunca retire fundo de uma vez perto do colo.",
+      "O que tirar na mesial precisa espelhar na distal. A distal é menor e mais empinada: dá para remover um pouco mais, sem criar assimetria exagerada.",
+      "Ao fim desta etapa você já tem o esboço grosseiro das duas proximais — ainda sem anatomia fina.",
+    ], "Face em foco: MESIAL, depois DISTAL. Cervical = zona de risco. Mantenha margem de segurança."),
 
-    step(3, "Arredondar a macroforma com o Lecron", "round", [
-      "Agora o trabalho deixa de ser remoção grande e passa a ser arredondamento com o Lecron: dente não tem quina quadrada. Comece a arredondar bordas e o cíngulo — a margem de cera ainda pode estar generosa.",
-      "Observe a bossa vestibular: ela ainda pode estar um pouco alta, no terço médio. A forma ainda é vaga — é nesta fase que entra o que você aprendeu na aula de anatomia. Desgaste a borda mesial arredondando e jogue a bossa um pouco mais para cervical.",
-      `O dente é convexo, não plano. Para criar essa convexidade, faça desgastes controlados na vestibular com o Lecron. Na distal, faça um pouco mais de desgaste (mais passes) do que na mesial: assim a assimetria do ${fdi} fica correta.`,
-      "Lembre da lingual: região côncava no médio-incisal e cíngulo convexo no cervical. Na vestibular, delimite a linha cervical bem redondinha com o Lecron. Remova as aparas de cera da superfície para enxergar bem o colo.",
-      "Saia da estrutura macro das primeiras remoções até a peça ter “carinha” de dente — ainda sem detalhes finos. Depois disso é que se define a anatomia.",
-    ]),
+    step(3, "Convergência e macroforma", "round", [
+      "Desenhe as bordas mesial e distal nas faces vestibular e palatina. As paredes convergem para o cervical — reduza respeitando essa convergência.",
+      "Não force o colo: pressão demais ali fratura a cera. Preserve volume nessa região frágil.",
+      "Na palatina há formação do cíngulo. Não corte em linha reta — o dente não é reto; retire o excesso até surgir a forma do cíngulo.",
+      "Resultado esperado: um esboço macro que já “parece dente”, ainda com quinas e sem detalhes anatômicos.",
+    ], "Convergência para o colo. Cíngulo ≠ corte reto."),
 
-    step(4, "Anatomia proximal e fossa lingual", "lingual", [
-      "Entre na mesial com o Lecron: deixe-a mais côncava e depois convexa em direção ao incisal. Isso ajuda a criar o efeito do cíngulo por trás. Prepare bem essa proximal.",
-      "Se o dente estiver largo no sentido vestíbulo-lingual em relação à medida da tabela, retire um pouco mais de cera nessa espessura até a proporção melhorar.",
-      "Na lingual, marque a crista marginal. Remova a região interna (fossa) em camadas finas com o Lecron. Arredonde as margens da fossa sem perder as cristas — preserve as cristas marginais.",
-      `Ao fim desta etapa a peça já deve lembrar o ${name}, ainda sem todos os detalhes de borda e sulcos.`,
-    ], "Cristas marginais se preservam; a fossa se escava no centro — só Lecron."),
+    step(4, "Arredondar e convexidade", "lingual", [
+      "Troque o corte grosseiro pelo arredondamento: dente não tem quina quadrada. Arredonde bordas e o cíngulo com o Lecron.",
+      "Ajuste a bossa vestibular — muitas vezes ela ainda está no terço médio; leve-a um pouco mais para cervical.",
+      `Crie a convexidade vestibular com desgastes controlados. Na distal, faça um pouco mais de passes do que na mesial — assimetria típica do ${fdi}.`,
+      "Delimite a linha cervical arredondada e limpe as aparas com a escova para enxergar o colo. Macroforma pronta; detalhes vêm na próxima etapa.",
+    ], "Sem quinas. Bossa para cervical. Escova para limpar aparas."),
 
-    step(5, "Borda incisal, proporção e detalhes vestibulares", "detail", [
-      "Com o Lecron, defina a anatomia da borda: a mesial é mais comprida, com ângulo mais próximo de 90°. A distal é menor e mais arredondada. Deixe esses dois ângulos claros.",
-      `Olhe a proporção usando as medidas da página (altura ${altura}, MD ${md}): se estiver largo demais em relação à altura, tire um pouco de cera dos lados. Se depois ficar muito quadrado, ajuste no cervical — não deixe ângulo reto no dente. Arredonde tudo até a cara ficar mais natural.`,
-      "Lembre das duas depressões (sulcos de desenvolvimento) e das mamelões. Desgaste de leve com o Lecron pensando nesses detalhes: o relevo deve ser discreto, nunca exagerado.",
-      "Se o dente ficou comprido demais, acerte a altura conforme a tabela. Ao remover cera, você pode perder a cervical lingual e o cíngulo — redesenhe com cuidado. Na mesial proximal, recupere a concavidade cervical se ela sumiu.",
-    ]),
+    step(5, "Anatomia, proporção e detalhes", "detail", [
+      "Na proximal, escave levemente (côncavo → convexo no sentido do cíngulo). Se estiver largo no sentido vestíbulo-palatino, retire um pouco até a proporção melhorar.",
+      "Na palatina, marque as cristas marginais e escave a fossa em camadas finas — preserve as cristas.",
+      "Borda incisal: mesial mais longa, ângulo próximo de 90°; distal menor e mais arredondada.",
+      `Confira proporção altura (${altura}) × largura (${md}). Se estiver largo demais, tire dos lados; se ficar quadrado, arredonde. Sugira sulcos de desenvolvimento e mamelões com desgaste discreto.`,
+    ], "Cristas se preservam; fossa se escava. MI ≈ 90°; DI arredondado."),
 
-    step(6, "Refino, alisamento com Lecron e revisão final", "polish", [
-      "A face lingual pode ter ficado bagunçada depois dos ajustes — redesenhe com o Lecron com mais cuidado, porque já não há muita cera para tirar. Arredonde margens e ângulos; defina melhor a crista marginal. A mesial deve continuar maior que a distal; elimine ângulos retos.",
-      "Com passes leves do Lecron, alise a superfície e quebre os ângulos restantes até a cera ficar mais uniforme e acetinada ao toque visual.",
-      "Revise faces, ângulos, proporção (conforme as medidas da tabela), colo, fossa e detalhes. Faça só refiles mínimos de cera onde ainda houver quina ou assimetria.",
-      `Resultado esperado: ${name} didático pronto. Materiais usados: cera + Lecron.`,
-    ]),
+    step(6, "Refino e polimento", "polish", [
+      "Depois dos ajustes, a palatina pode ter perdido definição — redesenhe com cuidado: já há pouco volume para remover. Recupere cervical e cíngulo se precisarem.",
+      "Garanta mesial maior que distal e elimine ângulos retos. Quebre quinas restantes com passes leves do Lecron.",
+      "Finalize com a meia fina: alise a superfície e suavize ângulos que o instrumento sozinho não quebra bem.",
+      `Revise faces, proporção, colo, fossa e detalhes. Resultado: ${name} didático pronto.`,
+    ], "Meia fina no acabamento. Revisar M > D, colo e fossa."),
   ];
 }
 

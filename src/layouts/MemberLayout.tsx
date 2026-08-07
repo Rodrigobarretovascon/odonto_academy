@@ -7,7 +7,7 @@ import { SiteFooter } from "../components/SiteFooter";
 
 const NAV = [
   { to: "/app/resumos", label: "Resumos" },
-  { to: "/app/escultura/13", label: "Escultura em cera" },
+  { to: "/app/escultura/11", label: "Escultura em cera" },
   { to: "/app/ia", label: "Odus IA" },
   { to: "/app/anatomia", label: "Anatomia dental" },
   { to: "/app/visualizador-3d", label: "Visualizador 3D" },

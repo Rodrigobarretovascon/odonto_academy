@@ -1,6 +1,6 @@
 /**
  * Metadados didáticos condensados — 6 etapas (11/21).
- * Materiais: apenas cera + Lecron.
+ * Alinhado ao roteiro do vídeo de escultura em cera.
  */
 
 import type { AnimPhase } from "./sculpture-scripts";
@@ -26,93 +26,93 @@ export interface PhaseTeaching {
 export const TOOTH_11_PHASES: PhaseTeaching[] = [
   {
     id: 1,
-    title: "Preparar o bloco e orientar as faces",
+    title: "Materiais, medidas e faces",
     animPhase: "faces",
-    time: "1:13–3:15",
+    time: "vídeo · início",
     action:
-      "Usar os valores da tabela oferecida acima; marcar altura nas 4 faces do bloco; identificar V, L, M e D.",
-    instrument: "Lecron + bloco de cera",
+      "Separar materiais; planejar medidas com a régua; limitar as 4 faces; identificar V, P, M e D.",
+    instrument: "Régua + Lecron + bloco de cera",
     activeTip: "Ponta do Lecron nas linhas de limite",
     remove: "Nada volumoso — só traços na cera",
     preserve: "Volume interno e orientação correta M ≠ D",
-    result: "Bloco de cera marcado e faces definidas",
+    result: "Bloco marcado e faces definidas",
     defaultView: "obliqua",
     removeOverlay: 0,
     preserveOverlay: 0.3,
   },
   {
     id: 2,
-    title: "Desenhar as proximais e fazer a redução grosseira",
+    title: "Desenho proximal e corte grosseiro",
     animPhase: "rough-cut",
-    time: "3:15–8:54",
+    time: "vídeo · proximais",
     action:
-      "Na face MESIAL, desenhar o perfil, reduzir cera fora da margem de segurança; depois repetir na DISTAL; convergência cervical e cíngulo.",
+      "Na MESIAL, desenhar o perfil com margem; cortar fora da margem; repetir na DISTAL (menor e mais empinada).",
     instrument: "Lecron + bloco de cera",
-    activeTip: "Ponta do Lecron na face mesial (fora da linha verde)",
-    remove: "Cera vermelha fora da margem (MD e depois P)",
-    preserve: "Margem de segurança (verde) e colo",
-    result: "Esboço grosseiro com cera regular e faces proximais definidas",
+    activeTip: "Ponta do Lecron na face mesial (fora da margem)",
+    remove: "Cera fora da margem de segurança",
+    preserve: "Margem de segurança e colo",
+    result: "Esboço grosseiro das duas proximais",
     defaultView: "M",
     removeOverlay: 0.5,
     preserveOverlay: 0.4,
   },
   {
     id: 3,
-    title: "Arredondar a macroforma com o Lecron",
+    title: "Convergência e macroforma",
     animPhase: "round",
-    time: "8:54–13:48",
+    time: "vídeo · convergência",
     action:
-      "Arredondar quinas na cera, levar bossa para cervical, desgastar mais a distal e delimitar o colo.",
+      "Desenhar bordas, convergir paredes para o cervical e formar o cíngulo sem cortar reto.",
     instrument: "Lecron + bloco de cera",
-    activeTip: "Ponta de raspagem do Lecron",
-    remove: "Quinas e excesso de cera médio-vestibular / distal",
-    preserve: "Volume de coroa e colo",
-    result: "Macroforma com “carinha” de dente",
+    activeTip: "Ponta do Lecron nas bordas e no cíngulo",
+    remove: "Excesso que impede a convergência e o cíngulo",
+    preserve: "Volume do colo",
+    result: "Macroforma que já parece dente",
     defaultView: "V",
     removeOverlay: 0.35,
     preserveOverlay: 0.35,
   },
   {
     id: 4,
-    title: "Anatomia proximal e fossa lingual",
+    title: "Arredondar e convexidade",
     animPhase: "lingual",
-    time: "14:07–17:38",
+    time: "vídeo · arredondar",
     action:
-      "Modelar mesial côncavo→convexo, corrigir VL se largo, marcar crista e escavar fossa na cera.",
-    instrument: "Lecron + bloco de cera",
-    activeTip: "Ponta / colher do Lecron na fossa",
-    remove: "Cera do interior da fossa e excesso VL",
-    preserve: "Cristas marginais e contato",
-    result: "Fossa esboçada e proximal trabalhada",
-    defaultView: "L",
-    removeOverlay: 0.5,
-    preserveOverlay: 0.5,
+      "Arredondar quinas, levar bossa para cervical, criar convexidade vestibular e delimitar o colo.",
+    instrument: "Lecron + escova",
+    activeTip: "Ponta de raspagem do Lecron; escova nas aparas",
+    remove: "Quinas e excesso médio-vestibular / distal",
+    preserve: "Volume de coroa e colo",
+    result: "Macroforma arredondada com colo limpo",
+    defaultView: "V",
+    removeOverlay: 0.35,
+    preserveOverlay: 0.4,
   },
   {
     id: 5,
-    title: "Borda incisal, proporção e detalhes vestibulares",
+    title: "Anatomia, proporção e detalhes",
     animPhase: "detail",
-    time: "17:56–22:22",
+    time: "vídeo · anatomia",
     action:
-      "Definir MI ~90° e DI arredondado, corrigir largura×altura, sulcos/mamelões e recuperar cervical se preciso.",
+      "Modelar proximal e fossa, cristas marginais, ângulos MI/DI, proporção altura×largura e sulcos discretos.",
     instrument: "Lecron + bloco de cera",
-    activeTip: "Ponta do Lecron nos ângulos e sulcos",
-    remove: "Excesso de cera lateral, cantos retos, excesso incisal",
-    preserve: "Proporção MI ≠ DI e colo",
-    result: "Anatomia vestibular e proporção ajustadas",
-    defaultView: "V",
-    removeOverlay: 0.35,
-    preserveOverlay: 0.35,
+    activeTip: "Ponta / colher do Lecron na fossa e nos ângulos",
+    remove: "Interior da fossa, excesso VL e cantos retos",
+    preserve: "Cristas marginais, colo e proporção",
+    result: "Anatomia e proporção definidas",
+    defaultView: "L",
+    removeOverlay: 0.45,
+    preserveOverlay: 0.45,
   },
   {
     id: 6,
-    title: "Refino, alisamento com Lecron e revisão final",
+    title: "Refino e polimento",
     animPhase: "polish",
-    time: "22:58–fim",
+    time: "vídeo · acabamento",
     action:
-      "Refinar lingual, garantir M > D, alisar a cera com passes leves do Lecron e revisar o dente.",
-    instrument: "Lecron + bloco de cera",
-    activeTip: "Ponta do Lecron em passes leves de alisamento",
+      "Recuperar palatina/cervical se preciso, garantir M > D, alisar com Lecron e polir com meia fina.",
+    instrument: "Lecron + meia fina",
+    activeTip: "Passes leves do Lecron; meia fina no alisamento",
     remove: "Micro-quinas e reto residual de cera",
     preserve: "Anatomia completa",
     result: "Central superior didático final",
@@ -134,20 +134,20 @@ export function teachingForTooth(toothNumber: number, phaseId: number): PhaseTea
   if (phaseId === 1) {
     return {
       ...p,
-      action: `Usar os valores da tabela oferecida acima; marcar altura nas 4 faces; identificar V, L, M e D do dente ${fdi}.`,
-      result: `Bloco marcado com os valores da tabela e faces do ${fdi} definidas`,
+      action: `Separar materiais; planejar medidas; marcar as 4 faces; identificar V, P, M e D do dente ${fdi}.`,
+      result: `Bloco marcado e faces do ${fdi} definidas`,
     };
   }
-  if (phaseId === 3) {
+  if (phaseId === 4) {
     return {
       ...p,
-      action: `Arredondar quinas, levar bossa para cervical, desgastar mais a distal do ${fdi} e delimitar o colo.`,
+      action: `Arredondar quinas, levar bossa para cervical, criar convexidade e delimitar o colo do ${fdi}.`,
     };
   }
   if (phaseId === 6) {
     return {
       ...p,
-      result: `Dente ${fdi} didático final (cera + Lecron)`,
+      result: `Dente ${fdi} didático final (cera + Lecron + meia fina)`,
     };
   }
   return p;

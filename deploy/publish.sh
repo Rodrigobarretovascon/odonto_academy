@@ -3,12 +3,15 @@
 #
 # Uso (no Mac, na pasta do projeto):
 #   bash deploy/publish.sh
-#   bash deploy/publish.sh root@10.100.15.2
-#   REMOTE=ubuntu@10.100.15.2 APP_DIR=/var/www/gbdental bash deploy/publish.sh
+#   bash deploy/publish.sh admgolden@10.100.15.2
+#   REMOTE=usuario@10.100.15.2 APP_DIR=/var/www/gbdental bash deploy/publish.sh
+#
+# Nota: root SSH está desabilitado — use admgolden neste servidor.
+#       Alguns hosts não têm sudo; o script detecta e adapta.
 #
 set -euo pipefail
 
-REMOTE="${1:-${REMOTE:-root@10.100.15.2}}"
+REMOTE="${1:-${REMOTE:-admgolden@10.100.15.2}}"
 APP_DIR="${APP_DIR:-/var/www/gbdental}"
 REPO_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 
@@ -17,7 +20,18 @@ cd "$REPO_DIR"
 npm run build
 
 echo "→ Destino: ${REMOTE}:${APP_DIR}"
-ssh -o ConnectTimeout=10 "$REMOTE" "mkdir -p '${APP_DIR}'"
+
+# Detecta se o remoto tem sudo (muitos hosts customizados não têm).
+REMOTE_SUDO="$(
+  ssh -o ConnectTimeout=10 "$REMOTE" 'command -v sudo >/dev/null 2>&1 && echo sudo || echo' || true
+)"
+if [[ -n "$REMOTE_SUDO" ]]; then
+  echo "→ Remoto com sudo"
+  ssh -o ConnectTimeout=10 "$REMOTE" "sudo mkdir -p '${APP_DIR}' && sudo chown -R \"\$(whoami):\$(whoami)\" '${APP_DIR}'"
+else
+  echo "→ Remoto sem sudo — comandos diretos"
+  ssh -o ConnectTimeout=10 "$REMOTE" "mkdir -p '${APP_DIR}'"
+fi
 
 echo "→ Enviando arquivos (rsync)…"
 rsync -az --delete \
@@ -37,6 +51,12 @@ ssh "$REMOTE" bash -s -- "$APP_DIR" <<'REMOTE'
 set -euo pipefail
 APP_DIR="$1"
 cd "$APP_DIR"
+
+if command -v sudo >/dev/null 2>&1; then
+  SUDO=sudo
+else
+  SUDO=
+fi
 
 if ! command -v node >/dev/null 2>&1; then
   echo "Node não encontrado. Instale Node 20+ neste servidor e rode de novo."
@@ -68,19 +88,19 @@ fi
 grep -q '^NODE_ENV=production' .env 2>/dev/null || echo 'NODE_ENV=production' >> .env
 grep -q '^PORT=' .env 2>/dev/null || echo 'PORT=3001' >> .env
 
-install -m 644 deploy/gbdental.service /etc/systemd/system/gbdental.service
 NPM_BIN="$(command -v npm)"
-sed -i "s|/usr/bin/npm|${NPM_BIN}|g" /etc/systemd/system/gbdental.service
+$SUDO install -m 644 deploy/gbdental.service /etc/systemd/system/gbdental.service
+$SUDO sed -i "s|/usr/bin/npm|${NPM_BIN}|g" /etc/systemd/system/gbdental.service
 
-systemctl daemon-reload
-systemctl enable gbdental
-systemctl restart gbdental
+$SUDO systemctl daemon-reload
+$SUDO systemctl enable gbdental
+$SUDO systemctl restart gbdental
 sleep 2
-systemctl --no-pager --full status gbdental | head -25 || true
+$SUDO systemctl --no-pager --full status gbdental | head -25 || true
 
 echo "→ Health check local…"
 curl -fsS http://127.0.0.1:3001/api/health || {
-  echo "Health falhou. Veja: journalctl -u gbdental -n 80 --no-pager"
+  echo "Health falhou. Veja: ${SUDO:+$SUDO }journalctl -u gbdental -n 80 --no-pager"
   exit 1
 }
 echo
