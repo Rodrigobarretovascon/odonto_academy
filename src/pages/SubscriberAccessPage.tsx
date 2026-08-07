@@ -17,6 +17,7 @@ export function SubscriberAccessPage() {
   const state = (location.state as AccessState | null) ?? {};
   const from = state.from && state.from !== "/acesso" ? state.from : "/app";
 
+  const [showLogin, setShowLogin] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -56,55 +57,20 @@ export function SubscriberAccessPage() {
     }
   };
 
-  return (
-    <PageShell
-      narrow
-      eyebrow="GB Dental · Área exclusiva"
-      title="Conteúdo exclusivo para assinantes"
-      lead="Você ainda não entrou na sua conta ou não possui uma assinatura ativa. Entre para verificar seu acesso ou assine a plataforma para aproveitar todos os conteúdos da GB Dental."
-      actions={
-        <>
-          <a href="#acesso-entrar" className="btn-primary btn-primary--lg">
-            Entrar na minha conta
-          </a>
-          <Link to="/assinar" state={{ needSubscription: true, from }} className="btn-outline btn-outline--lg">
-            Quero assinar
-          </Link>
-        </>
-      }
-      panelBody={
-        <>
-          <p className="access-page__register">
-            Ainda não possui uma conta?{" "}
-            <Link to="/cadastro" state={{ from }}>
-              Cadastre-se
-            </Link>
-          </p>
-          {user && !canAccess && (
-            <p className="access-page__note">
-              Você está conectada como <strong>{user.email}</strong>, mas ainda sem assinatura ativa.{" "}
-              <Link to="/assinar" state={{ needSubscription: true, from }}>
-                Ver planos
-              </Link>
-              {" · "}
-              <button type="button" className="access-page__text-btn" onClick={() => logout()}>
-                Trocar de conta
-              </button>
-            </p>
-          )}
-        </>
-      }
-      footer={
-        <p className="page-shell__support">
-          Ficou com alguma dúvida? Entre em contato pelo WhatsApp:{" "}
-          <a href={SITE.whatsappUrl} target="_blank" rel="noopener noreferrer">
-            {SITE.whatsappDisplay}
-          </a>
-        </p>
-      }
-    >
-      {!user && (
-        <PageCard id="acesso-entrar" title="Entrar" lead="Use o e-mail e a senha da sua conta GB Dental.">
+  if (!user && showLogin) {
+    return (
+      <PageShell
+        narrow
+        eyebrow="GB Dental · Acesso"
+        title="Entrar"
+        lead="Use o e-mail e a senha da sua conta GB Dental."
+        actions={
+          <button type="button" className="btn-outline" onClick={() => setShowLogin(false)}>
+            ← Voltar
+          </button>
+        }
+      >
+        <PageCard>
           <form onSubmit={handleLogin} className="auth-form">
             <label>
               E-mail
@@ -114,6 +80,7 @@ export function SubscriberAccessPage() {
                 onChange={(e) => setEmail(e.target.value)}
                 required
                 autoComplete="email"
+                autoFocus
               />
             </label>
             <label>
@@ -141,7 +108,66 @@ export function SubscriberAccessPage() {
             </Link>
           </p>
         </PageCard>
-      )}
-    </PageShell>
+        <p className="page-shell__support">
+          Dúvidas? WhatsApp{" "}
+          <a href={SITE.whatsappUrl} target="_blank" rel="noopener noreferrer">
+            {SITE.whatsappDisplay}
+          </a>
+        </p>
+      </PageShell>
+    );
+  }
+
+  return (
+    <PageShell
+      narrow
+      eyebrow="GB Dental · Área exclusiva"
+      title="Conteúdo exclusivo para assinantes"
+      lead="Você ainda não entrou na sua conta ou não possui uma assinatura ativa. Entre para verificar seu acesso ou assine a plataforma para aproveitar todos os conteúdos da GB Dental."
+      actions={
+        <>
+          {!user && (
+            <button type="button" className="btn-primary btn-primary--lg" onClick={() => setShowLogin(true)}>
+              Entrar na minha conta
+            </button>
+          )}
+          <Link to="/assinar" state={{ needSubscription: true, from }} className="btn-outline btn-outline--lg">
+            Quero assinar
+          </Link>
+        </>
+      }
+      panelBody={
+        <>
+          {!user && (
+            <p className="access-page__register">
+              Ainda não possui uma conta?{" "}
+              <Link to="/cadastro" state={{ from }}>
+                Cadastre-se
+              </Link>
+            </p>
+          )}
+          {user && !canAccess && (
+            <p className="access-page__note">
+              Você está conectada como <strong>{user.email}</strong>, mas ainda sem assinatura ativa.{" "}
+              <Link to="/assinar" state={{ needSubscription: true, from }}>
+                Ver planos
+              </Link>
+              {" · "}
+              <button type="button" className="access-page__text-btn" onClick={() => logout()}>
+                Trocar de conta
+              </button>
+            </p>
+          )}
+        </>
+      }
+      footer={
+        <p className="page-shell__support">
+          Ficou com alguma dúvida? Entre em contato pelo WhatsApp:{" "}
+          <a href={SITE.whatsappUrl} target="_blank" rel="noopener noreferrer">
+            {SITE.whatsappDisplay}
+          </a>
+        </p>
+      }
+    />
   );
 }
