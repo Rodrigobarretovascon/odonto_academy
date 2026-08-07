@@ -219,6 +219,7 @@ export function WaxMarkingStepAnimation({ toothNumber, stepTitle }: WaxMarkingSt
     };
 
     const animate = () => {
+      if (disposed) return;
       frame = requestAnimationFrame(animate);
       const dt = clock.getDelta();
       if (playingRef.current) timeRef.current += dt;
