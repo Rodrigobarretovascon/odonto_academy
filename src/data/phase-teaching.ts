@@ -245,18 +245,18 @@ export function teachingForAnyTooth(
     if (phaseId === 1) {
       return {
         ...p,
-        action: `Usar os valores da tabela oferecida acima; marcar altura nas 4 faces; identificar V, L, M e D do dente ${fdi}.`,
-        result: `Bloco marcado com os valores da tabela e faces do ${fdi} definidas`,
+        action: `Separar materiais; planejar medidas; marcar as 4 faces; identificar V, P, M e D do dente ${fdi}.`,
+        result: `Bloco marcado e faces do ${fdi} definidas`,
       };
     }
-    if (phaseId === 3) {
+    if (phaseId === 4) {
       return {
         ...p,
-        action: `Arredondar quinas, levar bossa para cervical, desgastar mais a distal do ${fdi} e delimitar o colo.`,
+        action: `Arredondar quinas, levar bossa para cervical, criar convexidade e delimitar o colo do ${fdi}.`,
       };
     }
     if (phaseId === 6) {
-      return { ...p, result: `Dente ${fdi} didático final (cera + Lecron)` };
+      return { ...p, result: `Dente ${fdi} didático final (cera + Lecron + meia fina)` };
     }
     return p;
   }

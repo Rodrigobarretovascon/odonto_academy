@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import type { ToothSculptureData } from "../types/tooth";
 import { MeasurementDiagram } from "./MeasurementDiagram";
+import { SculptureAtelierPlayer } from "./SculptureAtelierPlayer";
 import { SculptureLessonPlayer } from "./SculptureLessonPlayer";
 
 interface DentalSculpturePageProps {
@@ -12,9 +13,10 @@ function isRightHemi(n: number) {
 }
 
 /**
- * Página clássica de escultura — navegação + textos do roteiro + uma imagem-guia.
+ * Página de escultura — atelier no FDI 11; player clássico nos demais.
  */
 export function DentalSculpturePage({ data }: DentalSculpturePageProps) {
+  const isAtelier = data.number === 11;
   const primary = isRightHemi(data.number)
     ? { number: data.number, name: data.name }
     : { number: data.contralateralNumber, name: data.contralateralName };
@@ -23,10 +25,18 @@ export function DentalSculpturePage({ data }: DentalSculpturePageProps) {
     : { number: data.number, name: data.name };
 
   return (
-    <div className="dental-page">
+    <div className={`dental-page${isAtelier ? " dental-page--atelier" : ""}`}>
       <main className="dental-page__slide">
-        <section className="dental-page__hero">
-          <h1 className="dental-page__title">{data.name}</h1>
+        <section className={`dental-page__hero${isAtelier ? " dental-page__hero--atelier" : ""}`}>
+          <div className="dental-page__hero-copy">
+            {isAtelier && <p className="dental-page__eyebrow">Escultura em cera</p>}
+            <h1 className="dental-page__title">{data.name}</h1>
+            {isAtelier && (
+              <p className="dental-page__subtitle">
+                Seis etapas do vídeo — claras, resumidas, com espaço para a imagem 3D de cada fase.
+              </p>
+            )}
+          </div>
           <div className="tooth-id-stack">
             <Link
               to={`/app/escultura/${primary.number}`}
@@ -53,21 +63,25 @@ export function DentalSculpturePage({ data }: DentalSculpturePageProps) {
           </div>
         </section>
 
-        <MeasurementDiagram
-          measures={data.blockMeasures}
-          preparation={data.blockPreparation}
-          blockImage={data.blockImage}
-          toothNumber={data.number}
-        />
+        {!isAtelier && (
+          <MeasurementDiagram
+            measures={data.blockMeasures}
+            preparation={data.blockPreparation}
+            blockImage={data.blockImage}
+            toothNumber={data.number}
+          />
+        )}
 
-        <SculptureLessonPlayer data={data} />
+        {isAtelier ? <SculptureAtelierPlayer data={data} /> : <SculptureLessonPlayer data={data} />}
 
         <footer className="dental-page__footer">
           <p>
             {data.name} · FDI {data.number}
           </p>
           <p className="content-page__note">
-            Roteiro em texto. Conteúdo sujeito a revisão profissional.
+            {isAtelier
+              ? "Roteiro do vídeo didático. Imagem 3D por etapa será vinculada ao admin."
+              : "Roteiro em texto. Conteúdo sujeito a revisão profissional."}
           </p>
         </footer>
       </main>
