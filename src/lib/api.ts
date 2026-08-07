@@ -28,8 +28,6 @@ export interface Product {
   type: string;
   access_days: number;
   image_url: string;
-  image_urls?: string[];
-  images?: Array<{ id: number; image_url: string }>;
   badge: string;
   featured: boolean;
   stock_qty?: number | null;

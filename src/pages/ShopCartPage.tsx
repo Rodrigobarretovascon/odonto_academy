@@ -4,10 +4,8 @@ import { api, formatPrice, type Product } from "../lib/api";
 import { useAuth } from "../context/AuthContext";
 import { cartLineUnit, useCart } from "../context/CartContext";
 import { InCartBadge } from "../components/InCartBadge";
-import { ProductFocusModal } from "../components/ProductFocusModal";
-import { ProductImageCarousel, productImageSlides } from "../components/ProductImageCarousel";
 
-/** Loja pública: grade compacta + detalhe ampliado + carrinho em dock. */
+/** Loja pública: produtos em destaque; carrinho em painel recolhível. */
 export function ShopCartPage() {
   const { user } = useAuth();
   const { items, add, remove, setQuantity, clear, has, quantityOf, totalCents, count } = useCart();
@@ -15,7 +13,6 @@ export function ShopCartPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [flashId, setFlashId] = useState<number | null>(null);
   const [cartOpen, setCartOpen] = useState(false);
-  const [focus, setFocus] = useState<Product | null>(null);
   const flashTimer = useRef<number | null>(null);
   const prevCount = useRef(count);
 
@@ -42,33 +39,27 @@ export function ShopCartPage() {
         <div>
           <p className="shop-store__eyebrow">GB Dental · Loja</p>
           <h1 className="shop-store__title">Materiais selecionados</h1>
-          <p className="shop-store__lead">Toque no produto para ver fotos e características.</p>
+          <p className="shop-store__lead">Toque em um produto para adicionar ao carrinho.</p>
         </div>
       </header>
 
       <section id="loja-produtos" className="shop-store__catalog" aria-label="Produtos">
-        <div
-          className={`shop-store__grid shop-store__grid--shop${
-            products.length > 0 && products.length <= 6
-              ? ` shop-store__grid--few-${Math.min(products.length, 6)}`
-              : ""
-          }`}
-        >
+        <div className="shop-store__grid">
           {products.map((p) => {
             const inCart = has(p.id);
             const out = p.stock_qty != null && p.stock_qty <= 0;
-            const few = products.length > 0 && products.length <= 6;
             return (
               <button
                 key={p.id}
                 type="button"
-                className={`shop-store__card shop-store__card--uniform${few ? " shop-store__card--large" : ""}${inCart ? " is-in-cart" : ""}${flashId === p.id ? " is-flash" : ""}${out ? " is-out" : ""}`}
-                onClick={() => setFocus(p)}
-                title={out ? "Esgotado — ver detalhes" : "Ver produto"}
+                className={`shop-store__card${inCart ? " is-in-cart" : ""}${flashId === p.id ? " is-flash" : ""}${out ? " is-out" : ""}`}
+                onClick={() => onAdd(p)}
+                disabled={out}
+                title={out ? "Esgotado" : inCart ? "Adicionar +1" : "Adicionar ao carrinho"}
               >
                 <span className="shop-store__card-img">
                   {inCart && <InCartBadge quantity={quantityOf(p.id)} />}
-                  <ProductImageCarousel images={productImageSlides(p)} alt={p.name} autoplayMs={4000} />
+                  <img src={p.image_url} alt="" />
                 </span>
                 <span className="shop-store__card-body">
                   {p.subtitle && <span className="shop-store__card-sub">{p.subtitle}</span>}
@@ -82,16 +73,6 @@ export function ShopCartPage() {
           })}
         </div>
       </section>
-
-      {focus && (
-        <ProductFocusModal
-          product={focus}
-          inCart={has(focus.id)}
-          quantity={quantityOf(focus.id)}
-          onClose={() => setFocus(null)}
-          onAdd={() => onAdd(focus)}
-        />
-      )}
 
       {cartOpen && (
         <button

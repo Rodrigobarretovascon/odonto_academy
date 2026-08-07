@@ -1,8 +1,7 @@
-/** Odus — mascote oficial / logo do GB Dental. */
-const ODUS_SRC = "/images/ai/assistente-mascote.png";
 const LOGO_SRC = "/images/brand/gb-dental-logo.png?v=6";
+const MARK_SRC = "/images/brand/gb-dental-mark.png?v=6";
 
-/** Odus isolado — marca visual principal. */
+/** Marca isolada (dente) — recorte da identidade visual. */
 export function BrandMark({
   className = "",
   size = 40,
@@ -13,7 +12,7 @@ export function BrandMark({
   return (
     <img
       className={`gb-mark ${className}`}
-      src={ODUS_SRC}
+      src={MARK_SRC}
       alt=""
       width={size}
       height={size}
@@ -40,7 +39,7 @@ function HeartRule({ className = "" }: { className?: string }) {
   );
 }
 
-/** Logo: Odus + GB Dental by Gabriela Barreto */
+/** Logo marca oficial — PNG original com fundo transparente. */
 export function BrandLockup({
   size = "md",
 }: {
@@ -49,28 +48,16 @@ export function BrandLockup({
   size?: "sm" | "md" | "lg";
   mode?: "image" | "type";
 }) {
-  const markSize = size === "lg" ? 72 : size === "md" ? 52 : 40;
   return (
-    <span className={`gb-lockup gb-lockup--odus gb-lockup--${size}`}>
+    <span className={`gb-lockup gb-lockup--image gb-lockup--${size}`}>
       <img
-        src={ODUS_SRC}
-        alt=""
-        className="gb-lockup__odus"
-        width={markSize}
-        height={markSize}
+        src={LOGO_SRC}
+        alt="GB Dental — Ensina. Orienta. Cuida."
+        className="gb-lockup__img"
         decoding="async"
-        aria-hidden
       />
-      <span className="gb-lockup__text">
-        <span className="gb-lockup__title">
-          <strong>GB</strong> Dental
-        </span>
-        <span className="gb-lockup__by">by Gabriela Barreto</span>
-      </span>
-      {/* fallback PNG legado disponível se precisar */}
-      <img src={LOGO_SRC} alt="" hidden decoding="async" />
     </span>
   );
 }
 
-export { HeartRule, ODUS_SRC as AI_MASCOT_SRC, ODUS_SRC };
+export { HeartRule };

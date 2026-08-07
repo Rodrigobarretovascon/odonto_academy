@@ -42,7 +42,7 @@ interface ImmersiveSculptureLessonProps {
 
 const FACE_BTNS: { id: CarveFaceView; label: string }[] = [
   { id: "V", label: "Vestibular" },
-  { id: "P", label: "Lingual / Palatina" },
+  { id: "L", label: "Lingual" },
   { id: "M", label: "Mesial" },
   { id: "D", label: "Distal" },
   { id: "I", label: "Incisal" },

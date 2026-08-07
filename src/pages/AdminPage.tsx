@@ -9,10 +9,8 @@ import { OrdersPanel } from "./admin/OrdersPanel";
 import { CouponsPanel } from "./admin/CouponsPanel";
 import { CustomersPanel } from "./admin/CustomersPanel";
 import { BannersPanel } from "./admin/BannersPanel";
-import { ProductInlineCard } from "./admin/ProductInlineCard";
 
-type Tab = "dashboard" | "edit" | "orders";
-type EditSection = "products" | "volume" | "inventory" | "customers" | "coupons" | "banners";
+type Tab = "dashboard" | "products" | "volume" | "inventory" | "customers" | "orders" | "coupons" | "banners";
 
 interface AdminProduct {
   id: number;
@@ -26,8 +24,6 @@ interface AdminProduct {
   type: string;
   access_days: number;
   image_url: string | null;
-  images?: Array<{ id: number; image_url: string; sort_order?: number }>;
-  image_urls?: string[];
   badge: string | null;
   featured: boolean;
   active: boolean;
@@ -49,79 +45,26 @@ interface Dashboard {
   monthProfitCents: number;
   monthOrdersCount: number;
   activeSubscribers: number;
-  costsByCategory?: Array<{
-    category: string;
-    amountCents: number;
-    unitCents?: number;
-    fixedCents?: number;
-    count: number;
-  }>;
   recentOrders: Array<{
     id: number;
     total_cents: number;
     created_at: string;
     customer: string;
     email: string;
-    display_name?: string;
     products: string;
     channel: string;
   }>;
-  recentCustomers?: Array<{
-    name: string;
-    phone: string | null;
-    email: string | null;
-    last_order_at: string;
-    orders_count: number;
-    total_spent_cents: number;
-  }>;
-  monthly: Array<{ month: string; salesCents: number; costsCents: number; profitCents: number; unitsSold?: number }>;
+  monthly: Array<{ month: string; salesCents: number; costsCents: number; profitCents: number }>;
   expenses: Array<{
     id: number;
     description: string;
     category: string;
     amount_cents: number;
-    cost_mode?: "per_unit" | "fixed";
     spent_on: string;
     notes: string | null;
   }>;
-  unitsSold?: number;
-  monthUnitsSold?: number;
-  unitCostCents?: number;
-  fixedCostCents?: number;
-  variableCostsCents?: number;
-  monthVariableCostsCents?: number;
-  monthFixedCents?: number;
   lowStock: Array<{ id: number; name: string; stock_qty: number }>;
 }
-
-const EXPENSE_CATEGORIES = [
-  { value: "produto", label: "Produto / estoque" },
-  { value: "embalagem", label: "Embalagem" },
-  { value: "brinde", label: "Brinde" },
-  { value: "frete", label: "Frete" },
-  { value: "marketing", label: "Marketing" },
-  { value: "operacao", label: "Operação" },
-  { value: "geral", label: "Outros" },
-] as const;
-
-function expenseCategoryLabel(code: string) {
-  if (code === "compra") return "Produto / estoque";
-  return EXPENSE_CATEGORIES.find((c) => c.value === code)?.label ?? code;
-}
-
-function defaultCostMode(category: string): "per_unit" | "fixed" {
-  if (["marketing", "operacao", "geral"].includes(category)) return "fixed";
-  return "per_unit";
-}
-
-const emptyExpenseForm = {
-  description: "",
-  category: "produto",
-  amount: "",
-  cost_mode: "per_unit" as "per_unit" | "fixed",
-  spent_on: new Date().toISOString().slice(0, 10),
-  notes: "",
-};
 
 const emptyForm = {
   code: "",
@@ -152,16 +95,19 @@ export function AdminPage() {
   const { token } = useAuth();
   const navigate = useNavigate();
   const [tab, setTab] = useState<Tab>("dashboard");
-  const [editSection, setEditSection] = useState<EditSection>("products");
-  const [showNewProduct, setShowNewProduct] = useState(false);
   const [error, setError] = useState("");
   const [ok, setOk] = useState("");
   const [dashboard, setDashboard] = useState<Dashboard | null>(null);
   const [products, setProducts] = useState<AdminProduct[]>([]);
   const [form, setForm] = useState(emptyForm);
   const [editingId, setEditingId] = useState<number | null>(null);
-  const [expenseForm, setExpenseForm] = useState(emptyExpenseForm);
-  const [editingExpenseId, setEditingExpenseId] = useState<number | null>(null);
+  const [expenseForm, setExpenseForm] = useState({
+    description: "",
+    category: "compra",
+    amount: "",
+    spent_on: new Date().toISOString().slice(0, 10),
+    notes: "",
+  });
 
   function notify(success: string, err = "") {
     setOk(success);
@@ -179,45 +125,32 @@ export function AdminPage() {
   async function saveExpense(e: FormEvent) {
     e.preventDefault();
     try {
-      const body = {
-        description: expenseForm.description,
-        category: expenseForm.category,
-        amount_cents: reaisToCents(expenseForm.amount),
-        cost_mode: expenseForm.cost_mode,
-        spent_on: expenseForm.spent_on || undefined,
-        notes: expenseForm.notes || undefined,
-      };
-      const wasEdit = editingExpenseId != null;
-      if (wasEdit) {
-        await api(`/admin/expenses/${editingExpenseId}`, { method: "PUT", body: JSON.stringify(body) }, token);
-      } else {
-        await api("/admin/expenses", { method: "POST", body: JSON.stringify(body) }, token);
-      }
-      setExpenseForm({ ...emptyExpenseForm, spent_on: new Date().toISOString().slice(0, 10) });
-      setEditingExpenseId(null);
+      await api(
+        "/admin/expenses",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            description: expenseForm.description,
+            category: expenseForm.category,
+            amount_cents: reaisToCents(expenseForm.amount),
+            spent_on: expenseForm.spent_on || undefined,
+            notes: expenseForm.notes || undefined,
+          }),
+        },
+        token,
+      );
+      setExpenseForm({
+        description: "",
+        category: "compra",
+        amount: "",
+        spent_on: new Date().toISOString().slice(0, 10),
+        notes: "",
+      });
       await loadDashboard();
-      notify(wasEdit ? "Custo atualizado" : "Custo registrado");
+      notify("Custo registrado");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Erro ao salvar custo");
     }
-  }
-
-  function startEditExpense(ex: Dashboard["expenses"][number]) {
-    setEditingExpenseId(ex.id);
-    setExpenseForm({
-      description: ex.description,
-      category: ex.category || "geral",
-      amount: (ex.amount_cents / 100).toFixed(2).replace(".", ","),
-      cost_mode: ex.cost_mode === "fixed" ? "fixed" : "per_unit",
-      spent_on: String(ex.spent_on).slice(0, 10),
-      notes: ex.notes ?? "",
-    });
-    document.getElementById("admin-finance-edit")?.scrollIntoView({ behavior: "smooth", block: "start" });
-  }
-
-  function cancelEditExpense() {
-    setEditingExpenseId(null);
-    setExpenseForm({ ...emptyExpenseForm, spent_on: new Date().toISOString().slice(0, 10) });
   }
 
   async function removeExpense(id: number) {
@@ -237,7 +170,7 @@ export function AdminPage() {
     const run = async () => {
       try {
         if (tab === "dashboard") await loadDashboard();
-        if (tab === "edit" || tab === "orders") await loadProducts();
+        if (tab === "products" || tab === "volume" || tab === "orders") await loadProducts();
       } catch (e) {
         setError(e instanceof Error ? e.message : "Erro ao carregar");
       }
@@ -245,32 +178,25 @@ export function AdminPage() {
     void run();
   }, [tab, token]);
 
-  async function patchProduct(id: number, patch: Record<string, unknown>) {
-    await api(`/admin/products/${id}`, { method: "PATCH", body: JSON.stringify(patch) }, token);
-    await loadProducts();
-    setOk("Salvo");
-    setError("");
-  }
-
-  async function removeProduct(id: number, name: string) {
-    if (!confirm(`Remover “${name}” do catálogo?`)) return;
-    setError("");
-    setOk("");
-    try {
-      const result = await api<{ ok: boolean; deactivated?: boolean; message?: string }>(
-        `/admin/products/${id}`,
-        { method: "DELETE" },
-        token,
-      );
-      if (editingId === id) {
-        setEditingId(null);
-        setForm(emptyForm);
-      }
-      await loadProducts();
-      notify(result.message ?? (result.deactivated ? "Produto desativado" : "Produto removido"));
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Erro ao remover produto");
-    }
+  function startEdit(p: AdminProduct) {
+    setEditingId(p.id);
+    setForm({
+      code: p.code ?? "",
+      slug: p.slug,
+      name: p.name,
+      subtitle: p.subtitle ?? "",
+      description: p.description ?? "",
+      price_cents: String((p.price_cents / 100).toFixed(2)),
+      promo_price_cents: p.promo_price_cents != null ? String((p.promo_price_cents / 100).toFixed(2)) : "",
+      type: p.type,
+      access_days: String(p.access_days),
+      badge: p.badge ?? "",
+      stock_qty: p.stock_qty == null ? "" : String(p.stock_qty),
+      characteristics: (p.characteristics ?? []).join(", "),
+      applications: (p.applications ?? []).join(", "),
+      featured: p.featured,
+      active: p.active,
+    });
   }
 
   async function saveProduct(e: FormEvent) {
@@ -293,21 +219,25 @@ export function AdminPage() {
         featured: form.featured,
         active: form.active,
       };
-      await api("/admin/products", { method: "POST", body: JSON.stringify(payload) }, token);
+      if (editingId) {
+        await api(`/admin/products/${editingId}`, { method: "PATCH", body: JSON.stringify(payload) }, token);
+        setOk("Produto atualizado");
+      } else {
+        await api("/admin/products", { method: "POST", body: JSON.stringify(payload) }, token);
+        setOk("Produto cadastrado com código gerado automaticamente");
+      }
       setForm(emptyForm);
       setEditingId(null);
-      setShowNewProduct(false);
       await loadProducts();
-      setOk("Produto cadastrado — edite os campos no card abaixo");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Erro ao salvar");
     }
   }
 
-  async function uploadPhotos(productId: number, files: File[]) {
+  async function uploadPhoto(productId: number, file: File) {
     const body = new FormData();
-    for (const file of files) body.append("photos", file);
-    const res = await fetch(`${import.meta.env.VITE_API_URL ?? "/api"}/admin/products/${productId}/photos`, {
+    body.append("photo", file);
+    const res = await fetch(`${import.meta.env.VITE_API_URL ?? "/api"}/admin/products/${productId}/photo`, {
       method: "POST",
       headers: token ? { Authorization: `Bearer ${token}` } : {},
       body,
@@ -315,41 +245,16 @@ export function AdminPage() {
     const data = await res.json().catch(() => ({}));
     if (!res.ok) throw new Error(data.error ?? "Falha no upload");
     await loadProducts();
-    setOk(files.length > 1 ? `${files.length} fotos adicionadas ao carrossel` : "Foto adicionada ao carrossel");
-  }
-
-  async function removeProductImage(productId: number, imageId: number) {
-    if (!confirm("Remover esta imagem do carrossel?")) return;
-    try {
-      await api(`/admin/products/${productId}/images/${imageId}`, { method: "DELETE" }, token);
-      await loadProducts();
-      setOk("Imagem removida");
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Erro ao remover imagem");
-    }
-  }
-
-  async function setProductCover(productId: number, imageId: number) {
-    try {
-      await api(`/admin/products/${productId}/images/${imageId}/cover`, { method: "POST" }, token);
-      await loadProducts();
-      setOk("Capa atualizada");
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Erro ao definir capa");
-    }
+    setOk("Foto atualizada");
   }
 
   const tabs: { id: Tab; label: string }[] = [
     { id: "dashboard", label: "Início" },
-    { id: "edit", label: "Editar" },
-    { id: "orders", label: "Carrinho (PDV)" },
-  ];
-
-  const editSections: { id: EditSection; label: string }[] = [
     { id: "products", label: "Produtos" },
     { id: "volume", label: "Preço volume" },
     { id: "inventory", label: "Inventário" },
     { id: "customers", label: "Clientes" },
+    { id: "orders", label: "Carrinho (PDV)" },
     { id: "coupons", label: "Cupons" },
     { id: "banners", label: "Banners" },
   ];
@@ -368,7 +273,7 @@ export function AdminPage() {
         <div>
           <p className="admin-page__eyebrow">Área restrita · Admin</p>
           <h1>Administração GB Dental</h1>
-          <p>Edite produtos e valores na aba Editar · vendas no Carrinho (PDV)</p>
+          <p>Início financeiro, produtos, estoque, vendas, cupons e banners</p>
         </div>
         <div className="admin-page__nav">
           <button type="button" className="btn-outline" onClick={() => navigate(-1)}>
@@ -408,140 +313,127 @@ export function AdminPage() {
       {tab === "dashboard" && dashboard && (
         <>
           <section className="admin-section">
-            <h2>Meu financeiro</h2>
-            <p className="admin-muted">
-              O gasto total tem duas partes: <strong>por venda</strong> (embalagem, brinde, produto × unidades){" "}
-              <strong>mais</strong> os gastos <strong>mensais</strong> (aluguel, anúncio, compra avulsa…).
-            </p>
+            <h2>Resumo financeiro</h2>
+            <p className="admin-muted">Visão geral do que você ganhou, gastou e o resultado.</p>
             <div className="admin-stats">
               <article className="stat-card stat-card--gold">
-                <span>Quanto eu vendo</span>
+                <span>Ganhando (vendas)</span>
                 <strong>{formatPrice(dashboard.revenueCents)}</strong>
               </article>
               <article className="stat-card stat-card--warn">
-                <span>Quanto eu gasto</span>
+                <span>Gastei (custos)</span>
                 <strong>{formatPrice(dashboard.costsCents)}</strong>
               </article>
               <article className={`stat-card${dashboard.profitCents >= 0 ? " stat-card--ok" : " stat-card--warn"}`}>
-                <span>Quanto eu lucro</span>
+                <span>Lucro</span>
                 <strong>{formatPrice(dashboard.profitCents)}</strong>
               </article>
               <article className="stat-card">
-                <span>Custo das vendas</span>
-                <strong>{formatPrice(dashboard.variableCostsCents ?? (dashboard.unitCostCents ?? 0) * (dashboard.unitsSold ?? 0))}</strong>
+                <span>Vendas pagas</span>
+                <strong>{dashboard.ordersCount}</strong>
               </article>
               <article className="stat-card">
-                <span>Gastos mensais</span>
-                <strong>{formatPrice(dashboard.fixedCostCents ?? 0)}</strong>
+                <span>Ticket médio</span>
+                <strong>{formatPrice(dashboard.avgTicketCents)}</strong>
               </article>
               <article className="stat-card">
-                <span>Este mês (lucro)</span>
-                <strong>{formatPrice(dashboard.monthProfitCents)}</strong>
+                <span>Assinantes ativos</span>
+                <strong>{dashboard.activeSubscribers}</strong>
               </article>
             </div>
-            <p className="admin-muted admin-muted--tight">
-              {formatPrice(dashboard.unitCostCents ?? 0)}/un × {dashboard.unitsSold ?? 0} un. ={" "}
-              {formatPrice(dashboard.variableCostsCents ?? 0)}
-              {" + "}
-              mensais {formatPrice(dashboard.fixedCostCents ?? 0)}
-              {" = "}
-              {formatPrice(dashboard.costsCents)}.{" "}
-              <button type="button" className="admin-text-link" onClick={() => setTab("orders")}>
-                Registrar venda no PDV
-              </button>
-            </p>
           </section>
 
           <section className="admin-section">
-            <h2>Gastos por categoria</h2>
-            <p className="admin-muted">
-              Valores por unidade × unidades vendidas ({dashboard.unitsSold ?? 0}). O total entra em “Quanto eu gasto”.
-            </p>
-            {(dashboard.costsByCategory?.length ?? 0) === 0 ? (
-              <p className="admin-muted">Nenhum gasto cadastrado ainda.</p>
-            ) : (
-              <div className="admin-stats admin-stats--cats">
-                {(dashboard.costsByCategory ?? []).map((c) => (
-                  <article key={c.category} className="stat-card">
-                    <span>{expenseCategoryLabel(c.category)}</span>
-                    <strong>{formatPrice(c.amountCents)}</strong>
-                    <em className="admin-muted">
-                      {(c.unitCents ?? 0) > 0
-                        ? `${formatPrice(c.unitCents ?? 0)}/un × ${dashboard.unitsSold ?? 0}`
-                        : null}
-                      {(c.unitCents ?? 0) > 0 && (c.fixedCents ?? 0) > 0 ? " + " : null}
-                      {(c.fixedCents ?? 0) > 0 ? `fixo ${formatPrice(c.fixedCents ?? 0)}` : null}
-                      {(c.unitCents ?? 0) === 0 && (c.fixedCents ?? 0) === 0
-                        ? `${c.count} lançamento${c.count === 1 ? "" : "s"}`
-                        : null}
-                    </em>
-                  </article>
-                ))}
-              </div>
+            <h2>Este mês</h2>
+            <div className="admin-stats">
+              <article className="stat-card">
+                <span>Receita do mês</span>
+                <strong>{formatPrice(dashboard.monthRevenueCents)}</strong>
+              </article>
+              <article className="stat-card">
+                <span>Custos do mês</span>
+                <strong>{formatPrice(dashboard.monthCostsCents)}</strong>
+              </article>
+              <article className="stat-card">
+                <span>Resultado do mês</span>
+                <strong>{formatPrice(dashboard.monthProfitCents)}</strong>
+              </article>
+              <article className="stat-card">
+                <span>Vendas no mês</span>
+                <strong>{dashboard.monthOrdersCount}</strong>
+              </article>
+            </div>
+            {(dashboard.bannerRevenueCents > 0 || dashboard.discountsCents > 0) && (
+              <ul className="admin-monthly admin-monthly--notes">
+                {dashboard.bannerRevenueCents > 0 && (
+                  <li>
+                    <span>Banners (a receber de anunciantes)</span>
+                    <strong>{formatPrice(dashboard.bannerRevenueCents)}</strong>
+                  </li>
+                )}
+                {dashboard.discountsCents > 0 && (
+                  <li>
+                    <span>Descontos concedidos</span>
+                    <strong>{formatPrice(dashboard.discountsCents)}</strong>
+                  </li>
+                )}
+              </ul>
             )}
           </section>
 
-          <div className="admin-grid admin-grid--finance" id="admin-finance-edit">
+          {dashboard.monthly.length > 0 && (
             <section className="admin-section">
-              <h2>{editingExpenseId ? "Editar custo" : "Registrar custo"}</h2>
-              <p className="admin-muted">Escolha se o gasto é por cada venda ou do mês inteiro.</p>
+              <h2>Últimos meses</h2>
+              <div className="comparison-table-wrapper">
+                <table className="comparison-table">
+                  <thead>
+                    <tr>
+                      <th>Mês</th>
+                      <th>Vendas</th>
+                      <th>Custos</th>
+                      <th>Lucro</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {dashboard.monthly.map((m) => (
+                      <tr key={m.month}>
+                        <td>{m.month}</td>
+                        <td>{formatPrice(m.salesCents)}</td>
+                        <td>{formatPrice(m.costsCents)}</td>
+                        <td>{formatPrice(m.profitCents)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </section>
+          )}
+
+          <div className="admin-grid admin-grid--finance">
+            <section className="admin-section">
+              <h2>Registrar custo</h2>
+              <p className="admin-muted">Compras, frete, marketing e outros gastos do negócio.</p>
               <form className="admin-form" onSubmit={saveExpense}>
-                <fieldset className="admin-cost-mode">
-                  <legend>Esse gasto é…</legend>
-                  <div className="admin-cost-mode__options" role="group" aria-label="Tipo do gasto">
-                    <button
-                      type="button"
-                      className={`admin-cost-mode__btn${expenseForm.cost_mode === "per_unit" ? " is-active" : ""}`}
-                      onClick={() => setExpenseForm({ ...expenseForm, cost_mode: "per_unit" })}
-                    >
-                      <strong>Por venda</strong>
-                      <span>Multiplica por cada unidade vendida (embalagem, brinde, produto…)</span>
-                    </button>
-                    <button
-                      type="button"
-                      className={`admin-cost-mode__btn${expenseForm.cost_mode === "fixed" ? " is-active" : ""}`}
-                      onClick={() => setExpenseForm({ ...expenseForm, cost_mode: "fixed" })}
-                    >
-                      <strong>Mensal</strong>
-                      <span>Entra no mês da data (aluguel, anúncio, compra avulsa…)</span>
-                    </button>
-                  </div>
-                </fieldset>
-                <FieldLabel label="Descrição" tip="Ex.: caixa kraft, brinde, aluguel, anúncio Meta.">
+                <FieldLabel label="Descrição" tip="O que foi gasto (ex.: reposição de estoque, anúncio).">
                   <input
                     value={expenseForm.description}
                     onChange={(e) => setExpenseForm({ ...expenseForm, description: e.target.value })}
                     required
                   />
                 </FieldLabel>
-                <FieldLabel label="Categoria" tip="Organiza onde o dinheiro vai.">
+                <FieldLabel label="Categoria">
                   <select
                     value={expenseForm.category}
-                    onChange={(e) => {
-                      const category = e.target.value;
-                      setExpenseForm({
-                        ...expenseForm,
-                        category,
-                        // Só sugere o tipo se a pessoa ainda não escolheu ao editar; ao criar, categoria pode sugerir
-                        cost_mode: editingExpenseId != null ? expenseForm.cost_mode : defaultCostMode(category),
-                      });
-                    }}
+                    onChange={(e) => setExpenseForm({ ...expenseForm, category: e.target.value })}
                   >
-                    {EXPENSE_CATEGORIES.map((c) => (
-                      <option key={c.value} value={c.value}>
-                        {c.label}
-                      </option>
-                    ))}
+                    <option value="compra">Compra / estoque</option>
+                    <option value="marketing">Marketing</option>
+                    <option value="operacao">Operação</option>
+                    <option value="frete">Frete</option>
+                    <option value="geral">Geral</option>
                   </select>
                 </FieldLabel>
-                <FieldLabel
-                  label={expenseForm.cost_mode === "per_unit" ? "Valor por venda (R$)" : "Valor do mês (R$)"}
-                  tip={
-                    expenseForm.cost_mode === "per_unit"
-                      ? "Quanto custa 1 unidade a cada venda."
-                      : "Quanto você gasta nesse mês (não multiplica por venda)."
-                  }
-                >
+                <FieldLabel label="Valor (R$)" tip="Valor gasto em reais.">
                   <input
                     value={expenseForm.amount}
                     onChange={(e) => setExpenseForm({ ...expenseForm, amount: e.target.value })}
@@ -549,14 +441,7 @@ export function AdminPage() {
                     required
                   />
                 </FieldLabel>
-                <FieldLabel
-                  label={expenseForm.cost_mode === "per_unit" ? "Data" : "Mês / data do gasto"}
-                  tip={
-                    expenseForm.cost_mode === "per_unit"
-                      ? "Quando esse custo por venda passou a valer."
-                      : "O valor entra no mês dessa data."
-                  }
-                >
+                <FieldLabel label="Data">
                   <input
                     type="date"
                     value={expenseForm.spent_on}
@@ -569,49 +454,36 @@ export function AdminPage() {
                     onChange={(e) => setExpenseForm({ ...expenseForm, notes: e.target.value })}
                   />
                 </FieldLabel>
-                <div className="admin-form__actions">
-                  <button type="submit" className="btn-primary">
-                    {editingExpenseId ? "Salvar alteração" : "Adicionar custo"}
-                  </button>
-                  {editingExpenseId && (
-                    <button type="button" className="btn-outline" onClick={cancelEditExpense}>
-                      Cancelar
-                    </button>
-                  )}
-                </div>
+                <button type="submit" className="btn-primary">
+                  Salvar custo
+                </button>
               </form>
             </section>
 
             <section className="admin-section">
-              <h2>Meus custos</h2>
+              <h2>Custos recentes</h2>
               {dashboard.expenses.length === 0 ? (
-                <p className="admin-muted">Cadastre embalagem, brinde, produto… à esquerda.</p>
+                <p className="admin-muted">Nenhum custo registrado ainda.</p>
               ) : (
                 <div className="comparison-table-wrapper">
                   <table className="comparison-table">
                     <thead>
                       <tr>
+                        <th>Data</th>
                         <th>Descrição</th>
                         <th>Categoria</th>
                         <th>Valor</th>
-                        <th>Tipo</th>
                         <th />
                       </tr>
                     </thead>
                     <tbody>
                       {dashboard.expenses.map((ex) => (
-                        <tr key={ex.id} className={editingExpenseId === ex.id ? "is-editing" : undefined}>
+                        <tr key={ex.id}>
+                          <td>{new Date(ex.spent_on).toLocaleDateString("pt-BR")}</td>
                           <td>{ex.description}</td>
-                          <td>{expenseCategoryLabel(ex.category)}</td>
+                          <td>{ex.category}</td>
+                          <td>{formatPrice(ex.amount_cents)}</td>
                           <td>
-                            {formatPrice(ex.amount_cents)}
-                            {(ex.cost_mode ?? "per_unit") === "per_unit" ? "/venda" : "/mês"}
-                          </td>
-                          <td>{(ex.cost_mode ?? "per_unit") === "per_unit" ? "Por venda" : "Mensal"}</td>
-                          <td className="comparison-table__actions">
-                            <button type="button" className="btn-outline btn-outline--sm" onClick={() => startEditExpense(ex)}>
-                              Editar
-                            </button>
                             <button type="button" className="btn-outline btn-outline--sm" onClick={() => removeExpense(ex.id)}>
                               Remover
                             </button>
@@ -624,144 +496,6 @@ export function AdminPage() {
               )}
             </section>
           </div>
-
-          <section className="admin-section">
-            <h2>Este mês</h2>
-            <div className="admin-stats">
-              <article className="stat-card">
-                <span>Vendi no mês</span>
-                <strong>{formatPrice(dashboard.monthRevenueCents)}</strong>
-              </article>
-              <article className="stat-card">
-                <span>Custo das vendas</span>
-                <strong>
-                  {formatPrice(
-                    dashboard.monthVariableCostsCents ??
-                      (dashboard.unitCostCents ?? 0) * (dashboard.monthUnitsSold ?? 0),
-                  )}
-                </strong>
-              </article>
-              <article className="stat-card">
-                <span>Gastos mensais</span>
-                <strong>{formatPrice(dashboard.monthFixedCents ?? 0)}</strong>
-              </article>
-              <article className="stat-card stat-card--warn">
-                <span>Gastei no mês (total)</span>
-                <strong>{formatPrice(dashboard.monthCostsCents)}</strong>
-              </article>
-              <article className="stat-card">
-                <span>Lucro no mês</span>
-                <strong>{formatPrice(dashboard.monthProfitCents)}</strong>
-              </article>
-              <article className="stat-card">
-                <span>Unidades no mês</span>
-                <strong>{dashboard.monthUnitsSold ?? 0}</strong>
-              </article>
-            </div>
-            <p className="admin-muted admin-muted--tight">
-              Custo das vendas: {formatPrice(dashboard.unitCostCents ?? 0)} × {dashboard.monthUnitsSold ?? 0} un. ={" "}
-              {formatPrice(
-                dashboard.monthVariableCostsCents ??
-                  (dashboard.unitCostCents ?? 0) * (dashboard.monthUnitsSold ?? 0),
-              )}
-              . Outros gastos: {formatPrice(dashboard.monthFixedCents ?? 0)} (cadastre como{" "}
-              <strong>Mensal</strong> com a data do mês).
-            </p>
-          </section>
-
-          <div className="admin-grid admin-grid--finance">
-            <section className="admin-section">
-              <h2>Vendas recentes</h2>
-              {dashboard.recentOrders.length === 0 ? (
-                <p className="admin-muted">Nenhuma venda paga ainda.</p>
-              ) : (
-                <div className="comparison-table-wrapper">
-                  <table className="comparison-table">
-                    <thead>
-                      <tr>
-                        <th>Cliente</th>
-                        <th>Produtos</th>
-                        <th>Total</th>
-                        <th>Data</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {dashboard.recentOrders.map((o) => (
-                        <tr key={o.id}>
-                          <td>{o.display_name ?? o.customer ?? o.email ?? "—"}</td>
-                          <td>{o.products}</td>
-                          <td>{formatPrice(o.total_cents)}</td>
-                          <td>{new Date(o.created_at).toLocaleString("pt-BR")}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-            </section>
-
-            <section className="admin-section">
-              <h2>Clientes mais recentes</h2>
-              {(dashboard.recentCustomers?.length ?? 0) === 0 ? (
-                <p className="admin-muted">Os clientes aparecem após as primeiras vendas.</p>
-              ) : (
-                <div className="comparison-table-wrapper">
-                  <table className="comparison-table">
-                    <thead>
-                      <tr>
-                        <th>Nome</th>
-                        <th>Contato</th>
-                        <th>Pedidos</th>
-                        <th>Total</th>
-                        <th>Última compra</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {(dashboard.recentCustomers ?? []).map((c, i) => (
-                        <tr key={`${c.name}-${c.email ?? c.phone ?? i}`}>
-                          <td>{c.name}</td>
-                          <td>{c.phone || c.email || "—"}</td>
-                          <td>{c.orders_count}</td>
-                          <td>{formatPrice(c.total_spent_cents)}</td>
-                          <td>{new Date(c.last_order_at).toLocaleString("pt-BR")}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-            </section>
-          </div>
-
-          {dashboard.monthly.length > 0 && (
-            <section className="admin-section">
-              <h2>Últimos meses</h2>
-              <div className="comparison-table-wrapper">
-                <table className="comparison-table">
-                  <thead>
-                    <tr>
-                      <th>Mês</th>
-                      <th>Vendas</th>
-                      <th>Unid.</th>
-                      <th>Gastos</th>
-                      <th>Lucro</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {dashboard.monthly.map((m) => (
-                      <tr key={m.month}>
-                        <td>{m.month}</td>
-                        <td>{formatPrice(m.salesCents)}</td>
-                        <td>{m.unitsSold ?? "—"}</td>
-                        <td>{formatPrice(m.costsCents)}</td>
-                        <td>{formatPrice(m.profitCents)}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </section>
-          )}
 
           {dashboard.lowStock.length > 0 && (
             <section className="admin-section">
@@ -776,138 +510,243 @@ export function AdminPage() {
               </ul>
             </section>
           )}
+
+          <section className="admin-section">
+            <h2>Vendas recentes</h2>
+            <div className="comparison-table-wrapper">
+              <table className="comparison-table">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Cliente</th>
+                    <th>Canal</th>
+                    <th>Produtos</th>
+                    <th>Total</th>
+                    <th>Data</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {dashboard.recentOrders.map((o) => (
+                    <tr key={o.id}>
+                      <td>{o.id}</td>
+                      <td>{o.customer ?? o.email ?? "—"}</td>
+                      <td>{o.channel}</td>
+                      <td>{o.products}</td>
+                      <td>{formatPrice(o.total_cents)}</td>
+                      <td>{new Date(o.created_at).toLocaleString("pt-BR")}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </section>
         </>
       )}
 
-      {tab === "edit" && (
-        <div className="admin-edit-hub">
-          <section className="admin-section admin-edit-hub__intro">
-            <h2>Editar tudo</h2>
+      {tab === "products" && (
+        <div className="admin-grid">
+          <section className="admin-section">
+            <h2>{editingId ? "Editar produto" : "Cadastrar produto"}</h2>
             <p className="admin-muted">
-              Veja os valores e clique em <strong>Editar</strong> ao lado para alterar. Produtos, preços, estoque, clientes, cupons e banners ficam nesta aba.
+              Produto, preço unitário/promo e estoque inicial no mesmo formulário. Preço por volume e inventário ficam
+              nas abas dedicadas.
             </p>
-            <nav className="admin-subtabs" aria-label="Seções de edição">
-              {editSections.map((s) => (
-                <button
-                  key={s.id}
-                  type="button"
-                  className={`admin-subtabs__btn${editSection === s.id ? " is-on" : ""}`}
-                  onClick={() => setEditSection(s.id)}
+            <form className="admin-form" onSubmit={saveProduct}>
+              <FieldLabel
+                label="Código"
+                tip="Código único do produto (ex.: GB-00001). Gerado automaticamente ao criar; não é editável."
+              >
+                <input value={editingId ? form.code : "Gerado ao salvar"} readOnly disabled />
+              </FieldLabel>
+              <FieldLabel label="Nome" tip="Nome comercial exibido na loja, nos pedidos e no catálogo.">
+                <input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
+              </FieldLabel>
+              <FieldLabel
+                label="Subtítulo"
+                tip="Frase curta abaixo do nome no card do produto (ex.: kit completo, edição especial)."
+              >
+                <input value={form.subtitle} onChange={(e) => setForm({ ...form, subtitle: e.target.value })} />
+              </FieldLabel>
+              <FieldLabel
+                label="Descrição"
+                tip="Texto completo da página do produto: detalhes, conteúdo e informações para o cliente."
+              >
+                <textarea
+                  value={form.description}
+                  onChange={(e) => setForm({ ...form, description: e.target.value })}
+                  rows={3}
+                  required
+                />
+              </FieldLabel>
+              <div className="admin-form__row">
+                <FieldLabel
+                  label="Preço unitário (R$)"
+                  tip="Preço de tabela por unidade, usado quando não há promoção nem faixa de volume."
                 >
-                  {s.label}
+                  <input
+                    value={form.price_cents}
+                    onChange={(e) => setForm({ ...form, price_cents: e.target.value })}
+                    required
+                  />
+                </FieldLabel>
+                <FieldLabel
+                  label="Preço promocional (R$)"
+                  tip="Preço em promoção exibido na loja. Deve ser menor ou igual ao unitário. Deixe vazio se não houver promo."
+                >
+                  <input
+                    value={form.promo_price_cents}
+                    onChange={(e) => setForm({ ...form, promo_price_cents: e.target.value })}
+                  />
+                </FieldLabel>
+              </div>
+              <div className="admin-form__row">
+                <FieldLabel
+                  label="Estoque (unidades)"
+                  tip="Saldo inicial ao criar o produto. Deixe vazio para não controlar estoque. Depois use a aba Inventário."
+                >
+                  <input
+                    value={form.stock_qty}
+                    onChange={(e) => setForm({ ...form, stock_qty: e.target.value })}
+                  />
+                </FieldLabel>
+                <FieldLabel
+                  label="Dias de acesso"
+                  tip="Se maior que zero, a compra libera o conteúdo de assinante por esse número de dias."
+                >
+                  <input
+                    value={form.access_days}
+                    onChange={(e) => setForm({ ...form, access_days: e.target.value })}
+                  />
+                </FieldLabel>
+              </div>
+              <div className="admin-form__row">
+                <FieldLabel
+                  label="Tipo"
+                  tip="Físico (envio/estoque), assinatura ou digital (acesso online sem frete físico)."
+                >
+                  <select value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value })}>
+                    <option value="physical">Físico</option>
+                    <option value="subscription">Assinatura / digital</option>
+                    <option value="digital">Digital</option>
+                  </select>
+                </FieldLabel>
+                <FieldLabel
+                  label="Badge"
+                  tip="Selo curto no card da loja (ex.: Novo, Mais vendido). Deixe vazio se não quiser selo."
+                >
+                  <input value={form.badge} onChange={(e) => setForm({ ...form, badge: e.target.value })} />
+                </FieldLabel>
+              </div>
+              <FieldLabel
+                label="Características"
+                tip="Lista de atributos do produto, separados por vírgula (ex.: 5 faces, cera rosa, kit completo)."
+              >
+                <input
+                  value={form.characteristics}
+                  onChange={(e) => setForm({ ...form, characteristics: e.target.value })}
+                />
+              </FieldLabel>
+              <FieldLabel
+                label="Aplicações"
+                tip="Para que serve o produto, separados por vírgula (ex.: estudo anatômico, treino de escultura)."
+              >
+                <input
+                  value={form.applications}
+                  onChange={(e) => setForm({ ...form, applications: e.target.value })}
+                />
+              </FieldLabel>
+              <div className="admin-form__checks">
+                <label>
+                  <input
+                    type="checkbox"
+                    checked={form.featured}
+                    onChange={(e) => setForm({ ...form, featured: e.target.checked })}
+                  />
+                  Destaque
+                </label>
+                <label>
+                  <input
+                    type="checkbox"
+                    checked={form.active}
+                    onChange={(e) => setForm({ ...form, active: e.target.checked })}
+                  />
+                  Ativo
+                </label>
+              </div>
+              <div className="admin-form__actions">
+                <button type="submit" className="btn-primary">
+                  {editingId ? "Salvar alterações" : "Cadastrar"}
                 </button>
-              ))}
-            </nav>
-          </section>
-
-          {editSection === "products" && (
-            <>
-              <section className="admin-section" id="admin-product-form">
-                <div className="admin-section__row">
-                  <h2>Produtos</h2>
+                {editingId && (
                   <button
                     type="button"
-                    className="btn-primary"
+                    className="btn-outline"
                     onClick={() => {
-                      setShowNewProduct((v) => !v);
                       setEditingId(null);
                       setForm(emptyForm);
                     }}
                   >
-                    {showNewProduct ? "Fechar cadastro" : "Novo produto"}
+                    Cancelar
                   </button>
-                </div>
-                <p className="admin-muted">Cada campo tem o valor e um botão Editar ao lado. Salve campo a campo.</p>
-
-                {showNewProduct && (
-                  <form className="admin-form admin-form--new-product" onSubmit={saveProduct}>
-                    <h3>Cadastrar produto</h3>
-                    <FieldLabel label="Nome">
-                      <input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
-                    </FieldLabel>
-                    <FieldLabel label="Subtítulo">
-                      <input value={form.subtitle} onChange={(e) => setForm({ ...form, subtitle: e.target.value })} />
-                    </FieldLabel>
-                    <FieldLabel label="Descrição">
-                      <textarea
-                        value={form.description}
-                        onChange={(e) => setForm({ ...form, description: e.target.value })}
-                        rows={3}
-                        required
-                      />
-                    </FieldLabel>
-                    <div className="admin-form__row">
-                      <FieldLabel label="Preço unitário (R$)">
-                        <input
-                          value={form.price_cents}
-                          onChange={(e) => setForm({ ...form, price_cents: e.target.value })}
-                          placeholder="0,00"
-                          required
-                        />
-                      </FieldLabel>
-                      <FieldLabel label="Preço promocional (R$)">
-                        <input
-                          value={form.promo_price_cents}
-                          onChange={(e) => setForm({ ...form, promo_price_cents: e.target.value })}
-                          placeholder="0,00"
-                        />
-                      </FieldLabel>
-                    </div>
-                    <FieldLabel label="Estoque (unidades)">
-                      <input value={form.stock_qty} onChange={(e) => setForm({ ...form, stock_qty: e.target.value })} />
-                    </FieldLabel>
-                    <div className="admin-form__row">
-                      <FieldLabel label="Tipo">
-                        <select value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value })}>
-                          <option value="physical">Físico</option>
-                          <option value="subscription">Assinatura / digital</option>
-                          <option value="digital">Digital</option>
-                        </select>
-                      </FieldLabel>
-                      <FieldLabel label="Badge">
-                        <input value={form.badge} onChange={(e) => setForm({ ...form, badge: e.target.value })} />
-                      </FieldLabel>
-                    </div>
-                    <div className="admin-form__actions">
-                      <button type="submit" className="btn-primary">
-                        Cadastrar
-                      </button>
-                      <button type="button" className="btn-outline" onClick={() => setShowNewProduct(false)}>
-                        Cancelar
-                      </button>
-                    </div>
-                  </form>
                 )}
-              </section>
-
-              <div className="admin-product-list admin-product-list--inline">
-                {products.length === 0 && <p className="admin-muted">Nenhum produto — use Novo produto.</p>}
-                {products.map((p) => (
-                  <ProductInlineCard
-                    key={p.id}
-                    product={p}
-                    selected={editingId === p.id}
-                    onSelect={setEditingId}
-                    onPatch={patchProduct}
-                    onRemove={(id, name) => void removeProduct(id, name)}
-                    onPhotos={(id, files) => void uploadPhotos(id, files).catch((err) => setError(err.message))}
-                    onRemoveImage={(pid, iid) => void removeProductImage(pid, iid)}
-                    onSetCover={(pid, iid) => void setProductCover(pid, iid)}
-                  />
-                ))}
               </div>
-            </>
-          )}
+            </form>
+          </section>
 
-          {editSection === "volume" && <VolumePricesPanel token={token} products={productLite} notify={notify} />}
-          {editSection === "inventory" && <InventoryPanel token={token} notify={notify} />}
-          {editSection === "customers" && <CustomersPanel token={token} notify={notify} />}
-          {editSection === "coupons" && <CouponsPanel token={token} notify={notify} />}
-          {editSection === "banners" && <BannersPanel token={token} notify={notify} />}
+          <section className="admin-section">
+            <h2>Catálogo</h2>
+            <div className="admin-product-list">
+              {products.map((p) => (
+                <article key={p.id} className="admin-product-card">
+                  {p.image_url && <img src={p.image_url} alt="" />}
+                  <div>
+                    <h3>
+                      <span className="admin-code">{p.code}</span> {p.name}
+                    </h3>
+                    <p>
+                      {formatPrice(p.price_cents)}
+                      {p.promo_price_cents != null && <> · promo {formatPrice(p.promo_price_cents)}</>}
+                    </p>
+                    <p className="admin-muted">
+                      Estoque: {p.stock_qty == null ? "sem controle" : `${p.stock_qty} un.`} ·{" "}
+                      {p.active ? "ativo" : "inativo"}
+                    </p>
+                    <div className="admin-form__actions">
+                      <button type="button" className="btn-outline" onClick={() => startEdit(p)}>
+                        Editar
+                      </button>
+                      <label className="btn-outline admin-upload">
+                        Foto
+                        <input
+                          type="file"
+                          accept="image/*"
+                          hidden
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) void uploadPhoto(p.id, file).catch((err) => setError(err.message));
+                          }}
+                        />
+                      </label>
+                    </div>
+                  </div>
+                </article>
+              ))}
+            </div>
+          </section>
         </div>
       )}
 
+      {tab === "volume" && <VolumePricesPanel token={token} products={productLite} notify={notify} />}
+
+      {tab === "inventory" && <InventoryPanel token={token} notify={notify} />}
+
+      {tab === "customers" && <CustomersPanel token={token} notify={notify} />}
+
       {tab === "orders" && <OrdersPanel token={token} products={productLite} notify={notify} />}
+
+      {tab === "coupons" && <CouponsPanel token={token} notify={notify} />}
+
+      {tab === "banners" && <BannersPanel token={token} notify={notify} />}
     </div>
   );
 }

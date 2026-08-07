@@ -15,9 +15,7 @@ const whatsappPrefill =
   "Olá! Estou acessando a plataforma GB Dental e gostaria de tirar uma dúvida.";
 
 export const SITE = {
-  brand: "GB Dental by Gabriela Barreto",
-  brandShort: "GB Dental",
-  founder: "Gabriela Barreto",
+  brand: "GB Dental",
   whatsappPhone,
   whatsappDisplay,
   whatsappPrefill,

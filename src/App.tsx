@@ -1,7 +1,6 @@
 import { BrowserRouter, Navigate, Route, Routes, useParams } from "react-router-dom";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import { CartProvider } from "./context/CartContext";
-import { ThemeProvider } from "./context/ThemeContext";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { ScrollToTop } from "./components/ScrollToTop";
 import { PublicLayout } from "./layouts/PublicLayout";
@@ -47,10 +46,9 @@ export default function App() {
   return (
     <BrowserRouter>
       <ScrollToTop />
-      <ThemeProvider>
-        <AuthProvider>
-          <CartProvider>
-            <Routes>
+      <AuthProvider>
+        <CartProvider>
+          <Routes>
             <Route element={<PublicLayout />}>
               <Route index element={<LandingPage />} />
               <Route path="o-que-somos" element={<AboutPage />} />
@@ -92,11 +90,10 @@ export default function App() {
               </Route>
             </Route>
 
-              <Route path="*" element={<Navigate to="/" replace />} />
-            </Routes>
-          </CartProvider>
-        </AuthProvider>
-      </ThemeProvider>
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </CartProvider>
+      </AuthProvider>
     </BrowserRouter>
   );
 }
