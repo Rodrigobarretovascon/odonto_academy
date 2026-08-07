@@ -204,10 +204,15 @@ export function PublicLayout() {
       </header>
 
       {location.pathname === "/" && (
-        <div className="terus-masthead">
+        <div className="terus-masthead" aria-label="Mensagem da marca">
           <p className="terus-masthead__line">
-            Seu espaço para <em>aprender</em>, <em>praticar</em> e aperfeiçoar a{" "}
-            <em>escultura dental</em>.
+            <span>Seu espaço para</span>
+            <em>aprender</em>
+            <span className="terus-masthead__dot" aria-hidden="true" />
+            <em>praticar</em>
+            <span className="terus-masthead__dot" aria-hidden="true" />
+            <span>aperfeiçoar a</span>
+            <em>escultura dental</em>
           </p>
         </div>
       )}

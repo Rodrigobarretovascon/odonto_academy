@@ -59,12 +59,6 @@ export function PromoBannerRail() {
         ) : (
           media
         )}
-        {(current.title || current.description) && (
-          <div className="promo-banner__caption">
-            <strong>{current.title}</strong>
-            {current.description && <span>{current.description}</span>}
-          </div>
-        )}
         {banners.length > 1 && (
           <div className="promo-banner__dots" aria-hidden="true">
             {banners.map((b, i) => (
@@ -73,6 +67,7 @@ export function PromoBannerRail() {
                 type="button"
                 className={`promo-banner__dot${i === index ? " is-on" : ""}`}
                 onClick={() => setIndex(i)}
+                aria-label={`Banner ${i + 1}`}
               />
             ))}
           </div>

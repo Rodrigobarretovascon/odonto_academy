@@ -50,19 +50,11 @@ export function LandingPage() {
     <div className="landing landing--store">
       <section className="home-store" aria-label="Loja GB Dental">
         <div className="home-store__inner">
-          <header className="home-store__intro">
-            <p className="home-store__eyebrow">Loja</p>
-            <h1 className="home-store__title">Materiais e assinaturas</h1>
-            <p className="home-store__lead">
-              Escolha seu plano de acesso ou os materiais para estudar e praticar com método.
-            </p>
-          </header>
-
           <section className="home-plans" aria-labelledby="home-plans-title">
             <div className="home-plans__head">
               <div>
                 <p className="home-store__eyebrow">Assinaturas</p>
-                <h2 id="home-plans-title">Acesso completo à plataforma</h2>
+                <h2 id="home-plans-title">Acesso à plataforma</h2>
               </div>
               <Link to="/assinar" className="home-store__more">
                 Comparar planos →
@@ -89,38 +81,36 @@ export function LandingPage() {
                     key={p.id}
                     className={`home-plan${p.featured ? " home-plan--featured" : ""}${inCart ? " is-in-cart" : ""}`}
                   >
-                    {p.featured && <span className="home-plan__ribbon">Recomendado</span>}
-                    {p.badge && !p.featured && <span className="home-plan__badge">{p.badge}</span>}
-                    <div className="home-plan__media">
+                    <div className="home-plan__media" aria-hidden="true">
                       <img src={p.image_url} alt="" />
                     </div>
                     <div className="home-plan__body">
-                      <p className="home-plan__kicker">{p.subtitle}</p>
-                      <h3>{p.name}</h3>
-                      <p className="home-plan__desc">{p.description}</p>
-                      {p.characteristics && p.characteristics.length > 0 && (
-                        <ul className="home-plan__perks">
-                          {p.characteristics.slice(0, 4).map((c) => (
-                            <li key={c}>{c}</li>
-                          ))}
-                        </ul>
-                      )}
-                      <div className="home-plan__price-row">
+                      <div className="home-plan__copy">
+                        {(p.featured || p.badge) && (
+                          <span className="home-plan__ribbon">
+                            {p.featured ? "Recomendado" : p.badge}
+                          </span>
+                        )}
+                        <h3>{p.name}</h3>
+                        <p className="home-plan__kicker">{p.subtitle}</p>
+                        {p.characteristics && p.characteristics.length > 0 && (
+                          <p className="home-plan__perks-inline">
+                            {p.characteristics.slice(0, 3).join(" · ")}
+                          </p>
+                        )}
+                      </div>
+                      <div className="home-plan__buy">
                         <div>
                           {onPromo && (
                             <s className="home-plan__price-old">{formatPrice(p.price_cents)}</s>
                           )}
                           <p className="home-plan__price">{formatPrice(effective)}</p>
                           {p.access_days > 0 && (
-                            <p className="home-plan__term">{p.access_days} dias de acesso</p>
+                            <p className="home-plan__term">{p.access_days} dias</p>
                           )}
                         </div>
-                        <button
-                          type="button"
-                          className="btn-primary"
-                          onClick={() => add(p)}
-                        >
-                          {inCart ? `No carrinho (${quantityOf(p.id)})` : "Assinar"}
+                        <button type="button" className="btn-primary btn-primary--sm" onClick={() => add(p)}>
+                          {inCart ? `Carrinho (${quantityOf(p.id)})` : "Assinar"}
                         </button>
                       </div>
                     </div>
