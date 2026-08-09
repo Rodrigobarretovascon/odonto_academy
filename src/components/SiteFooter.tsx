@@ -11,7 +11,6 @@ const EXPERIENCE = [
 
 const FOOTER_LINKS = [
   { to: "/", label: "Início" },
-  { to: "/#como-funciona", label: "Como funciona" },
   { to: "/loja", label: "Loja" },
   { to: "/assinar", label: "Assinaturas" },
   { to: "/acesso", label: "Entrar" },
@@ -24,10 +23,10 @@ export function SiteFooter() {
     <footer className="site-footer">
       <div className="site-footer__inner">
         <div className="site-footer__brand">
-          <Link to="/" className="site-footer__logo" aria-label="GB Dental — início">
+          <Link to="/" className="site-footer__logo" aria-label="Gabriela Barreto Dental — início">
             <BrandLockup size="lg" />
           </Link>
-          <p className="site-footer__lead">Ensina, orienta e cuida.</p>
+          <p className="site-footer__lead">Gabriela Barreto Dental</p>
         </div>
 
         <div className="site-footer__columns">
@@ -71,7 +70,7 @@ export function SiteFooter() {
         </a>
 
         <div className="site-footer__meta">
-          <p>© {year} GB Dental</p>
+          <p>© {year} Gabriela Barreto Dental</p>
           <p className="site-footer__credit">
             Modelos 3D: University of Dundee, School of Dentistry (CC BY)
           </p>

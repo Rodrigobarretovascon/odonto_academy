@@ -5,6 +5,7 @@ import { useAuth } from "../context/AuthContext";
 import { BrandLockup } from "../components/BrandMark";
 import { SiteFooter } from "../components/SiteFooter";
 import { PromoBannerRail } from "../components/PromoBannerRail";
+import { SITE } from "../lib/site";
 
 export function PublicLayout() {
   const { count } = useCart();
@@ -43,10 +44,6 @@ export function PublicLayout() {
   const navLink = ({ isActive }: { isActive: boolean }) =>
     `terus-nav__link${isActive ? " terus-nav__link--active" : ""}`;
 
-  const howActive = location.pathname === "/como-funciona" || location.hash === "#como-funciona";
-  const contentsActive =
-    location.pathname === "/recursos" || location.hash === "#explore" || location.pathname === "/perguntas";
-
   const goTopAndClose = () => {
     setMenuOpen(false);
     window.scrollTo({ top: 0, left: 0, behavior: "auto" });
@@ -58,10 +55,10 @@ export function PublicLayout() {
         <Link
           to="/"
           className="terus-brand"
-          aria-label="GB Dental — início"
+          aria-label={`${SITE.brand} — início`}
           onClick={() => window.scrollTo({ top: 0, left: 0, behavior: "auto" })}
         >
-          <BrandLockup size="sm" />
+          <BrandLockup size="md" />
         </Link>
 
         {location.pathname === "/" && (
@@ -96,20 +93,6 @@ export function PublicLayout() {
               <NavLink to="/" end className={navLink} onClick={goTopAndClose}>
                 Início
               </NavLink>
-              <Link
-                to="/#como-funciona"
-                className={`terus-nav__link${howActive ? " terus-nav__link--active" : ""}`}
-                onClick={() => setMenuOpen(false)}
-              >
-                Como funciona
-              </Link>
-              <Link
-                to="/#explore"
-                className={`terus-nav__link${contentsActive ? " terus-nav__link--active" : ""}`}
-                onClick={() => setMenuOpen(false)}
-              >
-                Conteúdos
-              </Link>
               <NavLink to="/loja" className={navLink} onClick={goTopAndClose}>
                 Loja
               </NavLink>

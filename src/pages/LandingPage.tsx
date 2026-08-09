@@ -50,7 +50,7 @@ export function LandingPage() {
 
   return (
     <div className="landing landing--store">
-      <section className="home-store" aria-label="Loja GB Dental" id="explore">
+      <section className="home-store" aria-label={`Loja ${SITE.brand}`} id="explore">
         <div className="home-store__inner">
           <section className="home-plans" aria-labelledby="home-plans-title">
             <div className="home-plans__head">

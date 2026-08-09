@@ -12,10 +12,12 @@ const whatsappDisplay =
 
 const whatsappPrefill =
   (import.meta.env.VITE_WHATSAPP_PREFILL as string | undefined) ||
-  "Olá! Estou acessando a plataforma GB Dental e gostaria de tirar uma dúvida.";
+  "Olá! Estou acessando a plataforma Gabriela Barreto Dental e gostaria de tirar uma dúvida.";
 
 export const SITE = {
-  brand: "GB Dental",
+  brand: "Gabriela Barreto Dental",
+  brandShort: "GB Dental",
+  founder: "Gabriela Barreto",
   whatsappPhone,
   whatsappDisplay,
   whatsappPrefill,

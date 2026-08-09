@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
+import { Link, NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { BrandLockup, BrandMark, HeartRule } from "../components/BrandMark";
 import { AiMascot } from "../components/AiMascot";
@@ -89,8 +89,8 @@ export function MemberLayout() {
             </div>
           </div>
         ) : (
-          <NavLink to="/app" className="member-topbar__brand" aria-label="GB Dental — minha conta">
-            <BrandLockup size="sm" />
+          <NavLink to="/app" className="member-topbar__brand" aria-label="Gabriela Barreto Dental — minha conta">
+            <BrandLockup size="md" />
           </NavLink>
         )}
 
@@ -108,7 +108,7 @@ export function MemberLayout() {
 
       <aside id="member-drawer" className={`member-sidebar${open ? " is-open" : ""}`}>
         <div className="member-sidebar__brand">
-          <BrandLockup size="sm" />
+          <BrandLockup size="md" />
           <div className="member-sidebar__user">
             <strong>Área de assinantes</strong>
             <small>{user?.name}</small>
@@ -121,6 +121,9 @@ export function MemberLayout() {
             <small>{subscription?.product_name}</small>
           </div>
         )}
+        <Link to="/" className="member-sidebar__home" onClick={() => setOpen(false)}>
+          ← Voltar ao início
+        </Link>
         <nav className="member-sidebar__nav" aria-label="Área de assinantes">
           {NAV.map((item) => (
             <NavLink

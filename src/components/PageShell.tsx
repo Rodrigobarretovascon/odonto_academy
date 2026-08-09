@@ -17,7 +17,7 @@ type PageShellProps = {
 
 /** Envelope visual compartilhado — continuidade da identidade GB Dental. */
 export function PageShell({
-  eyebrow = "GB Dental",
+  eyebrow = "Gabriela Barreto Dental",
   title,
   lead,
   showBrand = true,

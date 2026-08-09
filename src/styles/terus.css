@@ -1,29 +1,35 @@
-/* GB Dental — identidade visual */
+/* Gabriela Barreto Dental — identidade visual */
 
 :root {
-  --gb-navy: #2d5596;
-  --gb-blue-mid: #b2cee6;
-  --gb-blue-soft: #d6e6fa;
-  --gb-blue-light: #e8f2fd;
-  --gb-rose: #f6b6c6;
-  --gb-rose-deep: #e89aab;
-  --gb-white: #ffffff;
-  --gb-gold: #c9a96a;
-  --gb-gold-soft: #f3ebd8;
-  --gb-gold-mist: rgba(201, 169, 106, 0.18);
+  color-scheme: light;
 
-  --gb-blue-900: #1e3a6e;
-  --gb-blue-800: #2d5596;
-  --gb-blue-700: #3d6aad;
-  --gb-blue-600: #5a7fb8;
+  --gb-navy: #0e1a2b;
+  --gb-brand: #0e1a2b;
+  --gb-brand-deep: #08121f;
+  --gb-blue-mid: #c5ccd6;
+  --gb-blue-soft: #e4e7ec;
+  --gb-blue-light: #eef0f3;
+  --gb-rose: #c5ccd6;
+  --gb-rose-deep: #8a93a3;
+  --gb-white: #f7f5f2;
+  --gb-surface: #fbfaf8;
+  --gb-surface-2: #f3f1ed;
+  --gb-gold: #8a93a3;
+  --gb-gold-soft: #eef0f3;
+  --gb-gold-mist: rgba(14, 26, 43, 0.06);
+
+  --gb-blue-900: #0e1a2b;
+  --gb-blue-800: #162338;
+  --gb-blue-700: #24344c;
+  --gb-blue-600: #3d4d66;
   --gb-gold-light: var(--gb-gold-soft);
-  --gb-gold-dark: #a8894f;
+  --gb-gold-dark: #5c6678;
   --gb-cream: var(--gb-white);
-  --gb-radius: 14px;
-  --gb-shadow: 0 10px 36px rgba(45, 85, 150, 0.1);
-  --gb-font-display: "Playfair Display", Georgia, serif;
-  --gb-font-body: "Montserrat", system-ui, sans-serif;
-  --color-muted: #6b7c96;
+  --gb-radius: 10px;
+  --gb-shadow: 0 12px 40px rgba(14, 26, 43, 0.08);
+  --gb-font-display: "Cormorant Garamond", "Times New Roman", Georgia, serif;
+  --gb-font-body: "Outfit", system-ui, sans-serif;
+  --color-muted: #6b7382;
 
   /* Espaçamento mais arejado */
   --space-xs: 0.5rem;
@@ -38,10 +44,10 @@
   --header-offset: 7.5rem;
 
   /* canvas contínuo */
-  --gb-canvas-top: #f7fbff;
-  --gb-canvas: #ffffff;
-  --gb-canvas-rose: #fdf8fa;
-  --gb-canvas-end: #eef5fc;
+  --gb-canvas-top: #f7f5f2;
+  --gb-canvas: #fbfaf8;
+  --gb-canvas-rose: #f3f1ed;
+  --gb-canvas-end: #eef0f3;
 }
 
 /* ── App shell ── */
@@ -653,27 +659,30 @@ button.terus-nav__link--action {
 .gb-lockup__img {
   display: block;
   width: auto;
-  height: 3.15rem;
-  max-width: min(100%, 20rem);
+  height: 3.4rem;
+  max-width: min(100%, 14rem);
   object-fit: contain;
   object-position: left center;
   background: transparent;
 }
 
-.gb-lockup--sm .gb-lockup__img {
-  height: auto;
-  width: 100%;
-  max-width: 100%;
+.gb-lockup--sm .gb-lockup__img,
+.gb-lockup--mark .gb-lockup__img {
+  height: 2.75rem;
+  width: auto;
+  max-width: 4.5rem;
 }
 
-.gb-lockup--md .gb-lockup__img {
-  height: 4.25rem;
-  max-width: 24rem;
+.gb-lockup--md .gb-lockup__img,
+.gb-lockup--full.gb-lockup--md .gb-lockup__img {
+  height: 3.6rem;
+  max-width: 11.5rem;
 }
 
-.gb-lockup--lg .gb-lockup__img {
-  height: 6.25rem;
-  max-width: 32rem;
+.gb-lockup--lg .gb-lockup__img,
+.gb-lockup--full.gb-lockup--lg .gb-lockup__img {
+  height: clamp(5.5rem, 14vw, 8rem);
+  max-width: min(100%, 22rem);
 }
 
 .terus-brand .gb-lockup {

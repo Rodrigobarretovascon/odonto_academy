@@ -1,7 +1,8 @@
-const LOGO_SRC = "/images/brand/gb-dental-logo.png?v=6";
-const MARK_SRC = "/images/brand/gb-dental-mark.png?v=6";
+/** Logos oficiais — Gabriela Barreto Dental */
+const LOGO_FULL = "/images/brand/gbd-logo-full.png?v=2";
+const LOGO_MARK = "/images/brand/gbd-logo-mark.png?v=2";
 
-/** Marca isolada (dente) — recorte da identidade visual. */
+/** Marca compacta (GB + DENTAL) — só para espaços pequenos. */
 export function BrandMark({
   className = "",
   size = 40,
@@ -9,15 +10,17 @@ export function BrandMark({
   className?: string;
   size?: number;
 }) {
+  const height = size;
+  const width = Math.round(size * 0.95);
   return (
     <img
       className={`gb-mark ${className}`}
-      src={MARK_SRC}
+      src={LOGO_MARK}
       alt=""
-      width={size}
-      height={size}
+      width={width}
+      height={height}
       decoding="async"
-      style={{ width: size, height: size, objectFit: "contain" }}
+      style={{ width, height, objectFit: "contain" }}
     />
   );
 }
@@ -26,20 +29,16 @@ function HeartRule({ className = "" }: { className?: string }) {
   return (
     <span className={`gb-heart-rule ${className}`} aria-hidden>
       <span className="gb-heart-rule__line" />
-      <svg className="gb-heart-rule__heart" width="10" height="9" viewBox="0 0 10 9" fill="none">
-        <path
-          d="M5 8.2C3.2 6.7.8 5.2.8 3.2.8 1.7 1.9.8 3.1.8c.7 0 1.4.3 1.9.9C5.5 1.1 6.2.8 6.9.8c1.2 0 2.3.9 2.3 2.4 0 2-2.4 3.5-4.2 5Z"
-          stroke="currentColor"
-          strokeWidth="1.1"
-          strokeLinejoin="round"
-        />
-      </svg>
+      <span className="gb-heart-rule__dot" />
       <span className="gb-heart-rule__line" />
     </span>
   );
 }
 
-/** Logo marca oficial — PNG original com fundo transparente. */
+/**
+ * Logo principal (prioridade): monograma GB + GABRIELA BARRETO + DENTAL.
+ * Em `sm`, usa a versão compacta só quando o espaço é apertado.
+ */
 export function BrandLockup({
   size = "md",
 }: {
@@ -48,16 +47,22 @@ export function BrandLockup({
   size?: "sm" | "md" | "lg";
   mode?: "image" | "type";
 }) {
+  const compact = size === "sm";
+  const src = compact ? LOGO_MARK : LOGO_FULL;
+  const heights = { sm: 44, md: 64, lg: 112 } as const;
+  const h = heights[size];
+
   return (
-    <span className={`gb-lockup gb-lockup--image gb-lockup--${size}`}>
+    <span className={`gb-lockup gb-lockup--image gb-lockup--${size}${compact ? " gb-lockup--mark" : " gb-lockup--full"}`}>
       <img
-        src={LOGO_SRC}
-        alt="GB Dental — Ensina. Orienta. Cuida."
+        src={src}
+        alt="Gabriela Barreto Dental"
         className="gb-lockup__img"
+        height={h}
         decoding="async"
       />
     </span>
   );
 }
 
-export { HeartRule };
+export { HeartRule, LOGO_MARK as AI_MASCOT_SRC, LOGO_FULL, LOGO_MARK };

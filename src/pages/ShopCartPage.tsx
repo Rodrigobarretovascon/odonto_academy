@@ -37,7 +37,7 @@ export function ShopCartPage() {
     <div className={`shop-store${cartOpen ? " is-cart-open" : ""}`}>
       <header className="shop-store__intro">
         <div>
-          <p className="shop-store__eyebrow">GB Dental · Loja</p>
+          <p className="shop-store__eyebrow">Gabriela Barreto Dental · Loja</p>
           <h1 className="shop-store__title">Materiais selecionados</h1>
           <p className="shop-store__lead">Toque em um produto para adicionar ao carrinho.</p>
         </div>
