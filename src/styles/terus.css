@@ -705,20 +705,27 @@ button.terus-nav__link--action {
   display: inline-flex;
   align-items: center;
   gap: 0.45rem;
-  color: var(--gb-blue-mid);
+  color: var(--gb-navy);
   width: 100%;
 }
 
 .gb-heart-rule__line {
   flex: 1;
   height: 1px;
-  background: currentColor;
-  opacity: 0.85;
+  background: color-mix(in srgb, var(--gb-navy) 35%, transparent);
+}
+
+.gb-heart-rule__dot {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--gb-navy);
+  flex-shrink: 0;
 }
 
 .gb-heart-rule__heart {
   flex-shrink: 0;
-  color: var(--gb-blue-mid);
+  color: var(--gb-navy);
 }
 
 .gb-divider {
