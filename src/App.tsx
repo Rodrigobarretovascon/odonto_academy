@@ -1,6 +1,7 @@
 import { BrowserRouter, Navigate, Route, Routes, useParams } from "react-router-dom";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import { CartProvider } from "./context/CartContext";
+import { ThemeProvider } from "./context/ThemeContext";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { ScrollToTop } from "./components/ScrollToTop";
 import { PublicLayout } from "./layouts/PublicLayout";
@@ -46,11 +47,12 @@ export default function App() {
   return (
     <BrowserRouter>
       <ScrollToTop />
-      <AuthProvider>
-        <CartProvider>
-          <Routes>
+      <ThemeProvider>
+        <AuthProvider>
+          <CartProvider>
+            <Routes>
             <Route element={<PublicLayout />}>
-              <Route index element={<LandingPage />} />
+              <Route index element={<ShopCartPage />} />
               <Route path="o-que-somos" element={<AboutPage />} />
               <Route path="como-funciona" element={<HowItWorksPage />} />
               <Route path="recursos" element={<ResourcesPage />} />
@@ -58,6 +60,7 @@ export default function App() {
               <Route path="acesso" element={<SubscriberAccessPage />} />
               <Route path="ia" element={<AiEntry />} />
               <Route path="loja" element={<ShopCartPage />} />
+              <Route path="inicio" element={<LandingPage />} />
               <Route path="carrinho" element={<Navigate to="/loja" replace />} />
               <Route path="checkout" element={<CheckoutPage />} />
               <Route path="login" element={<LoginPage />} />
@@ -92,8 +95,9 @@ export default function App() {
 
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
-        </CartProvider>
-      </AuthProvider>
+          </CartProvider>
+        </AuthProvider>
+      </ThemeProvider>
     </BrowserRouter>
   );
 }

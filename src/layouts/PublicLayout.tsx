@@ -2,17 +2,22 @@ import { useEffect, useRef, useState } from "react";
 import { Link, NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useCart } from "../context/CartContext";
 import { useAuth } from "../context/AuthContext";
-import { BrandLockup } from "../components/BrandMark";
 import { SiteFooter } from "../components/SiteFooter";
-import { PromoBannerRail } from "../components/PromoBannerRail";
+import { ThemeToggle } from "../components/ThemeToggle";
+import { useTheme } from "../context/ThemeContext";
 import { SITE } from "../lib/site";
 
 export function PublicLayout() {
   const { count } = useCart();
   const { user, hasAccess, logout } = useAuth();
+  const { theme } = useTheme();
   const location = useLocation();
   const navigate = useNavigate();
-  const hideFooter = location.pathname === "/loja";
+  const hideFooter = location.pathname === "/loja" || location.pathname === "/";
+  const brandLogo =
+    theme === "dark"
+      ? "/images/brand/gbd-logo-full-dark.png?v=4"
+      : "/images/brand/gbd-logo-wordmark.png?v=4";
   const [menuOpen, setMenuOpen] = useState(false);
   const [accountOpen, setAccountOpen] = useState(false);
   const accountRef = useRef<HTMLDivElement>(null);
@@ -51,23 +56,22 @@ export function PublicLayout() {
 
   return (
     <div className={`terus-app${hideFooter ? " terus-app--cart-desk" : ""}`}>
-      <header className="terus-header">
+      <header className="terus-header terus-header--centered">
         <Link
           to="/"
-          className="terus-brand"
+          className="terus-header__center-brand"
           aria-label={`${SITE.brand} — início`}
           onClick={() => window.scrollTo({ top: 0, left: 0, behavior: "auto" })}
         >
-          <BrandLockup size="md" />
+          <img
+            src={brandLogo}
+            alt="Gabriela Barreto Dental"
+            className="terus-header__center-brand-img"
+            decoding="async"
+          />
         </Link>
 
-        {location.pathname === "/" && (
-          <p className="terus-header__tagline">
-            Seu espaço para <em>aprender</em>, <em>praticar</em> e aperfeiçoar a{" "}
-            <em>escultura dental</em>.
-          </p>
-        )}
-
+        <div className="terus-header__right">
         <nav id="public-nav" className={`terus-nav${menuOpen ? " is-open" : ""}`} aria-label="Principal">
           {!user ? (
             <>
@@ -124,6 +128,7 @@ export function PublicLayout() {
         </nav>
 
         <div className="terus-header__actions">
+          <ThemeToggle className="theme-toggle--header" />
           <Link to="/loja" className="terus-cart-btn" aria-label={`Carrinho, ${count} itens`}>
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
               <path d="M6 7h15l-1.4 8.2a2 2 0 0 1-2 1.8H9a2 2 0 0 1-2-1.6L5 4H2" />
@@ -193,9 +198,9 @@ export function PublicLayout() {
             </span>
           </button>
         </div>
+        </div>
       </header>
 
-      {location.pathname === "/" && <PromoBannerRail />}
       <main className="terus-main">
         <Outlet />
       </main>

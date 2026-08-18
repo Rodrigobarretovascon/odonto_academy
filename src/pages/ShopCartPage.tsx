@@ -13,11 +13,17 @@ export function ShopCartPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [flashId, setFlashId] = useState<number | null>(null);
   const [cartOpen, setCartOpen] = useState(false);
+  const [loadError, setLoadError] = useState(false);
   const flashTimer = useRef<number | null>(null);
   const prevCount = useRef(count);
 
   useEffect(() => {
-    api<Product[]>("/products").then(setProducts).catch(console.error);
+    api<Product[]>("/products")
+      .then((list) => {
+        setProducts(list);
+        setLoadError(false);
+      })
+      .catch(() => setLoadError(true));
   }, []);
 
   useEffect(() => {
@@ -35,15 +41,58 @@ export function ShopCartPage() {
 
   return (
     <div className={`shop-store${cartOpen ? " is-cart-open" : ""}`}>
-      <header className="shop-store__intro">
-        <div>
-          <p className="shop-store__eyebrow">Gabriela Barreto Dental · Loja</p>
-          <h1 className="shop-store__title">Materiais selecionados</h1>
-          <p className="shop-store__lead">Toque em um produto para adicionar ao carrinho.</p>
+      <header className="shop-hero">
+        <div className="shop-hero__glow" aria-hidden="true" />
+        <div className="shop-hero__wave" aria-hidden="true" />
+        <span className="shop-hero__spark shop-hero__spark--a" aria-hidden="true" />
+        <span className="shop-hero__spark shop-hero__spark--b" aria-hidden="true" />
+        <span className="shop-hero__spark shop-hero__spark--c" aria-hidden="true" />
+
+        <p className="shop-hero__eyebrow">
+          <span className="shop-hero__eyebrow-star" aria-hidden="true" />
+          Materiais dentais com elegância
+        </p>
+
+        <div className="shop-hero__brand">
+          <img
+            src="/images/brand/gbd-logo-mark-light.png?v=4"
+            alt=""
+            className="shop-hero__mark shop-hero__mark--light"
+            decoding="async"
+          />
+          <img
+            src="/images/brand/gbd-logo-mark-dark.png?v=4"
+            alt=""
+            className="shop-hero__mark shop-hero__mark--dark"
+            decoding="async"
+          />
+          <div className="shop-hero__brand-text">
+            <strong>Gabriela Barreto</strong>
+            <span>Dental</span>
+          </div>
+        </div>
+
+        <h1 className="shop-hero__title">
+          Seu consultório com <em>cuidado</em> e excelência
+        </h1>
+        <p className="shop-hero__lead">
+          Lecrons, ceras e materiais selecionados — toque em um produto para adicionar ao carrinho.
+        </p>
+
+        <div className="shop-hero__pills" aria-hidden="true">
+          <span>Escultura</span>
+          <span>Ceras</span>
+          <span>Instrumentos</span>
         </div>
       </header>
 
       <section id="loja-produtos" className="shop-store__catalog" aria-label="Produtos">
+        {loadError && (
+          <p className="shop-store__empty">Não foi possível carregar os produtos. Tente novamente.</p>
+        )}
+        {!loadError && products.length === 0 && (
+          <p className="shop-store__empty">Carregando vitrine…</p>
+        )}
         <div className="shop-store__grid">
           {products.map((p) => {
             const inCart = has(p.id);
@@ -59,7 +108,15 @@ export function ShopCartPage() {
               >
                 <span className="shop-store__card-img">
                   {inCart && <InCartBadge quantity={quantityOf(p.id)} />}
-                  <img src={p.image_url} alt="" />
+                  <img
+                    src={p.image_url}
+                    alt=""
+                    loading="lazy"
+                    onError={(e) => {
+                      const el = e.currentTarget;
+                      el.style.opacity = "0";
+                    }}
+                  />
                 </span>
                 <span className="shop-store__card-body">
                   {p.subtitle && <span className="shop-store__card-sub">{p.subtitle}</span>}

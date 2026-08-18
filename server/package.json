@@ -8,7 +8,12 @@
     "start": "tsx src/index.ts",
     "db:init": "tsx src/db/init.ts",
     "seed": "tsx src/db/seed.ts",
-    "seed:catalog": "tsx src/db/seed-catalog.ts"
+    "seed:catalog": "tsx src/db/seed-catalog.ts",
+    "seed:cremer": "tsx src/db/seed-cremer-top50.ts",
+    "seed:cremer:sync": "tsx src/db/sync-cremer-media.ts",
+    "seed:cremer:apply": "tsx src/db/apply-cremer-curated.ts",
+    "seed:cremer:sculpture": "tsx src/db/seed-cremer-sculpture.ts",
+    "seed:cremer:ab-ppr": "tsx src/db/seed-cremer-american-burrs-ppr.ts"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
