@@ -4,7 +4,7 @@ import { PageShell } from "../components/PageShell";
 
 const RESOURCES = [
   { title: "Resumos", desc: "Sínteses para revisar temas-chave.", to: "/resumos", needSub: true },
-  { title: "Escultura em cera", desc: "28 dentes FDI com fases e vistas.", to: "/app/escultura/13", needSub: true },
+  { title: "Escultura em cera", desc: "28 dentes FDI com fases e vistas.", to: "/app/escultura/11", needSub: true },
   { title: "Anatomia dental", desc: "Atlas interativo da boca e do periodonto.", to: "/app/anatomia", needSub: true },
   { title: "Visualizador 3D", desc: "Modelos para girar, aproximar e estudar.", to: "/app/visualizador-3d", needSub: true },
   { title: "IA", desc: "Tire dúvidas com apoio educacional.", to: "/app/ia", needSub: true },

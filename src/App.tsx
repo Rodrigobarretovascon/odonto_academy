@@ -82,7 +82,7 @@ export default function App() {
 
                 <Route element={<ProtectedRoute requireAccess />}>
                   <Route path="resumos" element={<ResumosPage />} />
-                  <Route path="escultura" element={<Navigate to="/app/escultura/13" replace />} />
+                  <Route path="escultura" element={<Navigate to="/app/escultura/11" replace />} />
                   <Route path="escultura/:dente/imersivo" element={<RedirectImmersiveToClassic />} />
                   <Route path="escultura/:dente" element={<SculpturePage />} />
                   <Route path="anatomia" element={<AnatomyPage />} />
